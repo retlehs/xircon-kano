@@ -1,0 +1,667 @@
+if [catch {llength [get_cookie xdcc]}] {
+    echo "[kano] Your XDCC list is corrupt. Erasing.."
+    set_cookie xdcc ""
+}
+set lastdir [pwd]
+alias xdcc {
+    complete
+    set cmd [string tolower [lindex [args] 0]]
+    set rest [lrange [args] 1 end]
+    if {$cmd == "notc"} {set cmd silent}
+    switch -- $cmd {
+	add {
+	    set append ""
+	    if {[lindex $rest 0] == ""} {
+		set xdfile [FALC_fileopen -t "add file" -d $lastdir -f "all files|*.*" -M]
+		if {$xdfile == ""} {complete;return}
+		if [file isfile $xdfile] {set xdfile [list $xdfile]}
+		foreach xdf $xdfile {
+		    set p [prompt "file desc" "enter a description for: [file tail $xdf]" [string tolower [file root [file tail $xdf]]]]
+		    if {$p == ""} continue
+		    lappend append [list $xdf $p]
+		}
+	    } {
+		set file ""
+		catch {unset ffile}
+		foreach i $rest {
+		    lappend file $i
+		    if [file exists $file] {
+			set ffile $file
+			set desc [lrange $rest [llength $file] end]
+			break
+		    }
+		}
+		if ![info exists ffile] {
+		    /[event] add
+		    complete
+		    return
+		}
+		set file $ffile
+		if {$desc == ""} {
+		    set desc [prompt "file desc" "enter a description for: [file tail $file]" [string tolower [file root [file tail $file]]]]
+		    if {$desc == ""} {complete;return}
+		}
+		lappend append [list $file $desc]
+	    }
+	    set app ""
+	    foreach i $append {
+		lappend app [concat $i 0]
+	    }
+	    set_cookie xdccback [get_cookie xdcc]
+	    set_cookie xdcc [concat [get_cookie xdcc] $app]
+	    /[event] list
+	}
+	list {
+	    echo [join [build_xdcc] \n]
+	}
+	info {
+	    set packs [get_cookie xdcc]
+	    set packl [llength $packs]
+	    echo "[kano] $packl pack[s $packl]"
+	    set c 1
+	    foreach pack $packs {
+		set g [lindex $pack 2]
+		set file [lindex $pack 0]
+		echo "[kano] pack $c ($g get[s $g]): [lindex $pack 1]"
+		echo "   --> $file"
+		if {![file exists $file]} {
+		    echo "    4(file doesn't exist!)"
+		}
+		incr c
+	    }
+	}
+	silent {
+	    foreach i [build_xdcc] {
+		/quote notice [lindex [args] 1] :$i
+	    }
+	}
+	offer {
+	    switch -glob -- [string tolower [lindex [args] 1]] {
+		"" {
+		    foreach i [build_xdcc] {
+			say $i
+		    }
+		}
+		all {
+		    foreach i [build_xdcc] {
+			/msg [join [channels] ,] $i
+		    }
+		}
+		#* {
+		    foreach i [build_xdcc] {
+			/msg [lindex [args] 1] $i
+		    }
+		}
+		default {
+		    /[event] help
+		}
+	    }
+	}
+	move {
+	    set old [lindex [args] 1]
+	    set new [lindex [args] 2]
+	    if [catch {expr {$old + $new}}] {
+		/[event] list
+		return
+	    }
+	    incr old -1
+	    incr new -1
+	    set xdcc [get_cookie xdcc]
+	    set xd ""
+	    set ct 0
+	    foreach i $xdcc {
+		if {$ct == $new} {
+		    lappend xd [lindex $xdcc $old]
+		}
+		if {$ct != $old} {lappend xd $i}
+		incr ct
+	    }
+	    set_cookie xdccback [get_cookie xdcc]
+	    set_cookie xdcc $xd
+	    /[event] list
+	}	    
+	change {
+	    set num [string trim [lindex [args] 2] #]
+	    if {$num == "" || [string trim $num 0123456789] != ""} {
+		/[event] list
+		return
+	    }
+	    set xdcc [get_cookie xdcc]
+	    incr num -1
+	    set ind [lindex $xdcc $num]
+	    if {$ind == ""} {
+		/[event] list
+		return
+	    }
+	    set type [string tolower [lindex [args] 1]]
+	    set str [join [lrange [args] 3 end]]
+	    if {[lindex [args] 3] == ""} {
+		/[event] help
+		return
+	    }
+	    switch -- $type {
+		file {
+		    if ![file exists $str] {
+			echo "[kano] Sorry, file '$str' doesn't exist."
+		    } {
+			set ind [concat [list $str] [lrange $ind 1 end]]
+			set_cookie xdccback [get_cookie xdcc]
+			set_cookie xdcc [concat [lrange $xdcc 0 [expr {$num -1}]] [list $ind] [lrange $xdcc [expr {$num +1}] end]]
+		    }
+		}
+		desc {
+		    set ind [concat [list [lindex $ind 0] $str] [lrange $ind 2 end]]
+		    set_cookie xdccback [get_cookie xdcc]
+		    set_cookie xdcc [concat [lrange $xdcc 0 [expr {$num -1}]] [list $ind] [lrange $xdcc [expr {$num +1}] end]]
+		}
+		default {
+		    /[event] help
+		    return
+		}
+	    }
+	    /[event] list
+	}
+	rem {
+	    set num [string trimleft [lindex [args] 1] #]
+	    if [catch {expr {$num}}] {
+		/[event] list
+		return
+	    }
+	    if {$num > [llength [get_cookie xdcc]]} {/[event] list;return}
+	    incr num -1
+	    set xdcc [lreplace [get_cookie xdcc] $num $num]
+	    set_cookie xdccback [get_cookie xdcc]
+	    set_cookie xdcc $xdcc
+	    /[event] list
+	}
+	restore {
+	    if {[get_cookie xdccback] != ""} {
+		set xb [get_cookie xdccback]
+		set_cookie xdccback [get_cookie xdcc]
+		set_cookie xdcc $xb
+		/[event] list
+	    } {
+		echo "[kano] sorry, but xdccback is empty"
+	    }
+	}
+	default {
+	    set p1 ""
+	    set pre 14ù5ù14ù
+	    echo [subst {
+$pre $p1[event] alias usage
+ /[event] <option> <arguments>
+ 
+$pre ${p1}add - adds a file to the XDCC list
+ add                $p1! prompts to open a file and then for a description of
+                      selected files
+ add <file>         $p1! prompts only for a description of the file
+ add <file> <descr> $p1! prompts for nothing, but do not use quotes around long
+                      filenames -- it will figure them out itself
+ 
+$pre ${p1}change - changes a pack's values
+ change file <pack #> $p1! changes the filename associated with specified pack
+ change desc <pack #> $p1! changes the description associated with the pack
+ 
+$pre ${p1}move - moves a pack to a new index
+ move <pack #> <new pack #> $p1! rearranges packs
+ 
+$pre ${p1}rem - removes a pack from the list
+ rem <pack #> $p1! removes a pack
+ 
+$pre ${p1}restore - undoes your last change to the xdcc list
+ restore $p1! restores your previous xdcc list
+ 
+$pre ${p1}offer - displays your pack list
+ offer               $p1! displays packs to your current window
+ offer all           $p1! displays packs to all channels
+ offer <destination> $p1! displays packs to a channel, query, or dcc chat
+ 
+$pre ${p1}silent - silently displays your pack list
+ silent <destination> $p1! displays your pack list silently to a user
+ 
+$pre ${p1}list - locally displays your pack list
+ list $p1! echoes what others would see if you showed them '/[event] offer'
+ 
+$pre ${p1}info - displays detailed pack information
+ info $p1! gives you more information than /xdcc list
+ 
+$pre $p1/xdcc-http alias usage
+ /xdcc-http \[<options>\]
+ 
+$pre ${p1}config - configures the XDCC-HTTP service
+ config $p1! lets you set flood values and turn the service on or off
+ 
+$pre ${p1}help - displays information on XDCC-HTTP
+ help $p1! displays information and current settings for the XDCC-HTTP service
+}]
+}
+}
+complete
+}
+
+proc build_xdcc {} {
+    global count i
+    set count 1
+    set end ""
+    lappend end [t xdccstart]
+    foreach i [get_cookie xdcc] {
+	if [file exists [lindex $i 0]] {
+	    lappend end [t xdcclist]
+	}
+	incr count
+    }
+    lappend end [t xdccend]
+    return $end
+}
+
+on ctcp {
+    set com [string tolower [lindex [args] 1]]
+    if {($com == "xdcc" || $com == "tdcc") && [llength [get_cookie xdcc]]} {
+	if {$com == "xdcc"} {set com dcc}
+	set str [lindex [args] 2]
+	set c2 [string tolower [lindex $str 0]]
+	if {$c2 == "get"} {set c2 send}
+	switch -- $c2 {
+	    list {/xdcc notc [nick]}
+	    send {
+		set index [string trimleft [lindex $str 1] #]
+		if {[string trim $index 1234567890] != ""} {
+		    /quote NOTICE [nick] :/ctcp [my_nick] tdcc/xdcc send #x
+		} {
+		    set pack [lindex [get_cookie xdcc] [expr {$index - 1}]]
+		    if {$pack == ""} {
+			/quote NOTICE [nick] :pack not found
+		    } {
+			/$com send [nick] [lindex $pack 0]
+			/quote NOTICE [nick] :sending [file tail [lindex $pack 0]] ([lindex $pack 1])
+			set x ""
+			foreach i [get_cookie xdcc] {
+			    if {[lindex $i 0] == [lindex $pack 0]} {
+				lappend x [list [lindex $i 0] [lindex $i 1] [expr {[lindex $i 2] + 1}]]
+			    } {
+				lappend x $i
+			    }
+			}
+			set_cookie xdccback [get_cookie xdcc]
+			set_cookie xdcc $x
+		    }
+		}
+	    }
+	    default {/quote NOTICE [nick] :/ctcp [my_nick] tdcc/xdcc send/get/list}
+	}
+	echo [t xdcc]
+	complete
+	return
+    }
+}
+
+kaddhelp qoffer "Sets your QuickOffer file. Good for when you don't want to add something to your XDCC, but don't want to send it to a bunch of people manually." "/qoffer <file> <description>, /qoffer" "Quick Offer"
+kaddhelp xdcc ";XDCC Stuff"
+kaddhelp xdcc-http ";The XDCC-HTTP Service"
+
+alias xdcc-http xdcc-http-alias
+proc xdcc-http-alias {} {
+complete
+    switch -glob -- [lindex [args] 0] {
+	config* {
+	    set il [list]
+	    lappend il [list label x 5 5 200 10 "Allow a maximum of           requests within          seconds "]
+	    lappend il [list edit -n maxreq 70 5 15 10 [get_cookie xdcc_http_maxreq 10]]
+	    lappend il [list edit -n maxtime 138 5 15 10 [get_cookie xdcc_http_maxtime 10]]
+	    lappend il [list label x 5 25 200 20 "When over the maximum number of requests, ignore all requests for           seconds"]
+	    lappend il [list edit -n maxignore 45 33 15 10 [get_cookie xdcc_http_maxignore 60]]
+	    lappend il [list check -v [get_cookie xdcc_http_use 1] use 5 55 100 10 "Use XDCC-HTTP service"]
+	    set ans [FALC_dialog -t "xdcc-http configuration" 200 100 $il]
+	    if {$ans == ""} return
+	    foreach i $ans {
+		set name [lindex $i 0]
+		set value [lindex $i 1]
+		set_cookie xdcc_http_$name $value
+		switch -- $name {
+		    use xdcc-http-check
+		}
+	    }
+	}
+	default {
+	    echo "[kano] The XDCC-HTTP service, introduced in xdcc.ka in kano15, allows anyone access to files on your XDCC list via the HTTP protocol.\n[kano] The server is [expr {[get_cookie xdcc_http_use 1] ? "set up right now at http://[my_ip]:1515/ ([my_ip] is your current IP address)" : "not currently running"}]\n[kano] Type '/[event] config' to configure the service"
+	}
+    }
+}
+
+alias qoffer {
+    if {[arg] == ""} {
+	if {$env(kanooffer) == ""} {
+	    echo "[kano] Usage: /qoffer <file> <desc>"
+	    complete
+	    return
+	}
+	set k $env(kanooffer)
+	set i [list [lindex $k 0] "QuickOffer - [lindex $k 1]" [lindex $k 2]]
+	set_cookie xdccback [get_cookie xdcc]
+	set_cookie xdcc [list $i]
+	set count 1
+	t xdccstart
+	set i [list [lindex $k 0] "QuickOffer - [lindex $k 1]" [lindex $k 2]]
+	say [t xdcclist]
+	t xdccend
+	say "/ctcp [my_nick] qdcc"
+	set_cookie xdcc [get_cookie xdccback]
+	set_cookie xdccback ""
+    } {
+	if {[file exists [lindex [join [args]] 0]] && [lindex [join [args]] 1] != ""} {
+	    set env(kanooffer) [list [lindex [join [args]] 0] [join [lrange [join [args]] 1 end]] 0]
+	    /qoffer
+	} {
+	    echo "[kano] Usage: /qoffer <file> <desc>"
+	}
+    }
+    complete
+}
+if ![info exists env(kanooffer)] {set env(kanooffer) ""}
+
+on ctcp {
+    if {[string tolower [lindex [args] 1]] == "qdcc" && [file exists [lindex $env(kanooffer) 0]]} {
+	/dcc send [nick] [lindex $env(kanooffer) 0]
+	set env(kanooffer) "[lrange $env(kanooffer) 0 1] [expr [lindex $env(kanooffer) 2]+1]"
+    }
+}
+
+####mmm..http
+
+proc xdcc-http-check {} {
+    global xdcc_server xdcc_open
+    if ![get_cookie xdcc_http_use 1] {
+	if ![catch {close $xdcc_server}] {
+	    echo "[kano] closed XDCC-HTTP port 1515"
+	}
+	catch {unset xdcc_open}
+    } {
+	if ![info exists xdcc_open] {
+	    set xdcc_open [expr {![catch {socket -server xdcc_http 1515} xdcc_server]}]
+	}
+    }
+}
+xdcc-http-check
+
+set xdcc_template {
+<TR align=left valign=top>
+<TD align=right><font face=courier,fixed>%n</font></td><td><a href="%u">%d</a></td><td align=right><font size=-1>(%f, %s)</font></td>
+</tr>
+
+
+<BODY BGCOLOR=white>
+<center><font size=+2>%m's xdcc list</font></center><br><br>
+<table border=0>
+<tr align=top valign=center>
+<td></td>
+<td><b>Description</b></td>
+<td><b>Filename, Size</b></td>
+</tr>
+%t
+</table>
+</BODY>
+}
+
+proc xdcc_http {sock ip rport} {
+    global xdcc_close xdcc_stage xdcc_addr
+    set addr [dnslookup $ip]
+    set xdcc_addr($sock) $addr
+    xdcc_echo "[kano] $addr connected on port [lindex [fconfigure $sock -sockname] 2] (XDCC-http service; type /help xdcc-http)"
+    fconfigure $sock -blocking 0 -buffering line
+    fileevent $sock readable [list xdcc_getline $sock]
+    set xdcc_close($sock) [after 30000 [list xdcc_close $sock]]
+    set xdcc_stage($sock) wait
+}
+
+proc xdcc_getline sock {
+    if {[eof $sock] || [catch {gets $sock line}]} {xdcc_close $sock;return}
+    global xdcc_stage xdcc_close xdcc_headers xdcc_request xdcc_addr
+    switch -- $xdcc_stage($sock) {
+	wait {
+	    after cancel $xdcc_close($sock)
+	    if ![regexp {^GET ("([^"]*)"|([^ "]+))( HTTP/([0-9.]+))?$} $line junk file junk junk junk version] {xdcc_close $sock} {
+		set file [string trim $file \"]
+		set xdcc_request($sock) $file
+		if {$version == "" || $version < 1.0} {
+		    xdcc_put file $sock $file
+		} {
+		    catch {unset xdcc_headers($sock)}
+		    set xdcc_stage($sock) recvheaders
+		}
+	    }
+	}
+	recvheaders {
+	    if {$line == ""} {
+		xdcc_put head $sock $xdcc_request($sock)
+	    } {
+		if [regexp {^([^:]+): (.*)$} $line junk name value] {
+		    lappend xdcc_headers($sock) $name $value
+		}
+	    }
+	}
+    }
+}
+
+proc xdcc_close sock {
+    global xdcc_filename xdcc_addr xdcc_start xdcc_chan
+    if {[info exists xdcc_filename($sock)]} {
+	set sent [tell $xdcc_chan($sock)]
+	set fs [file size $xdcc_filename($sock)]
+	set t [file tail $xdcc_filename($sock)]
+
+	set elapsed [expr {[clock seconds] - $xdcc_start($sock)}]
+	set elapsed [expr {$elapsed == 0 ? 1 : $elapsed}]
+	set diff [expr {$fs-$sent}]
+	if {$fs > $sent} {
+	    xdcc_echo "[kano] xdcc-http: closed connection to $xdcc_addr($sock) with [filesize $diff] ($diff bytes) left on $t after [mmss $elapsed]"
+	} {
+	    xdcc_echo "[kano] xdcc-http: finished sending $t ([filesize $sent]) to $xdcc_addr($sock) in [mmss $elapsed] at [filesize [expr {int(double($sent)/$elapsed)}] no %.2f]/sec"
+	}
+    }
+    foreach i [info globals xdcc_*] {
+	global $i
+	catch {unset [set i]($sock)}
+    }
+    catch {close $sock}
+}
+
+proc xdcc_header {sock name} {
+    global xdcc_headers
+    set val [list]
+    foreach {keyname value} $xdcc_headers($sock) {
+	if {$name == $keyname} {return $value}
+    }
+    return
+}
+
+proc xdcc_mime file {
+    switch -- [string range [string tolower [file extension $file]] 1 end] {
+	jpg {return image/jpeg}
+	gif {return image/gif}
+	doc -
+	txt {return text/plain}
+	html {return text/html}
+	default {return application/x-download}
+    }
+}
+
+proc xdcc_put {type sock args} {
+    global xdcc_addr
+    switch -- $type {
+	head {
+	    set orig [lindex $args 0]
+	    set file [string range $orig 1 end]
+	    switch -regexp -- $file {
+		^$ {
+		    xdcc_echo "[kano] xdcc-http: sending index page to $xdcc_addr($sock)"
+		    xdcc_put home $sock
+		}
+		{^.*\?[0-9]+$} {
+		    regexp {^.*\?([0-9]+)$} $file junk file
+		    if {$file < [llength [get_cookie xdcc]]} {
+			xdcc_put status $sock ok
+
+			set filename [lindex [lindex [get_cookie xdcc] $file] 0]
+
+			if [catch {file size $filename} s] {set s [list]}
+
+			eval [list xdcc_put headers $sock [xdcc_mime $filename]] $s
+			xdcc_put file $sock $filename
+			xdcc_echo "[kano] xdcc-http: sending \[[file tail $filename], [filesize [expr {$s == "" ? 0 : $s}]]\] to $xdcc_addr($sock)"
+		    } {
+			xdcc_put status $sock not-found
+			xdcc_put not-found $sock
+			xdcc_echo "[kano] xdcc-http: $xdcc_addr($sock) requested '$orig' -- unknown xdcc pack"
+		    }
+		}
+		default {
+		    xdcc_echo "[kano] xdcc-http: $xdcc_addr($sock) requested '$orig' -- file not found"
+		    xdcc_put status $sock not-found
+		    xdcc_put not-found $sock
+		}
+	    }
+	}
+	status {
+	    set type [lindex $args 0]
+	    xdcc_puts -nonewline $sock "HTTP/1.1 "
+	    switch -- $type {
+		ok {
+		    xdcc_puts $sock "200 OK"
+		}
+		not-found {
+		    xdcc_puts $sock "404 File Not Found"
+		}
+	    }
+	}
+	headers {
+	    xdcc_puts $sock "Date: [clock format [clock seconds] -gmt 1]"
+	    xdcc_puts $sock "Server: [kanovers] for [kclient xircon] [version]"
+	    xdcc_puts $sock "Connection: close"
+	    xdcc_puts $sock "Content-type: [lindex $args 0]"
+	    if {[lindex $args 1] != ""} {xdcc_puts $sock "Content-length: [lindex $args 1]"}
+	    xdcc_puts $sock ""
+	}
+	home {
+	    global xdcc_template
+	    xdcc_put status $sock ok
+	    xdcc_put headers $sock text/html
+	    set file [get_cookie xdcc_template addons/xdcc-template.html]
+	    if ![file exists $file] {
+		set template $xdcc_template
+	    } {
+		set x [open $file]
+		set template [read $x]
+		close $x
+	    }
+
+	    set f [string first \n\n\n $template]
+	    if {$f == -1} {
+		
+	    }
+	    set per [string range $template 0 [expr {$f-1}]]
+	    set template [string range $template [expr {$f+1}] end]
+
+	    set end [list]
+	    for {set c 0} {$c < [string length $template]} {incr c} {
+		set char [string index $template $c]
+		if {$char == "%"} {
+		    incr c
+		    set name [string index $template $c]
+		    switch -- $name {
+			m {append end [my_nick]}
+			t {
+			    set n 0
+			    set subend [list]
+			    foreach i [get_cookie xdcc] {
+				if {[file exists [lindex $i 0]]} {
+				    for {set d 0} {$d < [string length $per]} {incr d} {
+					set char [string index $per $d]
+					if {$char == "%"} {
+					    incr d
+					    set name [string index $per $d]
+					    switch -- $name {
+						u {append subend [file tail [lindex $i 0]]?$n}
+						n {append subend [expr {$n+1}]}
+						f {append subend [file tail [lindex $i 0]]}
+						s {append subend [filesize [lindex $i 0]]}
+						d {append subend [lindex $i 1]}
+					    }
+					} {append subend $char}
+				    }
+				}
+				incr n
+			    }
+			    append end $subend
+			}
+		    }
+		} {append end $char}
+	    }
+	    xdcc_puts $sock $end
+	    close $sock
+	}
+	file {
+	    global xdcc_chan xdcc_sent xdcc_stage xdcc_filename xdcc_start
+	    set xdcc_stage($sock) file
+	    set file [lindex $args 0]
+	    set xdcc_filename($sock) $file
+	    set xdcc_start($sock) [clock seconds]
+	    if [catch {open $file} chan] {xdcc_close $sock} {
+		fconfigure $sock -buffering none -translation [list binary binary]
+		fconfigure $chan -buffering none -translation [list binary binary] -blocking 0
+		set xdcc_chan($sock) $chan
+		set xdcc_sent($sock) 0
+		if {[info commands fcopy] == ""} {
+		    fileevent $sock writable [list xdcc_next $sock]
+		} {
+		    xdcc_fcopy $sock 0
+		}
+	    }
+	}
+	not-found {
+	    xdcc_put headers $sock text/html
+	    xdcc_puts $sock "<center><font size=+2>file not found</font></center><br><br>this is not a real webserver, but a mini-server set up only on this port to offer [my_nick]'s <a href=/>XDCC list</a>."
+	    xdcc_close $sock
+	}
+    }
+}
+
+proc xdcc_next sock {
+    global xdcc_chan xdcc_sent
+    if {[eof $xdcc_chan($sock)] || [eof $sock]} {xdcc_close $sock} {
+	set amt [unsupported0 $xdcc_chan($sock) $sock]
+
+	incr xdcc_sent($sock) $amt
+    }
+}
+
+proc xdcc_fcopy {sock bytes {er ""}} {
+    global xdcc_chan xdcc_sent
+    incr xdcc_sent($sock) $bytes
+    if {$er != "" || [eof $xdcc_chan($sock)] || [eof $sock]} {
+	xdcc_close $sock
+    } {
+	fcopy $xdcc_chan($sock) $sock -size 1024 -command [list xdcc_fcopy $sock]
+    }
+}
+
+proc xdcc_echo string {
+    if {[get_cookie xdcc_new 1]} {
+	if ![window exists query .xdcc-http.] {
+	    /query .xdcc-http.
+	    window minimize query .xdcc-http.
+	    window set_title "xdcc-http log window" query .xdcc-http.
+	}
+	echo $string query .xdcc-http.
+    } {echo $string}
+}
+
+proc xdcc_puts args {
+    if [catch "puts $args"] {
+	set sock [expr {[lindex $args 0] == "-nonewline" ? [lindex $args 1] : [lindex $args 0]}]
+	xdcc_close $sock
+    }
+}
+
+on unload {catch {close $xdcc_server}}
+
+####end of http

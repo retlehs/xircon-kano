@@ -1,0 +1,116 @@
+set list {{abouit about} {adn and} {aint ain't} {alot {a lot}} {amkes makes} {anywya anyway} {arent aren't} {becuase because} {belive believe} {bettre better} {cant can't} {cna can} {cna't can't} {cnat can't} {coudl could} {couldnt couldn't} {didnt didn't} {didt didn't} {dissapear disappear} {dissappear disappear} {doens't doesn't} {does't doesn't} {doesnt doesn't} {doign doing} {dont don't} {elite elite} {everu every} {everyu every} {evrey every} {explanitory explanatory} {fidn find} {fior for} {foudn found} {freind friend} {frend friend} {frind friend} {gonig going} {gte get} {gto got} {gya gay} {hapenning happening} {happenning happening} {hasnt hasn't} {havent haven't} {heres here's} {hes he's} {homeowrk homework} {howd how'd} {hows how's} {hsi his} {hte the} {htey they} {hting thing} {htink think} {htis this} {hvae have} {hw homework} {hwo how} {i I} {i'll I'll} {id I'd} {ill I'll} {im I'm} {imho {in my humble opinion}} {imo {in my opinion}} {{int he} {in the}} {iot it} {irc IRC} {isnt isn't} {itll it'll} {iu I} {ive I've} {kbd keyboard} {keybd keyboard} {kniow know} {knwo know} {lenght length} {liek like} {mispell misspell} {mkae make} {mkaes makes} {n/m nevermind} {netscap netscape} {nm nevermind} {nothign nothing} {npo no} {npoe nope} {npoi no} {pic picture} {prolly probably} {quesiton question} {quesitons questions} {r are} {reallt really} {recieve receive} {recieved received} {recieving receiving} {rememberd remembered} {rthough though} {shoudl should} {shouldnt shouldn't} {shure sure} {si is} {sio so} {soemthing something} {somethign something} {someting something} {soudn sound} {spak speak} {ste set} {suckx suck} {sucxk suck} {taht that} {talkign talking} {teh the} {tehy they} {tel tell} {thart that} {thatll that'll} {thats that's} {theres there's} {theyre they're} {tho though} {thogh though} {thouhgt thought} {thsi this} {tlak talk} {tlaking talking} {tou you} {u you} {uio uo} {upo up} {usu usually} {ut it} {waht what} {wasnt wasn't} {watn want} {werent weren't} {weve we've} {whatd what'd} {whats what's} {whend when'd} {whered where'd} {wheres where's} {whod who'd} {whos who's} {whpo who} {whyd why'd} {whyu why} {wierd weird} {wiht with} {wnat want} {wont won't} {wouldnt wouldn't} {wree were} {xmas christmas} {yar year} {yert yet} {yoru your} {youd you'd} {youll you'll} {youre you're} {youve you've} {youy you} {yp up}}
+if ![get_cookie fixedspellfix 0] {
+    set x 0
+    foreach i $list {
+	set m [concat [get_cookie customfix] [list $i]]
+	if {[string length $m] >= 2048} {
+	    addecho "[kano] Entered $x/[llength $list] formerly unmovable spellfixes into your spellfix list."
+	    break
+	}
+	set_cookie customfix $m
+	incr x
+    }
+    set_cookie fixedspellfix 1
+}
+
+foreach i [get_cookie customfix] {
+    set spellfix([lindex $i 0]) [lindex $i 1]
+}
+
+hotkey space fixmistakes
+hotkey shift+space fixmistakes
+hotkey enter fixmistakes
+
+proc fixmistakes {} {
+    if [get_cookie fixmistakes 1] {
+	if {[event] == "enter" && ![get_cookie enterfix 1]} return
+	if {[event] != "enter"} final_in
+	set text [input get_text]
+	set in [input get_sel_start]
+	set start [string range $text 0 [expr $in -1]]
+	set start [split $start]
+	set word [lindex $start end]
+	set punct1 [split $word [abcs]]
+	set punct [join $punct1 {}]
+	if {$punct != ""} {
+	    set word [split $word $punct]
+	}
+	set end ""
+	set fixed 0
+	global spellfix
+	foreach i $word {
+	    set l [string tolower $i]
+	    if [info exists spellfix($l)] {
+		set j $spellfix($l)
+		if {[string toupper $i] == $i} {set j [string toupper $j]}
+		if {$j != $i} {
+		    incr fixed
+		}
+	    } {set j $i}
+	    lappend end $j
+	}
+	if !$fixed return
+	set final ""
+	set ind 0
+	set punct1 [concat [list ""] [split [join $punct1 {}] {}]]
+	foreach i $end {
+	    append final [lindex $punct1 $ind] $i
+	    incr ind
+	}
+	set sp [split $text]
+	set beg [join [lrange $sp 0 [expr [llength $start] -2]]]
+	if {$beg != ""} {set beg "$beg "}
+	set flen [string length $beg$final]
+	if {[event] == "enter" && [get_cookie sf_confirm 1]} {
+	    if {$in == [string length $text]} {
+		set final "$final "
+	    }
+	    complete
+	}
+	input set_text $beg$final[string range $text $in end]
+	input set_sel_start $flen
+    }
+}
+ac check @fixmistakes @1 Use inline spellfix (/spellfix)
+ac check @sf_confirm @1 Confirmation return after spellfix
+ac check @enterfix @1 Spellfix on enter key
+
+alias spellfix {
+    set il ""
+    switch -glob -- [lindex [args] 0] {
+	-rem {set dowhat "Remove Add"}
+	* {set dowhat "Add Remove"}
+    }
+    lappend il [list combo addrem 5 5 45 100 $dowhat]
+    set fix ""
+    set word ""
+    foreach i [get_cookie customfix] {
+	lappend fix [lindex $i 0]
+	lappend word [lindex $i 1]
+    }
+    lappend il [list combo -e chan 55 5 75 100 $fix]
+    lappend il [list combo -e chanfix 135 5 65 100 $word]
+    set ans [FALC_dialog -t "[kanovers] Spellfix Config" 200 20 $il]
+    set ch [lindex [lindex $ans 1] 1]
+    set fix [lindex [lindex $ans 2] 1]
+    if {$ans != ""} {
+	if {[lindex [lindex $ans 0] 1] == "Add"} {
+	    set x [get_cookie customfix]
+	    lappend x [list $ch $fix]
+	    set_cookie customfix $x
+	    set spellfix($ch) $fix
+	    /spellfix
+	} {
+	    set t ""
+	    foreach i [get_cookie customfix] {
+		if {[string tolower [lindex $i 0]] != [string tolower $ch]} {
+		    lappend t $i
+		}
+	    }
+	    set_cookie customfix $t
+	    /spellfix -rem
+	}
+    } {echo "[kano] [llength [get_cookie customfix]] spellfix(es): [join [get_cookie customfix] ", "]."}
+    complete
+}
+kaddhelp spellfix "Adds or removes inline spelling fixes, in addition to the ones set as defaults. This sets what words to automatically change when they're typed into the command line. These are saved from session to session." "/spellfix" "Configure Inline SpellFixing"

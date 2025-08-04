@@ -1,0 +1,260 @@
+
+
+alias translate {
+    set a [km_put 12 ".trans [raw_args]"]
+    if ![info exists env(KMOTD)] {set x 1} {set x {![sockon $env(KMOTD)]}}
+    if $x {
+	lappend env(KMOTDQ) $a
+	echo "[kano] Translations now go through the kanoMOTD server for more speed and accuracy. Please wait."
+	/kmotd
+    } {
+	puts $env(KMOTD) $a
+	window focus query .kanomotd.
+    }
+    complete
+}
+
+alias unstable_trans* {
+    set lang [ret [lindex [args] 1]]
+    set phrase [join [lrange [args] 2 end]]
+    set oink ""
+    switch -- $lang {
+	-ef {set oink en_fr}
+	-ed {set oink en_de}
+	-ei {set oink en_it}
+	-ep {set oink en_pt}
+	-es {set oink en_es}
+	-fe {set oink fr_en}
+	-de {set oink de_en}
+	-ie {set oink it_en}
+	-pe {set oink pt_en}
+	-se {set oink es_en}
+    }
+    if {$oink == "" || $phrase == ""} {
+	echo "[kano] Usage: /[event] \[-??\] <phrase>"
+	echo "    -ef English    French"
+	echo "    -ed            German"
+	echo "    -ei            Italian"
+	echo "    -ep            Portuguese"
+	echo "    -es            Spanish"
+	echo "    -fe French     English"
+	echo "    -de German     English"
+	echo "    -ie Italian    English"
+	echo "    -pe Portuguese English"
+	echo "    -se Spanish    English"
+	complete
+	return
+    }
+    if [info exists trans_sock] {
+	echo "[kano] Busy doing another translation.. Try /killc to cancel it."
+	complete
+	return
+    }
+    if [catch {socket -async 204.123.9.65 80} trans_sock] {
+	echo [rep [rep [t socketfailed] %type Translate] %error $trans_sock]
+	complete
+	unset trans_sock
+	return
+    }
+    fconfigure $trans_sock -blocking 0 -buffering line
+    set final_phrase ""
+    for {set i 0} {$i < [string length $phrase]} {incr i} {
+	set x [string index $phrase $i]
+	scan $x %c asc
+	append final_phrase [format %%%X $asc]
+    }
+    puts $trans_sock "GET /cgi-bin/translate?doit=done&urltext=$final_phrase&languagepair=$oink"
+    if [catch {flush $trans_sock} x] {
+	echo [rep [rep [t socketfailed] %type Translate] %error $x]
+	close $trans_sock
+	unset trans_sock
+	complete
+	return
+    }
+    fileevent $trans_sock readable "trans_read $trans_sock"
+    echo "[kano] Translating: $phrase"
+    set trans_count 0
+    complete
+}
+
+proc trans_read sock {
+    global trans_count trans_sock
+    if [eof $sock] {close $sock;unset trans_sock;return}
+    gets $sock read
+    if {$trans_count == 18 && [string match *Error*100* $read]} {
+	echo "[kano] Error retrieving translation."
+	close $sock
+	unset trans_sock
+	return
+    } elseif {$trans_count == 29} {
+	set m ""
+	set show 0
+	set ashow 0
+	foreach i [split $read {}] {
+	    if {$i == "<"} {incr show}
+	    if {$i == "&"} {incr ashow}
+	    if {[expr $show + $ashow] == 0} {append m $i}
+	    if {$i == ";" && $ashow > 0} {incr ashow -1}
+	    if {$i == ">"} {incr show -1}
+	    if {$show < 0} {set show 0}
+	    if {$ashow < 0} {set ashow 0}
+	}
+	echo "[kano] Translation: $m"
+	close $sock
+	unset trans_sock
+	set trans_count 0
+    }
+    incr trans_count
+}
+    
+
+alias dict {
+    if {[args] == ""} {echo "[kano] Usage: /[event] <word>";complete;return}
+    if {[catch {eof $dict} x] || $x == 1} {
+	catch {close $dict}
+	if [catch {socket -async 128.52.39.7 2627} dict] {
+	    echo [rep [t dicterr] %dict $dict]
+	    unset dict
+	    complete;return
+	}
+	fconfigure $dict -blocking 0 -buffering line
+    }
+    echo [t dictsearching]
+    if ![catch {puts $dict "DEFINE [raw_args]"}] {
+	fconfigure $dict -buffering line
+	fileevent $dict readable [list dict $dict [raw_args]]
+	/query .Dictionary.
+	window set_title "Dictionary: [raw_args]" query .Dictionary.
+	if {[window state query .Dictionary.] == "minimize"} {window restore query .Dictionary.}
+	window focus query .Dictionary.
+    }
+    complete
+}
+
+proc dict {sock word} {
+    global dictgo
+    if [eof $sock] {close $sock;return}
+    gets $sock i
+#    echo ($i) query .dictionary.
+    if {$i == "."} return
+    set i [string trimleft $i \200]
+    set sp [split $i]
+    switch -glob -- [lindex $sp 0] {
+	SPELLING {
+	    if {[lindex $sp 1] == 0} {
+		echo [rep [t dicterrnotfound] %word $word] query .Dictionary.
+	    } elseif {[lrange $sp 1 end] == ""} {
+		echo [rep [t dicterrfound] %word $word] query .Dictionary.
+		set dictgo($sock) 1
+	    }
+	}
+	DEFINITION {
+	    echo [rep [t dictfound] %word $word] query .Dictionary.
+	    set dictgo($sock) 1
+	}
+	{[0-9]} {echo "[kano] [lindex $sp 0]. [join [lrange $sp 1 end]]" query .Dictionary.}
+	default {
+	    if [info exists dictgo($sock)] {
+		if {$i == "." || $i == ""} {unset dictgo($sock);return}
+	    }
+	    echo $i query .Dictionary.
+	}
+    }
+}
+
+
+proc put_weather {sock city} {
+    fileevent $sock writable ""
+    window clear query .Weather($city).
+    puts $sock "GET /wxnet/fcst/$city.txt"
+}
+
+set Next_Weather 0
+proc get_weather {sock city} {
+    if [eof $sock] {close $sock;return}
+    global Next_Weather
+    if ![window exists query .Weather($city).] {
+	/query .Weather($city).
+	window restore query .Weather($city).
+	window focus query .Weather($city).
+	window set_title Weather query .Weather($city).
+    }
+    gets $sock x
+    if [string match "*Not Found*" $x] {
+	echo "[kano] City '$city' not found." query .Weather($city).
+	return
+    }
+    if {[string match {[\*=]*} [string trim $x]] || [string trim $x] == ""} return
+    if {[string trim $x] == "State extended forecast" || [string trim $x] == "Special weather statement"} {
+	set x [format 10%-80s [string trim $x]]
+    }
+    if {[lrange [split $x] 0 1] == "Weather Conditions"} {
+	window set_title [string trim $x] query .Weather($city).
+	set x [format 10%-80s [string trim $x]]
+    }
+    if $Next_Weather {
+	set xy $x
+	set x "11³ "
+	set space 0
+	set cur_word ""
+	set whichw 1
+	foreach i [split "[string trim $xy]" {}] {
+	    if {$i == " "} {
+		if {$space == 0} {set space 1;append cur_word $i} {set space 2}
+	    } {
+		if {$cur_word != "" && $space == 2} {
+		    switch $whichw {
+			1 {set ch 7}
+			2 {set ch 13}
+			3 {set ch 11}
+			4 {set ch 15}
+		    }
+		    append x "[format %-${ch}s $cur_word] 11³ "
+		    set cur_word ""
+		    incr whichw
+		}
+		append cur_word $i
+		set space 0
+	    }
+	}
+	append x "[format %-8s $cur_word] 11³ "
+	append x \n11ÀÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÙ
+    }
+    if {[lindex $x 0] == "Temp(F)"} {
+	set x 11ÚÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿
+	append x "\n11³0 Temp(F) 11³0  Humidity(%)  11³0  Wind(mph)  11³0   Pressure(in)  11³0  Weather 11³"
+	set Next_Weather 1
+    } {set Next_Weather 0}
+    if {[string toupper $x] == $x && $x != ""} {set x [string trim [string tolower $x]]}
+    echo "$x " query .Weather($city).
+}
+
+alias weather {
+    if {[arg] == ""} {
+	echo "[kano] Usage: /[event] <city>\[-<state abbrev.>\]"
+	complete;return
+    }
+    set city [string tolower [join [join [args]] {}]]
+    if ![catch {socket 141.213.23.245 80} wsock] {
+	fconfigure $wsock -buffering line -blocking 0
+	fileevent $wsock writable "put_weather $wsock $city"
+	fileevent $wsock readable "get_weather $wsock $city"
+	echo "[kano] Retrieving information..."
+    } {
+	echo [rep [rep [t socketfailed] %type Weather] %error $wsock]
+    }
+    complete
+}
+
+kaddhelp weather "Looks up the weather for a city using the National Weather Service's archives updated hourly or so. Example: /weather Sacramento, /weather Akron-OH." "/weather <city>\[-<state abbrev>\]" "Weather LookUp"
+kaddhelp translate "\;Translates a string using AltaVista's SysTran translation service."
+kaddhelp dict "Looks up a word through MIT's dictionary server." "/dict <word>" "Dictionary Lookup"
+
+alias def {/dict [arg];complete}
+
+alias spell {/dict [arg];complete}
+
+on unload {
+    catch {close $dict}
+    catch {close $trans_sock}
+}

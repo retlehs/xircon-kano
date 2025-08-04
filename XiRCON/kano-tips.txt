@@ -1,0 +1,17 @@
+add custom random quit messages by typing /defaults
+add custom random kick reasons by typing /defaults
+add custom random kickban reasons by typing /defaults
+add custom random version-reply messages by typing /defaults
+add custom random away messages by typing /defaults
+configuration settings are saved by what the script's filename is, so don't rename kano.tcl
+try different themes: type /ltheme
+more addons you can load are are in [rep [file join [string tolower [pwd]] kano "more addons"] / \\]
+to load an addon, place it in [rep [file join [string tolower [pwd]] addons] / \\]
+more addons are available by clicking kfile://add
+some addons require the use of the tcl 8.1 hack. to download it, click kfile://tcl
+download the latest beta of the next version of kano at kfile://beta
+download the latest prereleases of addons, themes, and script versions at kfile://beta
+read the readme! it has important information and is a quick read (less than one page). type /readme
+type /help for more information on kano's commands and features
+type /configure to change settings for kano
+type /hilite to configure what words highlight

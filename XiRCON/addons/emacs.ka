@@ -1,0 +1,359 @@
+kaddhelp emacs {
+KEY
+C-<x> = Control-<key>
+HOTKEYS
+C-e     Sends cursor to the end of the line.
+C-a     Sends cursor to the beginning of the line.
+C-k     Cuts the rest of the line onto the clipboard.
+C-w     Cuts selected text or, if none, all text up to the cursor,
+        onto the clipboard.
+C-t     Transposes two closest characters.
+C-y     Pastes from the clipboard.
+C-s     Searches the end of the line for a string of text. Badly 
+        implemented; I wish xirc had minibuffers.
+C-x C-c Quits Xirc (not just IRC).
+C-x ^   Maximizes current window.
+C-z     Minimizes current window.
+C-x k   Closes current window.
+C-x o   Switches to next window.
+C-x m   Checks your email.
+C-q <?> Quotes a character. Examples: C-q C-b for the bold character.
+        C-q 227 for a long dash in non-ansi fonts.
+QUESTIONS
+Q. How do I use mIRC color if C-k is bound?
+A. Use C-q C-c and it will insert a mIRC color character.
+
+Q. Bold?
+A. C-q C-b.
+ 
+Q. Reverse?
+A. C-q C-v.
+ 
+Q. How do I cut?
+A. Hit C-x C-x (Ctrl-X twice). But real emacs users use C-w.!#@
+
+Q. Where can I get emacs for Windows?
+A. http://www.cs.washington.edu/homes/voelker/ntemacs.html.} "" "Emacs Keys"
+
+
+hotkey control+q {if !$doing_Q {set doing_Q 1;set do_nums "";complete}}
+foreach i "[split abcdefghijklmnopqrstuvwxyz {}] space escape tab" {
+    hotkey control+$i input_insert
+    hotkey control+shift+$i input_insert
+    hotkey $i input_insert
+    hotkey shift+$i input_insert
+}
+foreach i [split 1234567890 {}] {
+    hotkey $i input_insert
+}
+
+set doing_Q 0
+set do_nums ""
+proc input_insert {} {
+    global doing_Q do_nums use_emacs
+    if {!$use_emacs || !$doing_Q} return
+    set key [lindex [lrange [split [event] +] end end] 0]
+    set type ""
+    foreach i [lrange [split [event] +] 0 [expr [llength [split [event] +]] -2]] {
+	append type [string index $i 0]
+    }
+    set type [join [lsort [split $type {}]] {}]
+    if $doing_Q {
+	switch $type {
+	    c {
+		set text [input get_text]
+		set pos_beg [input get_sel_start]
+		set pos_end [expr $pos_beg+[input get_sel_length]]
+		set start [string range $text 0 [expr $pos_beg-1]]
+		set end [string range $text $pos_end end]
+		set insert ""
+		switch $key {
+		    tab {set insert \011}
+		    a {set insert \001}
+		    b {set insert \002}
+		    c {set insert \003}
+		    d {set insert \004}
+		    e {set insert \005}
+		    f {set insert \006}
+		    g {set insert \007}
+		    h {set insert \010}
+		    i {set insert \011}
+		    j {set insert \012}
+		    k {set insert \013}
+		    l {set insert \014}
+		    m {set insert \015}
+		    n {set insert \016}
+		    o {set insert \017}
+		    p {set insert \020}
+		    q {set insert \021}
+		    r {set insert \022}
+		    s {set insert \023}
+		    t {set insert \024}
+		    u {set insert \025}
+		    v {set insert \026}
+		    w {set insert \027}
+		    x {set insert \030}
+		    y {set insert \031}
+		    z {set insert \032}
+		}
+
+		if {$insert != ""} {
+		    input set_text $start$insert$end
+		    input set_sel_start [expr $pos_beg +1]
+		    complete
+		}
+	    }
+	    "" {
+		set text [input get_text]
+		set pos_beg [input get_sel_start]
+		set pos_end [expr $pos_beg+[input get_sel_length]]
+		set start [string range $text 0 [expr $pos_beg-1]]
+		set end [string range $text $pos_end end]
+		set insert ""
+		switch -glob $key {
+		    escape {set insert {}}
+		    {[0-9]*} {
+			append do_nums $key
+			if {[string length $do_nums] == 3} {
+			    catch "eval \"return \\$do_nums\"" insert
+			} {complete}
+		    }
+		}
+		if {$insert != ""} {
+		    input set_text $start$insert$end
+		    input set_sel_start [expr $pos_beg +1]
+		    complete
+		}
+	    }
+	}
+    }
+    if {![string match {[0-9]} $key] || $type != ""} {set do_nums ""}
+    if {$do_nums == ""} {set doing_Q 0}
+}
+if {[get_cookie emacs] == ""} {
+    set_cookie emacs 0
+}
+alias emacs {
+    if [get_cookie emacs] {
+	set_cookie emacs 0
+	set use_emacs 0
+    } {
+	set_cookie emacs 1
+	set use_emacs 1
+    }
+    echo "[kano] Emacskeys [iph [get_cookie emacs] on off]."
+    complete
+}
+
+set use_emacs [get_cookie emacs]
+
+hotkey control+e {
+    if [emacs] {
+	input set_sel_start [string length [input get_text]]
+	complete
+    }
+}
+
+hotkey control+a {
+    if [emacs] {
+	input set_sel_start 0
+	complete
+    }
+}
+
+set last_search ""
+hotkey control+s {
+    if [emacs] {
+	set beg [expr [input get_sel_start] -1 + [input get_sel_length]]
+	set end [string range [input get_text] [input get_sel_start] end]
+	set word [prompt Search I-Search: $last_search]
+	if {$word == ""} {complete;return}
+	set find [string first $word $end]
+	if {$find == -1} {
+	    FALC_askbox -t "Not found" "I-Search failed"
+	    complete
+	    return
+	}
+	set last_search $word
+	input set_sel_start [expr $beg+$find+1]
+	input set_sel_length [string length $word]
+	complete
+    }
+}
+
+if 0 {
+hotkey control+r {
+    if [emacs] {
+	set word [prompt Search I-Search: $last_search]
+	if {$word == ""} {complete;return}
+	set find [string last $word [input set_text]]
+	if {$find == -1} {
+	    FALC_askbox -t "Not found" -m "I-Search failed"
+	    complete
+	    return
+	}
+	set last_search $word
+	input set_sel_start [expr $find +1]
+	input set_sel_length [string length $word]
+	complete
+    }
+}
+}
+
+hotkey control+z {
+    if [emacs] {
+	if {[window state [window type] [window name]] == "minimize"} {
+	    window minimize main
+	}
+	window minimize [window type] [window name]
+	complete
+    }
+}
+set doing_X 0
+hotkey control+X {
+    if [emacs] {
+	if !$doing_X {
+	    set doing_X 1
+	    complete
+	} {
+	    set doing_X 0
+	}
+    }
+}
+
+hotkey control+c {
+    if {[emacs] && $doing_X} {
+	window close main
+	set doing_X 0
+	complete
+    }
+}
+
+hotkey shift+6 {
+    if {[emacs] && $doing_X} {
+	window maximize [window type] [window name]
+	set doing_X 0
+	complete
+    }
+}
+
+
+hotkey o {
+    if {[emacs] && $doing_X} {
+	set x status
+	foreach i [channels] {
+	    lappend x "channel $i"
+	}
+	foreach i [queries] {
+	    lappend x "query $i"
+	}
+	foreach i [chats] {
+	    lappend x "chat $i"
+	}
+	if {[window type] == "status"} {
+	    if {[set ch [lindex $x 1]] == ""} {set doing_X 0;complete;return}
+	    set x [lindex $x 1]
+	} {
+	    set x [lindex $x [expr [lsearch [string tolower $x] [string tolower "[window type] [window name]"]] +1]]
+	    if {$x == ""} {
+		set x status
+	    }
+	    window minimize [window type] [window name]
+	}
+	if {[window state [lindex $x 0] [lindex $x 1]] == "minimize"} {
+	    window restore [lindex $x 0] [lindex $x 1]
+	}
+	window focus [lindex $x 0] [lindex $x 1]
+	set doing_X 0
+	complete
+    }
+}
+
+hotkey k {
+    if {[emacs] && $doing_X} {
+	window close [window type] [window name]
+	set doing_X 0
+	complete
+    }
+}
+
+hotkey m {
+    if {[emacs] && $doing_X} {
+	/check
+	set doing_X 0
+	complete
+    }
+}
+
+hotkey control+k {
+    if [emacs] { 
+	set x [input get_text]
+	set x [string range $x 0 [expr [input get_sel_start] - 1]]
+	FALC_clip -c [string range [input get_text] [input get_sel_start] end]
+	input set_text $x
+	input set_sel_start [string length $x]
+	complete
+    }
+}
+
+hotkey control+w {
+    if [emacs] {
+	if {[input get_sel_length] == 0} {
+	    set x [input get_text]
+	    set x [string range $x [input get_sel_start] end]
+	    FALC_clip -c [string range [input get_text] 0 [expr [input get_sel_start] - 1]]
+	    input set_text $x
+	    input set_sel_start 0
+	} {
+	    set x [input get_text]
+	    set z [string range $x 0 [expr [input get_sel_start] - 1]][string range $x [expr [input get_sel_start] + [input get_sel_length]] end]
+	    FALC_clip -c [string range $x [input get_sel_start] [expr [input get_sel_start] + [input get_sel_length] - 1]]
+	    set start [input get_sel_start]
+	    input set_text $z
+	    input set_sel_start $start
+	}
+	complete
+    }
+}
+
+hotkey control+t {
+    if [emacs] {
+	set x [input get_text]
+	set start [input get_sel_start]
+	set q [string range $x [expr $start - 1] [expr $start + 0]]
+	set q [string index $q 1][string index $q 0]
+	set x [string range $x 0 [expr $start - 2]]
+	append x $q
+	append x [string range [input get_text] [expr $start + 1] end]
+	input set_text $x
+	input set_sel_start [expr $start+1]
+	complete
+    }
+}
+
+hotkey control+d {
+    if [emacs] {
+	set x [input get_text]
+	set x [string range $x 0 [expr [input get_sel_start] - 1]][string range $x [expr [input get_sel_start] + 1] end]
+	set start [input get_sel_start]
+	input set_text $x
+	input set_sel_start $start
+	complete
+    }
+}
+
+hotkey control+y {
+    if [emacs] {
+	set x [input get_text]
+	set paste [FALC_clip -p]
+	if ![string match *\n* $paste] {
+	    set z [string range $x 0 [expr [input get_sel_start] - 1]]$paste[string range $x [expr [input get_sel_start] + 0] end]
+	    set start [expr [input get_sel_start] + [string length $paste]]
+	    input set_text $z
+	    input set_sel_start $start
+	} {/play -paste}
+	complete
+    }
+}
+
+proc emacs {} {return [get_cookie emacs]}

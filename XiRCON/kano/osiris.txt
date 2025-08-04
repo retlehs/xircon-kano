@@ -1,0 +1,20 @@
+--- osiris.thm by klepto is now embedded into kano.tcl as the default theme ---
+
+        ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+ÜÜÜÜÜÜÜÜ³° osiris.theme  °³ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+Û²±°    ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ                                              °±²Û
+Û³                                                                         ³Û
+Û³  Ive always wanted to make my own script..                              ³Û
+ ³                                                                         ³
+ .   Thanks to kano for coding an excellent tcl to keep me in windows.     ³
+     Thanks to shiftee for scripting the dopest shit for bitchx.           .
+     Much love to conio/booya|/spectre/fungiside/codelogic/psykotyk  for being cool and shit..
+     If you don't like this theme.. CODE YOUR FUCKING OWN!
+     P.S. I have tried to get as much as possible to get osiris.thm as close to osiris.bx as possible,
+     so ppl wouldn't bitch about "that is ugly, that is.." Somethings weren't possible in kano so fuck it..
+     ...I hope you like my hard work - klepto(deviant@lords.com)
+     extra special thanks to kano/conio.. who helped me when I was pissed and confused *lub* =) *wink* 
+history: done.. echo/awaypub/away/backpub/notice/sendnotice/pub/send pubs/joins/parts/quits/kicks
+history 2: modes/nicks/wallops/notifyon/notifyoff/names/ctcp/ident/bugfix/ansi.ini/kano's code/bx proc
+history 3: identoff/page/more ctcp/isop on pubmsg thanks to conio/all the fucking dcc hooks/etc..
+please do not rip the style or code of this theme. Please give credit where credit is due.. 

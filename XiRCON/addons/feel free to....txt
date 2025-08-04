@@ -1,0 +1,2 @@
+You can delete or move any of these KM or KA files. Some, such as echo.km or
+events.km, slow down the script significantly.

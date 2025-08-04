@@ -1,0 +1,556 @@
+kaddhelp dban "Bans a nickname's domain (*!*@*.domain.com)." "/dban <nick>" "Domain Ban"
+kaddhelp funban "Bans a host if it matches a list of words (loser, dick, etc.). Try it on someone." "/funban <nick>, /funban find" "Fun Ban Style"
+kaddhelp wkick "\;Word-kick."
+kaddhelp rkick "Kicks a random person from current channel." "/rkick \[kick msg\]" "Random Kick"
+kaddhelp repk "\;Repeatkick settings."
+kaddhelp capk "\;Capkick settings."
+kaddhelp tkb "Tempkickbans someone; they will be unbanned in <min:sec>. Kinda buggy." "/tkb <nick> <min:sec> \[reason\]" "Temporary KickBan"
+kaddhelp clone "\;Clone detection config."
+
+addmenu * "C&lonekick" /clone
+addmenu * "&Wordkick->&On/off" {if [get_cookie wkick(on)] {/wkick off} {/wkick on}}
+addmenu * "&Wordkick->Toggle kick-&ops" {/wkick ops}
+addmenu * "&Wordkick->"
+addmenu * "&Wordkick->&Add word" {/wkick add [prompt [kanovers] "Add what words?" mirc]}
+addmenu * "&Wordkick->&Remove word" {/wkick rem [prompt [kanovers] "Remove what words?" mirc]}
+addmenu * "&Repeatkick->&On/off" {if [get_cookie rkick(on)] {/repk off} {/repk on}}
+addmenu * "&Repeatkick->Toggle kick-&ops" {/repk ops}
+addmenu * "&Repeatkick->&Time limit" {/repk time [prompt [kanovers] "Set time limit to how many seconds?" [get_cookie rkick(time)]]}
+addmenu * "&Capkick->&On/off" {if [get_cookie capkick(on)] {/capk off} {/capk on}}
+addmenu * "&Capkick->Toggle kick-&ops" {/capk ops}
+addmenu * "&Capkick->Set maximum cap &percentage" {/capk percent [string trimleft [prompt [kanovers] "Set max% to what?" [get_cookie capkick(percent)]] %]}
+
+
+if {[get_cookie clone(ops)] == ""}  {set_cookie clone(ops)  0}
+if {[get_cookie clone(on)] == ""}   {set_cookie clone(on)   0}
+if {[get_cookie clone(type)] == ""} {set_cookie clone(type) 5}
+if {[get_cookie wkick(on)] == ""}   {set_cookie wkick(on)   1}
+if {[get_cookie wkick(ops)] == ""} {set_cookie wkick(ops)   0}
+
+alias ckick {
+    set cmd [string tolower [ret [lindex [args] 0]]]
+    set end [join [lrange [args] 1 end]]
+    if {$cmd == "on"} {
+	set_cookie colork(on) 1
+	echo "[kano] Colorkick turned on. [iph [get_cookie colork(ops)] {Kicking ops.} {Not kicking ops.}]"
+    } elseif {$cmd == "off"} {
+	set_cookie colork(on) 0
+	echo "[kano] Colorkick turned off."
+    } elseif {$cmd == "ops"} {
+	if [get_cookie colork(ops)] {set_cookie colork(ops) 1;echo "[kano] Kicking ops."} {set_cookie colork(ops) 0;echo "[kano] Not kicking ops."}
+    } {
+	echo "[kano] Usage: /[event] <on|off|ops>"
+    }
+    complete
+}
+
+
+on join {clones [nick] [user] [host] [string tolower [lindex [args] 0]]}
+proc clones {nick user host chan} {
+    if {[isprotect $nick {kick ban} passive] || ![get_cookie clone(on)] || ![isop [my_nick] $chan]} return
+    if [get_cookie clone(ops)] {
+	set x [chanlist $chan]
+    } {
+	set x [noplist $chan]
+    }
+    set type [get_cookie clone(type)]
+    foreach i $x {
+	if {$i == $nick} continue
+	set u [lindex [split [uhost $i] @] 0]
+	set h [lindex [split [uhost $i] @] 1]
+	if {$host != $h} continue
+	switch $type {
+	    1 {set ban *!*@$h}
+	    2 {set ban *!$u@$h}
+	    3 {set ban *!*[string range $u 0 7]*@$h}
+	    4 {set ban *!$u@*.[set sp [lrange [set sp [split $h .]] [set sp [expr [set sp [llength $sp]] -2]] [expr $sp+1]]]}
+	    5 {set ban *!*[string range $u 0 7]*@*.$sp}
+	    6 {set ban *!*@*.$sp}
+	}
+	/mode $chan -o+b $nick $ban
+	/kick $chan $nick clone: $i
+    }
+}
+
+if {[get_cookie rkick(on)] == ""}   {set_cookie rkick(on)   0}
+if {[get_cookie rkick(ops)] == ""}  {set_cookie rkick(ops)  0}
+if {[get_cookie rkick(time)] == ""} {set_cookie rkick(time) 120}
+if {[get_cookie capkick(on)] == ""} {set_cookie capkick(on)   0}
+if {[get_cookie capkick(ops)] == ""} {set_cookie capkick(ops)  0}
+if {[get_cookie capkick(percent)] == ""} {set_cookie capkick(percent) 90}
+
+
+alias skick {
+    if {[args] == ""} {echo "[kano] Usage: /[event] nick TypeOfKick reason";complete;return}
+    set nick [lindex [args] 0]
+    set type [string trimright [lindex [args] 1] :]
+    set reason [lrange [args] 2 end]
+    set typ "[string index $type 0]"
+    foreach i [split [string range $type 1 end] {}] {
+	if {[string toupper $i] == $i} {append typ $i} {append typ $i}
+    }
+    append typ :
+    regsub -all  $typ "" typ
+    if {[channel] == ""} {echo "[kano] Hey idiot, try doing this in a channel."}
+    /kick [channel] $nick [string tolower $typ] $reason
+    complete
+}
+
+
+alias repk {
+    set cmd [ret [lindex [args] 0]]
+    if {$cmd == "off"} {
+	set_cookie rkick(on) 0
+	echo "[kano] Repeatkicking off."
+    } elseif {$cmd == "on"} {
+	set_cookie rkick(on) 1
+	if [get_cookie rkick(ops)] {set blad on} {set blad off}
+	echo "[kano] Repeatkicking on. Good idea. Repeatkicking ops $blad."
+    } elseif {$cmd == "ops"} {
+	if [get_cookie rkick(ops)] {
+	    set_cookie rkick(ops) 0
+	    echo "[kano] Repeatkicking ops off."
+	} {
+	    set_cookie rkick(ops) 1
+	    echo "[kano] Repeatkicking ops on."
+	}
+    } elseif {$cmd == "time"} {
+	if {[string trim [ret [lindex [args] 1]] 1234567890] != ""} {
+	    echo "[kano] Usage (example): [k highlight] /[event] time 60"
+	} {
+	    set_cookie rkick(time) [ret [lindex [args] 1]]
+	    echo "[kano] Set repeat min. time to [ret [lindex [args] 1]] secs."
+	}
+    } {
+	echo "[kano] Usage: [k highlight]/[event] on, off, ops (toggle), time <any number>"
+	echo "[kano] Kicks people if they repeat the same exact line twice in N seconds."
+	echo "[kano] Repkick [iph [get_cookie rkick(on)] "on,[iph [get_cookie rkick(ops)] "" " not"] kicking ops" off]."
+    }
+    complete
+}
+
+on nick {
+    catch {
+	set rkick([arg]) $rkick([nick])
+	unset rkick([nick])
+	set capk([arg]) $capk([nick])
+	unset capk([nick])
+    }
+}
+
+on quit {
+    catch {unset capk([nick])}
+    catch {unset rkick([nick])}
+}
+
+
+on ctcp {
+    if {[string tolower [lindex [args] 1]] == "action"} {
+	repeatk [lindex [args] 0] [lindex [args] 2]
+	capk [lindex [args] 0] [lindex [args] 2]
+    }
+}
+
+proc repeatk {chan text} {
+    if {![get_cookie rkick(on)] || [string index $chan 0] != "#" || ![isop [my_nick] $chan]} return
+    global rkick tkb
+    if {!(([get_cookie rkick(ops)] || ![isop [nick] $chan]) && (![isvoice [nick] $chan] && ![string match *m* [lindex [mode $chan] 0]])) || [llength [split $text]] <= 1} return
+    if ![info exists rkick([nick])] {set rkick([nick]) ""}
+    set rtime [get_cookie rkick(time)]
+    set time [clock seconds]
+    set len [expr [llength $rkick([nick])] - 1]
+    set tempr ""
+    foreach i $rkick([nick]) {
+	if {[expr $time - [lindex $i 0]] < $rtime} {
+	    lappend tempr $i
+	}
+    }
+    set cnt 0
+    set args [args]
+    foreach i $tempr {
+	if {$args == [lrange $i 1 end]} {
+	    incr cnt
+	}
+    }
+    set rkick([nick]) $tempr
+    lappend rkick([nick]) "[clock seconds] [args]"
+    if {$cnt >= 1 && ![isprotect [nick] kick passive]} {
+	set r [rindex [get_cookie mesg(repeatkick) {{stop repeating}}]]
+	if {$cnt > 1 && ![isprotect [nick] ban passive]} {
+	    /mode $chan +b [maskhost [nick]![user]@[host]]
+	    /kick $chan [nick] repeatkickban: $r
+	    lappend tkb([expr [unixtime]+300]) "$chan -b [maskhost [nick]![user]@[host]]"
+	} {
+	    /kick $chan [nick] repeatkick: $r
+	}
+    }		    
+}
+
+alias capk {
+    set cmd [ret [lindex [args] 0]]
+    if {$cmd == "on"} {
+	set_cookie capkick(on) 1
+	if [get_cookie capkick(ops)] {set blad on} {set blad off}
+	echo "[kano] Capkicking turned on. Good boy. Kicking ops $blad."
+    } elseif {$cmd == "off"} {
+	set_cookie capkick(on) 0
+	echo "[kano] Capkicking turned off."
+    } elseif {$cmd == "ops"} {
+	if [get_cookie capkick(ops)] {set_cookie capkick(ops) 0;echo "[kano] Capkicking ops turned off."} {set_cookie capkick(ops) 1;echo "[kano] Capkicking ops turned on."}
+    } elseif {$cmd == "percent"} {
+	if {[string trim [lindex [args] 1] 0123456789] != ""} {
+	    echo "[kano] Usage (example): [k highlight]/[event] percent 75"
+	} {
+	    set_cookie capkick(percent) [lindex [args] 1]
+	    echo "[kano] Capkicking from [lindex [args] 1]% to 100% caps in one line."
+	}
+    } {
+	echo "[kano] Usage: /[event] on, off, ops (toggles), percent <1-100>."
+	echo "[kano] This will kick someone if they say something in a channel in which <percent>% of the letters are in caps and the entire line is >10 letters/characters."
+	echo "[kano] Wondering why capkick didn't kick someone? To see exactly what percent of the line was in caps, cut the line out and type [k highlight]/cap <paste>"
+    }
+    complete
+}
+    
+
+proc capk {chan text} {
+    if {!([get_cookie capkick(on)] && (![isvoice [nick] $chan] || [string match *m* [lindex [mode $chan] 0]]) && [string index $chan 0] == "#")} return
+    global capk
+    set cap 0
+    set full 0
+    foreach i [split $text {}] {
+	if {[string trim [string tolower $i] abcdefghijklmnopqrstuvwxyz] == ""} {
+	    if {[string toupper $i] == $i} {
+		incr cap
+	    }
+	    incr full
+	}
+    }
+    if {$full > 10 && [expr ($cap / $full.0) * 100] >= [get_cookie \
+	    capkick(percent)] && ![isprotect [nick] kick passive] \
+	    && [isop [my_nick] $chan] && ((![get_cookie capkick(ops)] \
+	    && ![isop [nick] $chan]) || [get_cookie capkick(ops)])} {
+	if ![info exists capk([nick])] {set capk([nick]) 0}
+	set r [rindex [get_cookie mesg(capkick) {{calm down}}]]
+	if {[expr [unixtime] - $capk([nick])] > [get_cookie rkick(time)]} {
+	    /kick $chan [nick] capkick: $r
+	    set capk([nick]) [unixtime]
+	} elseif {![isprotect [nick] ban passive]} {
+	    /mode $chan -o+b [nick] [maskhost [uhost [nick]]]
+	    /kick $chan [nick] capkickban: $r
+	}			    
+    }
+}
+
+alias cap {
+    if {[arg] == ""} {complete;return}
+    set cap 0
+    set full 0
+    foreach i [split [args] {}] {
+	if {[string trim [string tolower $i] abcdefghijklmnopqrstuvwxyz] == ""} {
+	    if {[string toupper $i] == $i} {
+		incr cap
+	    }
+	    incr full
+	}
+    }
+    echo "[expr ($cap / $full.0) * 100]% caps"
+    complete
+}
+
+set wordkicked ""
+
+alias wkick {
+    set x [lindex [args] 0]
+    set arg [lrange [args] 1 end]
+    if {$x == "on"} {
+	set_cookie wkick(on) 1
+	echo "[kano] Word-kicking on."
+	
+    } elseif {$x == "off"} {
+	set_cookie wkick(on) 0
+	echo "[kano] Word-kicking off."
+	
+    } elseif {$x == "add"} {
+	if {$arg == ""} {
+	    echo "[kano] Usage: /[event] add <word(s)>"
+	    complete ; return
+	}
+	foreach i $arg {
+	    set k [get_cookie wkick(word)]
+	    lappend k $i
+	    set_cookie wkick(word) $k
+	    echo "[kano] Adding $i..."
+	}
+	echo "[kano] Done: [get_cookie wkick(word)]."
+	
+    } elseif {$x == "rem"} {
+	if {$arg == ""} {
+	    echo "[kano] Usage: /[event] rem <word(s)>"
+	    complete ; return
+	}
+	foreach i $arg {
+	    set_cookie wkick(word) [lreplace [get_cookie wkick(word)] [lsearch [get_cookie wkick(word)] $i] [lsearch [get_cookie wkick(word)] $i]]
+	    echo "[kano] Removing $i..."
+	}
+	echo "[kano] Done: [get_cookie wkick(word)]."
+	
+    } elseif {$x == "ops"} {
+	if [get_cookie wkick(ops)] {set_cookie wkick(ops) 0;echo "[kano] Not kicking ops."} {set_cookie wkick(ops) 1;echo "[kano] Kicking ops."}
+
+    } elseif {$x == "see"} {
+	echo "[kano] Wordkicks: [get_cookie wkick(word)]."
+
+    } else {
+	echo "[kano] Usage: /[event] <on|off|ops|see>, /[event] <add|rem> <word>"
+    }
+    complete
+}
+
+alias clone {
+    set il ""
+    set m [list "(1) *@host" "(2) user@host" "(3) *user@host" "(4) *user@*.host" "(5) user@*.host" "(6) *@*.host"]
+    lappend il [list check -v [get_cookie clone(on)] on 15 15 10 10]
+    lappend il [list label a 25 15 75 10 "Kick clones matching:"]
+    lappend il [list combo type 100 15 70 100 $m]
+    lappend il [list check -v [get_cookie clone(ops)] ops 15 25 10 10 -v [get_cookie clone(ops)]]
+    lappend il [list label b 25 25 70 10 "Clonekick ops"]
+    set ans [FALC_dialog -t "[kanovers] Clone Kick" 180 45 $il]
+    if {[llength $ans] != 0} {
+	foreach i $ans {
+	    set m [lindex $i 0]
+	    set n [lindex $i 1]
+	    if {$m == "on"} {
+		set_cookie clone(on) $n
+	    } elseif {$m == "type"} {
+		set_cookie clone(type) [string trim [lindex $n 0] ()]
+	    } elseif {$m == "ops"} {
+		set_cookie clone(ops) $n
+	    }
+	}
+    }
+    complete
+}
+
+
+alias rkick {
+    if ![isop [my_nick] [channel]] {
+	echo "[kano] You're not an op!"
+    } {
+	if {[arg] == ""} {
+	    set reason [randvers]
+	} {
+	    set reason [arg]
+	}
+	set is 1
+	while {$is} {
+	    set x [lindex [noplist [channel]] [rand 0 [expr [llength [noplist [channel]]]-1]]]
+	    set is [isprotect $x kick passive]
+	}
+	set c 0
+	set u [noplist [channel]]
+	set n ""
+	set stime [clock seconds]
+	while {$n != $x} {
+	    set n [lindex $u $c]
+	    input set_text "/kick $n"
+	    update
+	    incr c
+	    if {[expr $stime + 10] <= [clock seconds]} break
+	    after 100
+	}
+	input set_text ""
+	/kick [channel] $x randomkick: $reason
+	echo "[kano] Kicking $x from [channel]."
+    }
+    complete
+}
+
+
+alias tkb {
+    if {[llength [args]] < 2 || ![ison [lindex [args] 0] [channel]] || [string trim [lindex [args] 1] 1234567890:] != "" || ![string match \[0-9\]*:\[0-9\]* [lindex [args] 1]]} {echo "[kano] Usage: /[event] <nick> <min:sec> \[reason\]";complete;return}
+    lappend tkb([expr ([lindex [split [lindex [args] 1] :] 0]*60)+[lindex [split [lindex [args] 1] :] 1]+[unixtime]]) "[channel] -b [strep [maskhost [uhost [ret [lindex [args] 0]]]]]"
+    /kb [ret [lindex [args] 0]] (tempban/[lindex [args] 1]) [join [lrange [args] 2 end]]
+    echo [t tempkickban]
+    complete
+}
+
+on privmsg {
+    repeatk $d [lindex [args] 1]
+    capk $d [lindex [args] 1]
+    if {[get_cookie wkick(on)] && (![isvoice [nick] $d] \
+	    && [string first m [lindex [mode [lindex [args] 0]] 0]] != -1) \
+	    && [isop [my_nick] [lindex [args] 0]] && [string index [lindex \
+	    [args] 0] 0] == "#" && ([get_cookie wkick(ops)] || ![isop [nick] \
+	    [lindex [args] 0]])} {
+	foreach banz [get_cookie wkick(word)] {
+	    if {![isprotect [nick] kick passive] && [lsearch -glob [split [string tolower [lindex [args] 1]]] [string tolower $banz]] != -1} {
+		if {[lsearch $wordkicked [string tolower [host]]] != -1 && ![isprotect [nick] ban passive]} {
+		    /mode [lindex [args] 0] -o+b [nick] [maskhost [nick]![user]@[host]]
+		    set b "ban"
+		} {lappend wordkicked [string tolower [host]];set b ""}
+		/kick [lindex [args] 0] [nick] wordkick$b: $banz
+		break
+	    }
+	}
+    }
+}
+
+
+
+alias screw {
+    if {[args] == ""} {
+	echo "[kano] Usage: /[event] -a|-h <nick>, /[event] -d a|u|h"
+	echo "    See '/help screw' for details."
+	complete
+	return
+    }
+    set arg [args]
+    if {[lindex $arg 0] == "-d"} {
+	set end [lrange $arg 1 end]
+	if {$end == "" || ($end != "a" && $end != "u" && $end != "h")} {
+	    echo "[kano] /[event] -d sets the default ScrewBan type."
+	    echo "[kano] Usage: /[event] -d a (ex. *!?????@???.?????.???)"
+	    echo "[kano]                    u (ex. *!k?i?h@c?u.x?n?h.n?t)"
+	    echo "[kano]                    h (ex. *!*@c?u.x?n?h.n?t)"
+	} {
+	    set_cookie screwban $end
+	    regsub -all h $end "host only" end
+	    regsub -all a $end "all ?'s" end
+	    regsub -all u $end "user and host" end
+	    echo "[kano] ScrewBan set to \"$end.\""
+	}
+	complete
+	return
+    }
+    if {[lindex [args] 0] == "-a" || [lindex [args] 0] == "-h"} {set arg [join [lrange [args] 1 end]]} {
+	if {[get_cookie screwban] != "u"} {
+	    /screw -[get_cookie screwban] [lindex [args] 0]
+	    complete
+	    return
+	}
+    }
+    if {[uhost $arg] == ""} {
+	echo "[kano] Try again in a few seconds (grabbing userhost)."
+	/quote userhost $arg
+	complete
+    }
+    if {[lindex [args] 0] != "-h"} {
+	set x [uhost $arg]
+    } {
+	set x *@[lindex [split [uhost $arg] @] 1]
+    }
+    set y *!
+    set z ""
+    set i 0
+    foreach j [split $x {}] {
+	append z $j
+	if ![string match \[\\!\\.\\@\\*\]* $j] {
+	    if {[lindex [args] 0] == "-a"} {
+		append y ?
+	    } {
+		if ![expr $i % 2] {append y ?} {append y $j}
+	    }
+	} {
+	    append y $j
+	}
+	incr i
+    }
+    /mode [channel] +b $y
+    complete
+}
+
+
+set funlist {fuck shit asshole dick suck cunt penis vagina loser idiot moron owned bitch yousuck biteme blowme faggot dork cock ass}
+alias funban {
+    set x [lindex [args] 0]
+    if {$x == "find"} {
+	foreach i $funlist {
+	    /match *[join [split $i {}] *]*
+	}
+	complete
+	return
+    }
+    if ![catch {lindex $newbans $x} ind] {
+	/mode [channel] +b [lindex $ind 0]
+	complete;return
+    }
+    if {[uhost $x] == ""} {echo "[kano] Who?";complete;return}
+    set ban ""
+    set uhost [string tolower $x![uhost $x]]
+    set host [split $uhost !@]
+    foreach i $funlist {
+	set split [split $i {}]
+	if ![string match *[join $split *]* $uhost] continue
+	set whichchar 0
+	set str *
+	foreach part $host {
+	    set temp *
+	    foreach letter $split {
+		append temp $letter*
+		if ![string match $temp $part] break
+		set split [lrange $split 1 end]
+		append str $letter*
+	    }
+	    append str [lindex {! @} $whichchar]*
+	    incr whichchar
+	}
+	if {$str == "*!*@*"} {set ban ""} {lappend ban $str}
+    }
+    if {$ban != ""} {
+	set banz $ban
+	set bans ""
+	echo "[kano] $x's host matches: [listify $ban]"
+	foreach ban $banz {
+	    set l ""
+	    foreach i [chanlist [channel]] {
+		if [string match $ban $i![uhost $i]] {lappend l $i}
+	    }
+	    if ![info exists nextban] {set nextban -}
+	    if {[llength $l] > 1} {lappend bans [list $ban $l];continue}
+	    echo "[kano] Banning $ban."
+	    /mode [channel] +b $ban
+	    break
+	}
+	if {[raw_args] != $nextban && $bans != ""} {
+	    set c 1
+	    set newbans $bans
+	    foreach i $bans {
+		set l [lindex $i 1]
+		set i [lindex $i 0]
+		echo "[kano] ($c) $i matches [llength $l] people: [listify $l]"
+		incr c
+	    }
+	    echo "[kano] Type /[event] <#> to confirm."
+	}
+	set nextban [raw_args]
+    } {echo "[kano] No bans matched. Sorry."}
+    complete
+}
+
+
+alias dban {
+    if [string length [uhost [lindex [args] 0]]] {
+	set host [maskhost !@[lindex [split [uhost [lindex [args] 0]] @] 1]]
+	if [ison [lindex [args] 0] [channel]] {
+	    /mode [channel] -o+b [lindex [args] 0] $host
+	    /kick [channel] [lindex [args] 0] banned
+	} {
+	    /mode [channel] +b $host
+	}
+    }
+}
+
+alias fkick {
+    if {[args] == ""} {/help [event];complete;return}
+    set l ""
+    set low [string tolower [raw_args]]
+    foreach i [string tolower [chanlist [channel]]] {
+	if {[string match $low $i![string tolower [uhost $i]]]} {lappend l $i}
+    }
+    echo "[kano] Kicking [llength $l] nick/s.."
+    masskick [channel] $l [raw_args]
+    complete
+}
+
+kaddhelp fkick "Kicks all users matching a mask (e.g. *.aol.com)." "/fkick <mask>" "Filter-Kick"

@@ -1,0 +1,773 @@
+***  Installation Started 08/03/25 13:49  ***
+Title: XiRCON 1.0B4 Installation
+Source: C:\Documents and Settings\Joseph\My Documents\Downloads\XiRC10b4.exe
+Made Dir: C:\Program Files\XiRCON
+File Copy: C:\Program Files\XiRCON\UNWISE.EXE
+RegDB Key: Software\Microsoft\Windows\CurrentVersion\Uninstall\XiRCON 1.0B4
+RegDB Val: XiRCON 1.0B4
+RegDB Name: DisplayName
+RegDB Root: 2
+RegDB Key: Software\Microsoft\Windows\CurrentVersion\Uninstall\XiRCON 1.0B4
+RegDB Val: C:\PROGRA~1\XiRCON\UNWISE.EXE C:\PROGRA~1\XiRCON\INSTALL.LOG
+RegDB Name: UninstallString
+RegDB Root: 2
+File Copy: C:\Program Files\XiRCON\Xircon.exe
+File Copy: C:\Program Files\XiRCON\Xed.exe
+File Copy: C:\Program Files\XiRCON\Xtcl.dll
+File Copy: C:\Program Files\XiRCON\Xtclpipe.dll
+File Copy: C:\Program Files\XiRCON\Default.tcl
+File Copy: C:\Program Files\XiRCON\Readme.txt
+File Copy: C:\Program Files\XiRCON\License.txt
+File Copy: C:\Program Files\XiRCON\Tcl.txt
+File Copy: C:\Program Files\XiRCON\Versions.txt
+Made Dir: C:\Documents and Settings\Joseph\Start Menu\Programs\XiRCON
+Shell Link: C:\Documents and Settings\Joseph\Start Menu\Programs\XiRCON\XiRCON.lnk
+Shell Link: C:\Documents and Settings\Joseph\Start Menu\Programs\XiRCON\XiRCON Editor.lnk
+Shell Link: C:\Documents and Settings\Joseph\Start Menu\Programs\XiRCON\License.lnk
+Shell Link: C:\Documents and Settings\Joseph\Start Menu\Programs\XiRCON\Readme.lnk
+Shell Link: C:\Documents and Settings\Joseph\Start Menu\Programs\XiRCON\TCL Help.lnk
+Shell Link: C:\Documents and Settings\Joseph\Start Menu\Programs\XiRCON\Version History.lnk
+Shell Link: C:\Documents and Settings\Joseph\Start Menu\Xircon.lnk
+User Rights: Admin
+***  Installation Started 08/03/25 13:52  ***
+Title: kano 15 beta 8
+Source: C:\Documents and Settings\Joseph\My Documents\Downloads\k15beta8.exe
+File Copy: C:\Program Files\XiRCON\kcolor.dll
+File Copy: C:\Program Files\XiRCON\kano-tips.txt
+File Copy: C:\Program Files\XiRCON\UNINSTAL.EXE
+RegDB Key: Software\Microsoft\Windows\CurrentVersion\Uninstall\kano 15 for xircon
+RegDB Val: kano 15 for xircon
+RegDB Name: DisplayName
+RegDB Root: 2
+RegDB Key: Software\Microsoft\Windows\CurrentVersion\Uninstall\kano 15 for xircon
+RegDB Val: C:\PROGRA~1\XiRCON\UNINSTAL.EXE C:\PROGRA~1\XiRCON\INSTALL.LOG
+RegDB Name: UninstallString
+RegDB Root: 2
+File Copy: C:\Program Files\XiRCON\falcon.dll
+File Copy: C:\Program Files\XiRCON\kano website [internet shortcut].url
+File Copy: C:\Program Files\XiRCON\kano.hlp
+File Copy: C:\Program Files\XiRCON\README_IMPORTANT.txt
+File Copy: C:\Program Files\XiRCON\winapi.dll
+Made Dir: C:\Program Files\XiRCON\kano
+Made Dir: C:\Program Files\XiRCON\kano\Color Schemes
+File Copy: C:\Program Files\XiRCON\kano\Color Schemes\ANSI.ini
+File Copy: C:\Program Files\XiRCON\kano\Color Schemes\mIRC.ini
+File Copy: C:\Program Files\XiRCON\kano\Color Schemes\these can be used for....txt
+File Copy: C:\Program Files\XiRCON\kano\Color Schemes\Xircon.ini
+File Copy: C:\Program Files\XiRCON\kano\kano website [internet shortcut].url
+File Copy: C:\Program Files\XiRCON\kano\osiris.txt
+File Copy: C:\Program Files\XiRCON\What's New.txt
+File Copy: C:\Program Files\XiRCON\kano\kano.tcl
+Made Dir: C:\Program Files\XiRCON\addons
+File Copy: C:\Program Files\XiRCON\addons\alias.km
+File Copy: C:\Program Files\XiRCON\addons\echo.km
+File Copy: C:\Program Files\XiRCON\addons\events.km
+File Copy: C:\Program Files\XiRCON\addons\hotkeys.km
+File Copy: C:\Program Files\XiRCON\addons\popups.km
+File Copy: C:\Program Files\XiRCON\addons\privmsg.km
+Made Dir: C:\Program Files\XiRCON\kano\Themes
+File Copy: C:\Program Files\XiRCON\kano\Themes\sphere.thm
+Made Dir: C:\Program Files\XiRCON\kano\Themes\Conio
+File Copy: C:\Program Files\XiRCON\kano\Themes\Conio\before loading conio....txt
+File Copy: C:\Program Files\XiRCON\kano\Themes\Conio\ccb.sty
+File Copy: C:\Program Files\XiRCON\kano\Themes\Conio\chosen.sty
+File Copy: C:\Program Files\XiRCON\kano\Themes\Conio\conio.sty
+File Copy: C:\Program Files\XiRCON\kano\Themes\Conio\conio.thm
+File Copy: C:\Program Files\XiRCON\kano\Themes\Conio\enigma.sty
+File Copy: C:\Program Files\XiRCON\kano\Themes\Conio\frtn.sty
+File Copy: C:\Program Files\XiRCON\kano\Themes\Conio\gizmo.sty
+File Copy: C:\Program Files\XiRCON\kano\Themes\Conio\undead.sty
+Made Dir: C:\Program Files\XiRCON\kano\Themes\Default
+File Copy: C:\Program Files\XiRCON\kano\Themes\Default\Brighter Scheme.ini
+File Copy: C:\Program Files\XiRCON\kano\Themes\Default\Darker Scheme.ini
+File Copy: C:\Program Files\XiRCON\kano\Themes\Default\Syntax Colors.ini
+File Copy: C:\Program Files\XiRCON\kano\Themes\Default\to load a color ini....txt
+Made Dir: C:\Program Files\XiRCON\kano\Themes\Gradial
+File Copy: C:\Program Files\XiRCON\kano\Themes\Gradial\before loading gradial....txt
+File Copy: C:\Program Files\XiRCON\kano\Themes\Gradial\Blue Gradial Scheme.ini
+File Copy: C:\Program Files\XiRCON\kano\Themes\Gradial\Gradial.thm
+Made Dir: C:\Program Files\XiRCON\kano\Themes\mIRC
+File Copy: C:\Program Files\XiRCON\kano\Themes\mIRC\mirc-thm.ini
+File Copy: C:\Program Files\XiRCON\kano\Themes\mIRC\mirc.thm
+Made Dir: C:\Program Files\XiRCON\kano\Themes\Doot
+File Copy: C:\Program Files\XiRCON\kano\Themes\Doot\amnesia.frm
+File Copy: C:\Program Files\XiRCON\kano\Themes\Doot\bitchx.frm
+File Copy: C:\Program Files\XiRCON\kano\Themes\Doot\bleek.frm
+File Copy: C:\Program Files\XiRCON\kano\Themes\Doot\chop.frm
+File Copy: C:\Program Files\XiRCON\kano\Themes\Doot\forge.frm
+File Copy: C:\Program Files\XiRCON\kano\Themes\Doot\howto.txt
+File Copy: C:\Program Files\XiRCON\kano\Themes\Doot\nitestar.frm
+File Copy: C:\Program Files\XiRCON\kano\Themes\Doot\phade.frm
+File Copy: C:\Program Files\XiRCON\kano\Themes\Doot\frm.thm
+File Copy: C:\Program Files\XiRCON\kano\Themes\BitchX.thm
+File Copy: C:\Program Files\XiRCON\kano\Themes\CRK.thm
+File Copy: C:\Program Files\XiRCON\kano\Themes\doot.thm
+File Copy: C:\Program Files\XiRCON\kano\Themes\Metal.thm
+File Copy: C:\Program Files\XiRCON\kano\Themes\Osiris.thm
+File Copy: C:\Program Files\XiRCON\kano\Themes\Syntax.thm
+File Copy: C:\Program Files\XiRCON\kano\Themes\Vortex.thm
+File Copy: C:\Program Files\XiRCON\kano\Themes\xircon.thm
+File Copy: C:\Program Files\XiRCON\addons\flood.ka
+File Copy: C:\Program Files\XiRCON\addons\xdcc.ka
+File Copy: C:\Program Files\XiRCON\addons\download addons.url
+File Copy: C:\Program Files\XiRCON\addons\Click to load extra addons.bat
+File Copy: C:\Program Files\XiRCON\addons\feel free to....txt
+File Copy: C:\Program Files\XiRCON\addons\if things get slow....txt
+File Copy: C:\Program Files\XiRCON\addons\customize.ka
+File Copy: C:\Program Files\XiRCON\addons\these addons are....txt
+File Copy: C:\Program Files\XiRCON\addons\bots.ka
+File Copy: C:\Program Files\XiRCON\addons\emacs.ka
+File Copy: C:\Program Files\XiRCON\addons\games.ka
+File Copy: C:\Program Files\XiRCON\addons\kick.ka
+File Copy: C:\Program Files\XiRCON\addons\lookup.ka
+File Copy: C:\Program Files\XiRCON\addons\mail.ka
+File Copy: C:\Program Files\XiRCON\addons\mass.ka
+File Copy: C:\Program Files\XiRCON\addons\paste.ka
+File Copy: C:\Program Files\XiRCON\addons\spellfix.ka
+File Copy: C:\WINDOWS\Fonts\gte437.fon
+File Copy: C:\WINDOWS\Fonts\ibmpc.FON
+Shell Link: C:\Documents and Settings\Joseph\Start Menu\Programs\XiRCON\kano help.lnk
+Shell Link: C:\Documents and Settings\Joseph\Start Menu\Programs\XiRCON\kano website.lnk
+Shell Link: C:\Documents and Settings\Joseph\Start Menu\Programs\XiRCON\kano for xircon.lnk
+Shell Link: C:\Documents and Settings\Joseph\Start Menu\Programs\XiRCON\kano for xircon.lnk
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.best.net
+RegDB Name: Selection
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc2.sprynet.com
+RegDB Name: 001
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc1.sprynet.com
+RegDB Name: 002
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc-w.primenet.com
+RegDB Name: 003
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc-e.primenet.com
+RegDB Name: 004
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.pacbell.net
+RegDB Name: 005
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.best.net
+RegDB Name: 006
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.Prison.NET
+RegDB Name: 007
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/ircd.netcom.com
+RegDB Name: 008
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.lightning.net
+RegDB Name: 009
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/ircd.txdirect.net
+RegDB Name: 010
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.exodus.net
+RegDB Name: 011
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.home.com
+RegDB Name: 012
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.frontiernet.net
+RegDB Name: 013
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.cs.rpi.edu
+RegDB Name: 014
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.uiuc.edu
+RegDB Name: 015
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/ircd2.netcom.com
+RegDB Name: 016
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc-1.netcom.com
+RegDB Name: 017
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc-2.netcom.com
+RegDB Name: 018
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.mcs.net
+RegDB Name: 019
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc02.irc.aol.com
+RegDB Name: 020
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.total.net
+RegDB Name: 021
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.passport.ca
+RegDB Name: 022
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.psinet.com
+RegDB Name: 023
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.mindspring.com
+RegDB Name: 024
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.cs.cmu.edu
+RegDB Name: 025
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.ced.chalmers.se
+RegDB Name: 026
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.colorado.edu
+RegDB Name: 027
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/efnet.demon.co.uk
+RegDB Name: 028
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.ais.net
+RegDB Name: 029
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/services.us
+RegDB Name: 030
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.powersurfr.com
+RegDB Name: 031
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc2-2.netcom.com
+RegDB Name: 032
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc2-1.netcom.com
+RegDB Name: 033
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.rift.com
+RegDB Name: 034
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.magic.ca
+RegDB Name: 035
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.nbnet.nb.ca
+RegDB Name: 036
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.polymtl.ca
+RegDB Name: 037
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.nijenrode.nl
+RegDB Name: 038
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.ec-lille.fr
+RegDB Name: 039
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.anet-stl.com
+RegDB Name: 040
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.inter.net.il
+RegDB Name: 041
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.emory.edu
+RegDB Name: 042
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.df.lth.se
+RegDB Name: 043
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/efnet.telia.no
+RegDB Name: 044
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.homelien.no
+RegDB Name: 045
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.mbnet.mb.ca
+RegDB Name: 046
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/efnet.cs.hut.fi
+RegDB Name: 047
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: Stratics/irc.stratics.com
+RegDB Name: 048
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: Stratics/irc3.stratics.com
+RegDB Name: 049
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: Stratics/irc4.stratics.com
+RegDB Name: 050
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/liberty.nj.us.dal.net
+RegDB Name: 051
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/chrome.mo.us.dal.net
+RegDB Name: 052
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/qis.md.us.dal.net
+RegDB Name: 053
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/viper.mo.us.dal.net
+RegDB Name: 054
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/indy.in.us.dal.net
+RegDB Name: 055
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/sodre.fl.us.dal.net
+RegDB Name: 056
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/services.dal.net
+RegDB Name: 057
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/stlouis.mo.us.dal.net
+RegDB Name: 058
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/mindijari.ca.us.dal.net
+RegDB Name: 059
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/webbernet.mi.us.dal.net
+RegDB Name: 060
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/stats.dal.net
+RegDB Name: 061
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/glass.oh.us.dal.net
+RegDB Name: 062
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/netcom-r.on.ca.dal.net
+RegDB Name: 063
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/opus.bc.ca.dal.net
+RegDB Name: 064
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/trapdoor.ca.us.dal.net
+RegDB Name: 065
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/ohare.az.us.dal.net
+RegDB Name: 066
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/toronto.on.ca.dal.net
+RegDB Name: 067
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/quantum-r.ny.us.dal.net
+RegDB Name: 068
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/algo.se.eu.dal.net
+RegDB Name: 069
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/farside.ab.ca.dal.net
+RegDB Name: 070
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/ans.dc.us.dal.net
+RegDB Name: 071
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/webzone.ok.us.dal.net
+RegDB Name: 072
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/routing.dal.net
+RegDB Name: 073
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/raptor.ab.ca.dal.net
+RegDB Name: 074
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/ced.se.eu.dal.net
+RegDB Name: 075
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/arlington.va.us.dal.net
+RegDB Name: 076
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/powertech.no.eu.dal.net
+RegDB Name: 077
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/onyx.nj.us.dal.net
+RegDB Name: 078
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: DALNet/viking.no.eu.dal.net
+RegDB Name: 079
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc2.c-com.net
+RegDB Name: 080
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/ircd.c-com.net
+RegDB Name: 081
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc1.c-com.net
+RegDB Name: 082
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc-roc.frontiernet.net
+RegDB Name: 083
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/ircd.erols.com
+RegDB Name: 084
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.idle.net
+RegDB Name: 085
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/efnet.sto.telia.se
+RegDB Name: 086
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc-e.irc.lightning.net
+RegDB Name: 087
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.idirect.ca
+RegDB Name: 088
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.uk.psi.net
+RegDB Name: 089
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/ircd.ais.net
+RegDB Name: 090
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc.freei.net
+RegDB Name: 091
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc-w.frontiernet.net
+RegDB Name: 092
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/irc-e.frontiernet.net
+RegDB Name: 093
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: EFNet/efnet.matrix.com.br
+RegDB Name: 094
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: GamesNET/Santa.Clara.CA.GamesNet.net
+RegDB Name: 095
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: GamesNET/West.GamesNET.net
+RegDB Name: 096
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: GamesNET/Ircops.GamesNET.net
+RegDB Name: 097
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: GamesNET/NY.GamesNET.net
+RegDB Name: 098
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: GamesNET/CA.GamesNET.net
+RegDB Name: 099
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: GamesNET/OpServ.GamesNet.Net
+RegDB Name: 100
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: GamesNET/ChanServ.GamesNet.net
+RegDB Name: 101
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Connection\ServerTree
+RegDB Val: GamesNET/GA.GamesNET.net
+RegDB Name: 102
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors\Table
+RegDB Val: 0
+RegDB Name: 001
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors\Table
+RegDB Val: 11403264
+RegDB Name: 002
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors\Table
+RegDB Val: 46080
+RegDB Name: 003
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors\Table
+RegDB Val: 11449344
+RegDB Name: 004
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors\Table
+RegDB Val: 174
+RegDB Name: 005
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors\Table
+RegDB Val: 11403438
+RegDB Name: 006
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors\Table
+RegDB Val: 25518
+RegDB Name: 007
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors\Table
+RegDB Val: 11449518
+RegDB Name: 008
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors\Table
+RegDB Val: 6513507
+RegDB Name: 009
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors\Table
+RegDB Val: 16737123
+RegDB Name: 010
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors\Table
+RegDB Val: 6551907
+RegDB Name: 011
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors\Table
+RegDB Val: 16775523
+RegDB Name: 012
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors\Table
+RegDB Val: 6513663
+RegDB Name: 013
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors\Table
+RegDB Val: 16737279
+RegDB Name: 014
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors\Table
+RegDB Val: 6552063
+RegDB Name: 015
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors\Table
+RegDB Val: 16777215
+RegDB Name: 016
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\DCC
+RegDB Val: 8192
+RegDB Name: BlockSize
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\DCC
+RegDB Val: 1
+RegDB Name: FastSend
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Fonts
+RegDB Val: GwdTE_437
+RegDB Name: ChannelFontName
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Fonts
+RegDB Val: 11
+RegDB Name: ChannelFontSize
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Fonts
+RegDB Val: GwdTE_437
+RegDB Name: ChatFontName
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Fonts
+RegDB Val: 11
+RegDB Name: ChatFontSize
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Fonts
+RegDB Val: GwdTE_437
+RegDB Name: FingerFontName
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Fonts
+RegDB Val: 11
+RegDB Name: FingerFontSize
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Fonts
+RegDB Val: GwdTE_437
+RegDB Name: QueryFontName
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Fonts
+RegDB Val: 11
+RegDB Name: QueryFontSize
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Fonts
+RegDB Val: GwdTE_437
+RegDB Name: StatusFontName
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Fonts
+RegDB Val: 11
+RegDB Name: StatusFontSize
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\General
+RegDB Val: 1
+RegDB Name: AutoReconnect
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\General
+RegDB Val: 0
+RegDB Name: FloodProtection
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\General
+RegDB Val: 0
+RegDB Name: HideOwnNick
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\General
+RegDB Val: 0
+RegDB Name: HighlightOwnText
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\General
+RegDB Val: 1
+RegDB Name: RejoinOnKick
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\General
+RegDB Val: 1
+RegDB Name: ShowToolbar
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\General
+RegDB Val: %I:%M.%S¯ 
+RegDB Name: TimeFormat
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Links
+RegDB Val: GamesNET/EFNet/DALNet/Links
+RegDB Name: ImportNetworks
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Scripts
+RegDB Val: kano\kano.tcl
+RegDB Name: Startup01
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors
+RegDB Val: 7
+RegDB Name: Action
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors
+RegDB Val: 34
+RegDB Name: Alert
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors
+RegDB Val: 2
+RegDB Name: Change
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors
+RegDB Val: 2
+RegDB Name: Channel
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors
+RegDB Val: 7
+RegDB Name: Command
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors
+RegDB Val: 4
+RegDB Name: CTCP
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors
+RegDB Val: 7
+RegDB Name: Default
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors
+RegDB Val: 4
+RegDB Name: Error
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors
+RegDB Val: 10
+RegDB Name: Highlight
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors
+RegDB Val: 3
+RegDB Name: Join
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors
+RegDB Val: 2
+RegDB Name: Mode
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors
+RegDB Val: 3
+RegDB Name: Nick
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors
+RegDB Val: 7
+RegDB Name: Notice
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors
+RegDB Val: 4
+RegDB Name: Part
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors
+RegDB Val: 68
+RegDB Name: Pause
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors
+RegDB Val: 7
+RegDB Name: Private
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors
+RegDB Val: 7
+RegDB Name: Public
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors
+RegDB Val: 4
+RegDB Name: Quit
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\Colors
+RegDB Val: 14
+RegDB Name: URL
+RegDB Root: 1
+RegDB Key: Software\XiRCON\1.0\Default\Preferences\General
+RegDB Val: 1
+RegDB Name: ResumeOnCopy
+RegDB Root: 1
+User Rights: Admin

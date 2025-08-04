@@ -1,0 +1,239 @@
+kmod hotkeys 15 "hotkey bindings"
+
+ac check @ext_cursor @1 Better cursor movement (ctrl+left arrow, shift+ctrl+left arrow, etc.)
+ac check @qexit @0 /Quit exits [kclient xircon]
+
+hotkey enter {
+    if {[string range [input get_text] 0 5] == "/quit "} {
+	if [get_cookie qexit 0] {window close main}
+    }
+}
+
+hotkey control+h {
+    set sel [input get_sel_start]
+    input set_text [string range [input get_text] 0 [expr [input get_sel_start] -1]]http://[string range [input get_text] [expr [input get_sel_start] + [input get_sel_length]] end]
+    input set_sel_start [expr $sel + 7]
+    complete
+}
+
+hotkey control+enter {
+    say [input get_text]
+    input set_text ""
+}
+
+hotkey control+shift+enter {
+    say [analyze [input get_text]]
+    input set_text ""
+}
+
+hotkey control+right pre_move
+hotkey control+left pre_move
+hotkey control+shift+left pre_move
+hotkey control+shift+right pre_move
+
+hotkey shift+control+e {
+    set x [input get_text]
+    set where [input get_sel_start]
+    set len [input get_sel_length]
+    if $len {
+	set beg [string range $x 0 [expr $where-1]]
+	set end [string range $x [expr $where+$len] end]
+	set len [string range $x $where [expr $where+$len-1]]
+    } {
+	set len $x;set beg "";set end ""
+    }
+    echo $len
+    catch "return \"$len\"" x
+    input set_text $beg$x$end
+    input set_sel_start $where
+}
+
+hotkey shift+control+t /ts
+
+## formatting stuff
+hotkey control+b {format_in }
+hotkey control+r {format_in }
+hotkey control+u {format_in }
+
+hotkey f1 /help
+
+hotkey shift+control+v {
+    foreach i [split [FALC_clip -p] \n] {
+	say $i
+    }
+    complete
+}
+
+hotkey control+v {
+    if [get_cookie onewindow 0] {
+	foreach i [split [FALC_clip -p] \n] {
+	    say $i
+	}
+	complete
+    }
+}
+
+hotkey enter {if [get_cookie onewindow 0] {say [input get_text]}}
+hotkey shift+enter {if [get_cookie onewindow 0] {say [input get_text]}}
+hotkey shift+control+enter {if [get_cookie onewindow 0] {say [input get_text]}}
+
+hotkey control+p {
+    set ans [FALC_listbox -t "Open Page" -m "" -e "{} [get_cookie openurls]"]
+    if {$ans == ""} {complete;return}
+    if [catch {lrem [get_cookie openurls] $ans} list] {set list [get_cookie openurls]}
+    set_cookie openurls [string trim "[list $ans] $list"]
+    if ![string match *://* $ans] {set ans http://$ans}
+    FALC_shell $ans
+    complete
+}
+
+hotkey control+z {inputcase upper;complete}
+hotkey alt+z {inputcase lower;complete}
+hotkey control+alt+z {inputcase lower;complete}
+
+hotkey alt+f4 {
+    /exit
+    complete
+}
+
+hotkey tab {
+    if {([set m [wordstart [set in [input get_text]] [set st [input get_sel_start]]]] == 0 || $m == [string length $in]) && [string match /* $in] && $st <= [string length [ret [lindex [split $in] 0]]]} {
+	set choices ""
+	foreach i [array names help] {
+	    if [string match [string range [ret [lindex [split $in] 0]]* 1 end] $i] {
+		set yes 1
+		foreach j {{} aliases hotkeys features} {if {[string tolower $i] == $j} {set yes 0}}
+		if {![string match \[0-9\]* $i] && [string index $i 0] != "+" && $yes} {lappend choices $i}
+	    }
+	}
+	set end " [string range $in [expr [set f [string first " " $in]] +1] end]"
+	if {$f == -1} {set end ""}
+	if {[llength $choices] == 1} {
+	    input set_text "/[join $choices]$end"
+	} elseif {[llength $choices] != 0} {
+	    set aliasm ""
+	    set aliasz ""
+	    set mz 0
+	    foreach i [lsort $choices] {
+		if {[string length $i] <= 5} {
+		    append aliasm "[format %-5s [string toupper $i]] "
+		} elseif {[llength $aliasm] == [expr 7 - $mz]} {
+		    set mz 1
+		    lappend aliasz $aliasm
+		    set aliasm "[format %-11s [string toupper $i]] "
+		} {
+		    append aliasm "[format %-11s [string toupper $i]] "
+		    incr mz
+		}
+		if {[llength $aliasm] >= [expr 8 - $mz]} {
+		    set mz 0
+		    lappend aliasz $aliasm
+		    set aliasm ""
+		}
+	    }
+	    if {$aliasm != ""} {lappend aliasz $aliasm}
+	    echo "[kano] Possible completions ([llength $choices]):"
+	    foreach i $aliasz {
+		echo "[kano] $i"
+	    }
+	    set full [lindex [lsort $choices] 0]
+	    foreach i [lrange [lsort $choices] 1 end] {
+		while {![string match $full* $i]} {
+		    set full [string range $full 0 [expr [string length $full] -2]]
+		}
+	    }
+	    if [FALC_lock caps] {set full [string toupper $full]}
+	    input set_text /$full$end
+	    input set_sel_start [expr [string length $full] +1]
+	    complete
+	    return
+	} {complete;return}
+	input set_sel_start [expr [string length $choices] +1]
+	complete
+    }
+}
+
+hotkey f2 {
+    set it [string trim [lrange $lastniq end end]]
+    input set_text "$it "
+    input set_sel_start [string length "$it "]
+    if {$lastniq == ""} {complete}
+    set lastniq "[lrange $lastniq end end] [lrange $lastniq 0 [expr [llength $lastniq] - 2]]"
+}
+
+hotkey f3 {
+    set text [input get_text]
+    set nick ""
+    set niq [string trimright [ret [lindex [set text [join $text]] 0]] :]
+    foreach i [nicks [channel] @$niq*] {
+	set nick [string trimleft $i "@+"]
+    }
+    foreach i [nicks [channel] +$niq*] {
+	set nick [string trimleft $i "@+"]
+    }
+    foreach i [nicks [channel] $niq*] {
+	set nick [string trimleft $i "@+"]
+    }
+    if {$nick != ""} {
+	set it [ncomp $nick]
+	input set_text "$it [join [lrange $text 1 end]]"
+	input set_sel_start [string length "$it [join [lrange $text 1 end]]"]
+    }
+}
+
+hotkey f4 {
+    if {[input get_sel_length] == 0} {
+	set a [split [input get_text] {}]
+	set place [input get_sel_start]
+	set b ""
+	for {set i [expr [llength $a]-1]} {$i >= 0} {incr i -1} {
+	    lappend b [lindex $a $i]
+	}
+	set v [join $b {}]
+	input set_text $v
+	input set_sel_start $place
+    } {
+	set s [input get_text]
+	set st [input get_sel_start]
+	set sl [expr [input get_sel_length]-1]
+	set a [split [string range $s $st [expr $st+$sl]] {}]
+	set b ""
+	for {set i [expr [llength $a]-1]} {$i >= 0} {incr i -1} {
+	    lappend b [lindex $a $i]
+	}
+	set v [join $b {}]
+	set sl [string length $v]
+	input set_text [string range $s 0 [expr $st-1]]$v[string range $s [expr $st+$sl] end]
+	input set_sel_start $st
+	input set_sel_length $sl
+    }
+    complete
+}
+
+
+hotkey f5 {
+    set a [input get_text]
+    set place [input get_sel_start]
+    set b ""
+    for {set i [expr [llength $a]-1]} {$i >= 0} {incr i -1} {
+        append b "[lindex $a $i] "
+    }
+    input set_text $b
+    input set_sel_start $place
+    complete
+}
+
+hotkey f6 {
+    if {$jumps != ""} {
+	/newserver $jumps
+    } {
+	echo "[kano] Split list is empty!"
+    }
+    complete
+}
+
+foreach i [get_cookie hotkeys] {
+    catch {hotkey [join [lindex $i 0]] [join [lrange $i 1 end]]}
+}
+
+hotkey shift+f7 {set marqing 1;marq [input get_text] 1}

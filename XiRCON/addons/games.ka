@@ -1,0 +1,558 @@
+if {[get_cookie slots] == ""}       {set_cookie slots       10.00}
+set scramb(text) ""
+set scramb(chan) ""
+set scramb(last) 0
+set scramb(cheat) 1
+
+alias scramble {
+    set cmd [lindex [args] 0]
+    set args [lrange [raw_args] 1 end]
+    if {[args] == ""} {
+	echo "[kano] /[event] <phrase>: starts game"
+	echo "[kano] /[event] -score: echoes users' scores"
+	echo "[kano] /[event] -top: publically displays the top 5 scores"
+	echo "[kano] /[event] -add|-sub <nick> <points>: adds or removes from someone's score"
+    } elseif {$cmd == "-score"} {
+	catch {unset scrambsc}
+	foreach i [array names scramb] {
+	    if {[string index $i 0] == "*"} {
+		lappend scrambsc($scramb($i)) [string range $i 1 end]
+	    }
+	}
+	foreach i [array names scrambsc] {
+	    foreach j [lsort $scrambsc($i)] {
+		echo "[kano] [format %9s $j]: $i"
+	    }
+	}
+    } elseif {$cmd == "-top"} {
+	say "[kanoverz] scramble top five for this round:"
+	catch {unset scrambsc}
+	foreach i [array names scramb] {
+	    if {[string index $i 0] == "*"} {
+		lappend scrambsc($scramb($i)) [string range $i 1 end]
+	    }
+	}
+	set int 1
+	foreach i [lrange [lsort -integer -decreasing [array names scrambsc]] 0 4] {
+	    say "[kanoverz] $int. [listify [lsort $scrambsc($i)]]: $i points"
+	    incr int
+	}
+    } elseif {$cmd == "-add"} {
+	if [info exists scramb(*[lindex $args 0])] {
+	    incr scramb(*[lindex $args 0]) [lindex $args 1]
+	} {
+	    set scramb(*[lindex $args 0]) [lindex $args 1]
+	}
+	echo "[kano] [lindex $args 0]'s score is now $scramb(*[lindex $args 0])."
+	if [scramb] {/msg [lindex $args 0] [kanoverz] Your score is now $scramb(*[lindex $args 0]).}
+    } elseif {$cmd == "-sub" || $cmd == "-rem"} {
+	if [info exists scramb(*[lindex $args 0])] {
+	    incr scramb(*[lindex $args 0]) -[lindex $args 1]
+	} {
+	    set scramb(*[lindex $args 0]) -[lindex $args 1]
+	}
+	echo "[kano] [lindex $args 0]'s score is now $scramb(*[lindex $args 0])."
+	if [scramb] {/msg [lindex $args 0] [kanoverz] Your score is now $scramb(*[lindex $args 0]).}
+    } elseif {[channel] == ""} {
+	echo "[kano] But you're not in a channel!"
+    } elseif {[args] == "-clear"} {
+	foreach i [array names scramb] {
+	    if {[string index $i 0] == "*"} {
+		unset scramb($i)
+	    }
+	    set scramb(cheat) 1
+	    set scramb(chan) ""
+	}
+	    if [scramb] {say "[kanoverz] cleared all scramble scores."}
+	echo "[kano] Cleared all scores."
+    } {
+	set ct 0
+	set scramble(*) *
+	foreach i [args] {
+	    set j [split $i {}]
+	    while {[llength $j] != 1} {
+		set word [lindex $j [random 0 [expr [llength $j] - 1]]]
+		append scramble($ct) $word
+		set j [lreplace $j [lsearch $j $word] [lsearch $j $word]]
+	    }
+	    append scramble($ct) [lindex $j 0]
+	    incr ct
+	}
+	unset scramble(*)
+	set scramby ""
+	foreach i [lsort -integer [array names scramble]] {
+	    append scramby " $scramble($i)"
+	}
+	say "[kanoverz] word scramble: [string trim $scramby]"
+	say "[kanoverz] say the unscrambled word/phrase on a line by itself"
+	set scramb(text) [arg]
+	unset scramble
+	set scramb(chan) [channel]
+	set scramb(last) [unixtime]
+    }
+    complete
+}
+
+on nick {
+    if [info exists scramb(*[string tolower [nick]])] {
+	set scramb(*[string tolower [lindex [args] 0]]) $scramb(*[string tolower [nick]])
+	unset scramb(*[string tolower [nick]])
+    }
+}
+
+on privmsg {
+    if {$l == [string tolower $scramb(chan)]} {
+	if {[string tolower [lindex [args] 1]] == [string tolower $scramb(text)]} {
+	    if ![info exists scramb(*[string tolower [nick]])] {
+		set scramb(*[string tolower [nick]]) 1
+	    } {
+		incr scramb(*[string tolower [nick]])
+	    }
+	    /msg $d [kanoverz] scramble: we have a winner! [nick] got the correct answer, $scramb(text)!! Your score is now $scramb(*[string tolower [nick]]).
+	    set scramb(chan) ""
+	    set scramb(last) [unixtime]
+	} elseif {[string tolower [lindex [args] 1]] == [string tolower [string trim $scramby]] && $scramb(cheat)} {
+	    if ![info exists scramb(*[string tolower [nick]])] {
+		set scramb(*[string tolower [nick]]) 1
+	    } {
+		incr scramb(*[string tolower [nick]])
+	    }
+	    /msg $d [kanoverz] scramble: we have a cheater! [nick] cheated for $scramb(text). Your score, [nick], is now $scramb(*[string tolower [nick]]). Cheating now disabled for this round.
+	    set scramb(chan) ""
+	    set scramb(cheat) 0
+	    set scramb(last) [unixtime]
+	}
+    }
+}
+
+proc scramb {} {
+    global scramb
+    if {[expr [unixtime] - $scramb(last)] < 300} {return 1} {return 0}
+}
+
+#scramble stuff
+#prizes for reading my remarkably unreadable code:
+#  /fword (word) - finds (a) word(s) from a dictionary file (such as any UNIX
+#                  WORDS file... action: echoes words back
+#  /combo (word) - SAYS (not echoes) all possible combinations of the letters
+#                  in the specified word. remember *permutations*? imagine!
+#                  a real-life application of what you learned in high
+#                  school! oh, wait..this isn't real life..
+#well, enjoy these scramble-HAX0R commands...I sure do. and don't tell your
+#friends..it just makes it all that much more fun
+
+alias fword {
+    set x [open words] ;#get this file by typing /kfile
+    set f [format %-[string length [string trim [lindex [args] 0]]]s ""]
+    set f [rep $f " " \[[string trim [lindex [args] 0]]\]]
+    foreach i [read $x] {
+	if [string match $f $i] {
+	    echo $i
+	}
+    }
+    close $x
+    complete
+}
+
+alias combo {
+    set j [perm [string range [arg] 0 4]]
+    input set_text "[llength $j] matches"
+    update
+    foreach i $j {
+	say $i
+    }
+    input set_text ""
+    complete
+}
+
+kaddhelp scramble "\;A fun public game. Etc."
+
+
+proc same {1 2 3} {
+    global ttt
+    set x $ttt($1)
+    foreach i "$2 $3" {
+	if {$ttt($i) != $x || $ttt($i) == " "} {return 0}
+    }
+    return 1
+}
+
+proc dttt {} {
+    global ttt xo ttt_nicks
+    set nick $ttt_nicks
+    foreach i "1 2 3 4 5 6 7 8 9" {
+	if {$ttt($i) == "x"} {
+	    set ttt($i) 04x
+	} elseif {$ttt($i) == "o"} {
+	    set ttt($i) 09o
+	}
+    }
+    echo "($ttt(1))($ttt(2))($ttt(3))" chat $nick
+    echo "($ttt(4))($ttt(5))($ttt(6))" chat $nick
+    echo "($ttt(7))($ttt(8))($ttt(9))" chat $nick
+    if {[same 1 5 9] || [same 7 5 3] || [same 1 2 3] || [same 4 5 6] || [same 7 8 9] || [same 1 4 7] || [same 2 5 8] || [same 3 6 9]} {
+	echo "[kano] [string toupper $xo] wins!!!" chat $nick
+	foreach i "1 2 3 4 5 6 7 8 9" {
+	    set ttt($i) "14$i"
+	}
+    }
+}
+
+proc ttt {} {
+    global ttt xo
+    foreach i "1 2 3 4 5 6 7 8 9" {
+	if {$ttt($i) == "x"} {
+	    set ttt($i) 04x
+	} elseif {$ttt($i) == "o"} {
+	    set ttt($i) 09o
+	}
+    }
+    echo "($ttt(1))($ttt(2))($ttt(3))"
+    echo "($ttt(4))($ttt(5))($ttt(6))"
+    echo "($ttt(7))($ttt(8))($ttt(9))"
+    if {[same 1 5 9] || [same 7 5 3] || [same 1 2 3] || [same 4 5 6] || [same 7 8 9] || [same 1 4 7] || [same 2 5 8] || [same 3 6 9]} {
+	echo "[kano] [string toupper $xo] wins!!!"
+	foreach i "1 2 3 4 5 6 7 8 9" {
+	    set ttt($i) "14$i"
+	}
+    }
+}
+
+foreach i "1 2 3 4 5 6 7 8 9" {
+    set ttt($i) "14$i"
+}
+set xo          [lindex "x o" [random 0 1]]
+set ttt_nicks   ""
+
+hotkey 1 {
+    if {"[window_type] [window_name]" == "query .TicTacToe."} {
+	if {[string match 14* $ttt(1)]} {
+	    set ttt(1) $xo
+	    /clear
+	    ttt
+	    if {$xo == "x"} {
+		set xo o
+	    } {
+		set xo x
+	    }
+	    complete
+	} complete
+    }
+}
+
+hotkey 2 {
+    if {"[window_type] [window_name]" == "query .TicTacToe."} {
+	if {[string match 14* $ttt(2)]} {
+	    set ttt(2) $xo
+	    /clear
+	    ttt
+	    if {$xo == "x"} {
+		set xo o
+	    } {
+		set xo x
+	    }
+	    complete
+	} {complete}
+    }
+}
+
+hotkey 3 {
+    if {"[window_type] [window_name]" == "query .TicTacToe."} {
+	if {[string match 14* $ttt(3)]} {
+	    set ttt(3) $xo
+	    /clear
+	    ttt
+	    if {$xo == "x"} {
+		set xo o
+	    } {
+		set xo x
+	    }
+	    complete
+	} {complete}
+    }
+}
+
+hotkey 4 {
+    if {"[window_type] [window_name]" == "query .TicTacToe."} {
+	if {[string match 14* $ttt(4)]} {
+	    set ttt(4) $xo
+	    /clear
+	    ttt
+	    if {$xo == "x"} {
+		set xo o
+	    } {
+		set xo x
+	    }
+	    complete
+	} {complete}
+    }
+}
+
+hotkey 5 {
+    if {"[window_type] [window_name]" == "query .TicTacToe."} {
+	if {[string match 14* $ttt(5)]} {
+	    set ttt(5) $xo
+	    /clear
+	    ttt
+	    if {$xo == "x"} {
+		set xo o
+	    } {
+		set xo x
+	    }
+	    complete
+	} {complete}
+    }
+}
+
+hotkey 6 {
+    if {"[window_type] [window_name]" == "query .TicTacToe."} {
+	if {[string match 14* $ttt(6)]} {
+	    set ttt(6) $xo
+	    /clear
+	    ttt
+	    if {$xo == "x"} {
+		set xo o
+	    } {
+		set xo x
+	    }
+	    complete
+	} {complete}
+    }
+}
+
+hotkey 7 {
+    if {"[window_type] [window_name]" == "query .TicTacToe."} {
+	if {[string match 14* $ttt(7)]} {
+	    set ttt(7) $xo
+	    /clear
+	    ttt
+	    if {$xo == "x"} {
+		set xo o
+	    } {
+		set xo x
+	    }
+	    complete
+	} {complete}
+    }
+}
+
+hotkey 8 {
+    if {"[window_type] [window_name]" == "query .TicTacToe."} {
+	if {[string match 14* $ttt(8)]} {
+	    set ttt(8) $xo
+	    /clear
+	    ttt
+	    if {$xo == "x"} {
+		set xo o
+	    } {
+		set xo x
+	    }
+	    complete
+	} {complete}
+    }
+}
+
+hotkey 9 {
+    if {"[window_type] [window_name]" == "query .TicTacToe."} {
+	if {[string match 14* $ttt(9)]} {
+	    set ttt(9) $xo
+	    /clear
+	    ttt
+	    if {$xo == "x"} {
+		set xo o
+	    } {
+		set xo x
+	    }
+	    complete
+	} {complete}
+    }
+}
+
+alias ttt {
+    if {[queries .TicTacToe.] == ""} {
+	/query .TicTacToe.
+	window set_title "Tic Tac Toe(Initializing)" query .TicTacToe.
+	window focus query .TicTacToe.
+    }
+    if {"[window_type] [window_name]" == "query .TicTacToe."} {
+	window set_title "Tic Tac Toe(New Game)" query .TicTacToe.
+	echo "[kano] Use the number pad to put X's or O's."
+	echo "[kano] Begin!"
+	foreach i "1 2 3 4 5 6 7 8 9" {
+	    set ttt($i) "14$i"
+	}
+	ttt
+    }
+    complete
+}
+
+kaddhelp ttt "You can play a 2-player tic-tac-toe game with someone (can't play over IRC yet, though." "/ttt" "Tic Tac Toe"
+
+alias slots {
+    set slots {13- 04ò 08O 11* 06Ó 098}
+    set 1 [lindex $slots [set n1 [rand 0 [expr [llength $slots] - 1]]]]
+    set 2 [lindex $slots [set n2 [rand 0 [expr [llength $slots] - 1]]]]
+    set 3 [lindex $slots [set n3 [rand 0 [expr [llength $slots] - 1]]]]
+    catch {unset pr}
+    set pr(0) 6
+    set pr(1) 5
+    set pr(2) 2
+    set pr(3) 5
+    set pr(4) 2
+    set pr(5) 3
+    set amt .20
+    if {$n1 == $n2 && $n2 == $n3} {
+	set money [expr $amt * $pr($n1) * 3]
+    } elseif {$n1 == $n2 || $n1 == $n3} {
+	set money [expr $amt * $pr($n1) * 2]
+    } elseif {$n2 == $n3} {
+	set money [expr $amt * $pr($n2) * 2]
+    } {
+	set money 0.00
+    }
+    set reppy(0) bar
+    set reppy(1) cherry
+    set reppy(2) lemon
+    set reppy(3) star
+    set reppy(4) plum
+    set reppy(5) grapes
+    set_cookie slots [expr [get_cookie slots] + ($money - $price)]
+    echo "[kano] Slots: 15\[$1 $2 $315\] ($reppy($n1), $reppy($n2), $reppy($n3))."
+    echo "[kano] You win 15[format %1.2f $money]! You now have 15[format %1.2f [get_cookie slots]]... Play again, it's only 15$price!"
+    complete
+}
+alias flip {
+    set a [split [args] {}]
+    set b ""
+    for {set i [expr [llength $a]-1]} {$i >= 0} {incr i -1} {
+        lappend b [lindex $a $i]
+    }
+    set v [join $b {}]
+    say $v
+    complete
+}
+
+alias flip2 {
+    set a [args]
+    set b ""
+    for {set i [expr [llength $a]-1]} {$i >= 0} {incr i -1} {
+        append b "[lindex $a $i] "
+    }
+    say $b
+    complete
+}
+
+alias pat2 {
+    set pat [lindex [args] 0]
+    set arg [lrange [arg] 1 end]
+    set on 1
+    if {$pat == "su"} {
+	set patt {07 10}
+	set bg 0
+    } elseif {$pat == "bw"} {
+	set patt {0,1 1,0}
+	set bg 1^B
+    } elseif {$pat == "rainbow"} {
+	set patt {04 08 09 11 13}
+	set bg 1
+    } elseif {$pat == "die"} {
+	set patt {04 07}
+	set bg 1
+    } elseif {$pat == "fade"} {
+	set patt {00 15 14 15}
+	set bg 1
+    } elseif {$pat == "cool"} {
+	set patt {02 12 10 11 10 12}
+	set bg 1
+    } elseif {$pat == "hot"} {
+	set patt {04 07 08}
+	set bg 1
+    } {
+	echo "[kano] Patterns:                                           "
+	echo "[kano] su      == Syracuse U. colors."
+	echo "[kano] rainbow == Take a guess."
+	echo "[kano] die     == Deathly colors, red and orange on black."
+	echo "[kano] fade    == Fading from white, to grey, to dark grey."
+	echo "[kano] cool    == The 'cool' colors: green, blue."
+	echo "[kano] hot     == The 'hot' colors: red, orange, yellow."
+	echo "[kano] bw      == Black-white-black-white. Cool. =)"
+	set on 0
+    }
+    if $on {
+	/pat $bg \{$patt\} $arg
+    }
+    complete
+}
+
+alias mix {
+    if {[args] == ""} {
+	echo "[kano] Usage: /[event] <text>"
+	complete
+	return
+    }
+    set count 0
+    set msg ""
+    set arg [args]
+    while {$count < [string length $arg]} {
+	set i [string index $arg $count]
+	if {[set r [random 0 2]] == "0"} {
+	    append i 
+	} elseif {$r == "1"} {
+	    append i 
+	} {
+	    append i 
+	}
+	append msg $i
+	incr count
+    }
+    say $msg
+    complete
+}
+
+alias pat {
+    if {[llength [args]] < 3} {echo "[kano] Usage: /[event] <bgcolor> <pattern-in-quotes> <text>" ; complete ; return}
+    set bg [lindex [args] 0]
+    set patt [lindex [join [args]] 1]
+    set vars [lrange [arg] 2 end]
+    set msg "1,$bg"
+    set i 0
+    set count 0
+    while {$count < [string length $vars]} {	
+	if {$i == " "} {append msg $i;continue}
+	append msg "[lindex $patt $i][string index $vars $count]"
+	if {$i == [expr [llength $patt] - 1]} {
+	    set i 0
+	} {
+	    incr i
+	}
+	incr count
+    }
+    say $msg
+    complete
+}
+
+alias clue {
+    set x "It was &n in the &b with the &w!"
+    set n {"Professor Plum" "Colonel Mustard" "Mr. Green" "Mrs. White" "Miss Scarlet" "Mrs. Peacock"}
+    set b {"Ball Room" "Conservatory" "Billiard Room" "Library" "Kitchen" "Dining Room" "Hall" "Study" "Lounge"}
+    set w {"Knife" "Candlestick" "Revolver" "Rope" "Lead Pipe" "Wrench"}
+    set n [lindex $n [expr [rand 1 [llength $n]] - 1]]
+    set b [lindex $b [expr [rand 1 [llength $b]] - 1]]
+    set w [lindex $w [expr [rand 1 [llength $w]] - 1]]
+    regsub -all "&nick" $x [my_nick] x
+    regsub -all "&n" $x $n x
+    regsub -all "&b" $x $b x
+    regsub -all "&w" $x $w x
+    if {[args] == "-e"} {
+	echo "[kano] $x"
+    } elseif {[args] == ""} {
+	say $x
+    } {
+	echo "[kano] Usage: /[event] \[-e\]"
+	echo "[kano] The -e option echoes who it was, instead of saying it."
+    }
+    complete
+}
+kaddhelp slots "A slot machine! Try it! =)" "/slots" "Slot machine"
+kaddhelp mix "Try it, it's pretty cool. Please note http://url's won't \"work.\"" "/mix <text>" "Reverse/Underline/Bold mixer"
+kaddhelp clue "Try it. Type [k h]/clue -e[k d] to echo, or just [k h]/clue[k d] to say it. Find out what 'it' is." "/clue \[-e\]" "Random Clue Generator"

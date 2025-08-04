@@ -1,0 +1,149 @@
+ÕÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¸
+³ conio.thm documentation                       v2: 02/01/99 ³°°
+ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´°°
+³                                                            ³°°
+³ Thank you for using the endlessly-customizeable, easily-   ³°°
+³ configured conio.thm for kano.tcl.  conio.thm is the only  ³°°
+³ theme available that allows you to change nearly every     ³°°
+³ display aspect, from colors to borders to slashes and      ³°°
+³ parentheses.  But alongside this power lies its ease of    ³°°
+³ use -- configurable with a handful of easy-to-remember     ³°°
+³ aliases.                                                   ³°°
+³                                                            ³°°
+ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´°°
+³                                                            ³°°
+³ Installation of conio.thm                                  ³°°
+³    conio.thm is easy to install!  Just extract the .thm    ³°°
+³    file and any .sty files you need into either your       ³°°
+³    XiRCON directory or your Themes directory.  Then,       ³°°
+³    simply issue a /theme command from XiRCON, find the     ³°°
+³    conio.thm file, and double-click it.  conio.thm will    ³°°
+³    load itself, and the fun will begin!                    ³°°
+³                                                            ³°°
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ°°
+  °°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
+
+
+ÕÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¸
+³ conio.thm documentation - Aliases                          ³°°
+ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´°°
+³                                                            ³°°
+³ conio.thm is based on a set of variables which are stored  ³°°
+³ in the Windows Registry and set via the XiRCON command     ³°°
+³ line.  The aliases used to configure conio.thm are as      ³°°
+³ follows:                                                   ³°°
+³                                                            ³°°
+ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´°°
+³                                                            ³°°
+³    /conio          Displays all variables and values       ³°°
+³                    when arguments are omitted, and         ³°°
+³                    displays a detailed listing when        ³°°
+³                    the -l option is specified.             ³°°
+³                                                            ³°°
+³                    Arguments: [<varname> [newvalue]]       ³°°
+³                                                            ³°°
+³                    Specifying a varname will show          ³°°
+³                    matching entries and values.            ³°°
+³                    Specifying a varname and a newvalue     ³°°
+³                    will set varname to newvalue.           ³°°
+³                                                            ³°°
+ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´°°
+³                                                            ³°°
+³    /style          Shows a list of all styles, their       ³°°
+³                    descriptions, and which style is        ³°°
+³                    currently in use.                       ³°°
+³                                                            ³°°
+³                    Arguments: [newstyle]                   ³°°
+³                                                            ³°°
+³                    Specifying a newstyle will switch       ³°°
+³                    to that particular style.               ³°°
+³                                                            ³°°
+ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´°°
+³                                                            ³°°
+³    /preset         Shows a list of all presets and         ³°°
+³                    their descriptions.  Presets are        ³°°
+³                    described further in this               ³°°
+³                    documentation.                          ³°°
+³                                                            ³°°
+³                    Arguments: [newpreset]                  ³°°
+³                                                            ³°°
+³                    Specifying a newpreset will switch      ³°°
+³                    to that particular preset.              ³°°
+³                                                            ³°°
+ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´°°
+³                                                            ³°°
+³    /about          Displays the conio.thm logo in the      ³°°
+³                    current colors and box style.           ³°°
+³                                                            ³°°
+ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´°°
+³                                                            ³°°
+³    /firsttime      Opens a window with the introduction    ³°°
+³                    you received the first time you         ³°°
+³                    loaded conio.thm.                       ³°°
+³                                                            ³°°
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ°°
+  °°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
+
+
+ÕÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¸
+³ conio.thm documentation - Configuration                    ³°°
+ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´°°
+³                                                            ³°°
+³ How do I change my colors?                                 ³°°
+³    conio.thm colors are set with six /conio variables.     ³°°
+³    These variables are:                                    ³°°
+³                                                            ³°°
+³    bright          Bright color                            ³°°
+³    dark            Dark color                              ³°°
+³    white           Color for white                         ³°°
+³    norm            Normal text                             ³°°
+³    gray            Dark gray color                         ³°°
+³    back            Background color                        ³°°
+³                                                            ³°°
+³    The values of these variables should be a mIRC/XiRCON-  ³°°
+³    style color number (00-15).  To see a list of all       ³°°
+³    colors and their corresponding numbers, use the /c      ³°°
+³    command.                                                ³°°
+³                                                            ³°°
+ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´°°
+³                                                            ³°°
+³ What are presets?                                          ³°°
+³    Presets are preset values for /conio variables which    ³°°
+³    can be used to set some or all variables with one easy  ³°°
+³    command.  For instance, a particular preset "purple"    ³°°
+³    might set the conio.thm color variables to shades of    ³°°
+³    purple; whereas the "default" preset would set all      ³°°
+³    variables back to their default state.                  ³°°
+³                                                            ³°°
+³    To see a list of all presets, type /preset.  To use a   ³°°
+³    particular preset, type /preset name.                   ³°°
+³                                                            ³°°
+ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´°°
+³                                                            ³°°
+³ Where are presets and styles located?                      ³°°
+³    Presets and styles are located in .sty files which      ³°°
+³    may reside in either your XiRCON directory, or the      ³°°
+³    directory in which conio.thm is located.  These files   ³°°
+³    are loaded when conio.thm starts, and add presets and   ³°°
+³    styles to your /preset and /style commands.             ³°°
+³                                                            ³°°
+³    For more information on writing your own presets and    ³°°
+³    styles, see STYLES.TXT included in the conio.thm        ³°°
+³    distribution archive.                                   ³°°
+³                                                            ³°°
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ°°
+  °°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
+
+
+ÕÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¸
+³ conio.thm documentation                                    ³°°
+ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´°°
+³                                                            ³°°
+³ Thank you for choosing conio.thm!  The author, Sam         ³°°
+³ Stephenson, can be reached by email at sam@conio.net, or   ³°°
+³ on IRC as conio@EFnet.  The author resides 24/7 in the     ³°°
+³ channels #conio, #xircon, and #kano, so you'll always be   ³°°
+³ able to find him.  Good luck, and enjoy conio.thm.         ³°°
+³                                                            ³°°
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ°°
+  °°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°

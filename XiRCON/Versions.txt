@@ -1,0 +1,215 @@
+XiRCON IRC Version History
+
+======================================================================
+
+1.0B4   08/10/97
+
+- Added SOCKS proxy support.
+
+- Added support for server passwords.  A password may be supplied in
+  the connect dialog, /server command, or /newserver command in the
+  standard format "host:port:pass" or "host port pass".
+
+- When connected to more than one server, all windows are identified
+  with their "server number" in the caption.
+
+- Added an option for sorting the windowbar by server/type.
+
+- Added an import command to the links window, which can import an
+  entire network to your connect dialog.
+
+- Added the ability to set a background ("wallpaper") image.
+
+- Added the ability to load and save color schemes to files.
+
+- Timestamping is no longer implemented as a tooltip.  Timestamping
+  is now a per-window setting (like logging).  Turning timestamp on
+  or off will repaint the entire window with or without timestamps.
+
+- Added a /sound command and built-in support for playing CTCP sounds.
+
+- Added a "default sound directory" setting.
+
+- Added bold/underline/reverse/color stripping options.
+
+- Added an option for quiet logging.
+
+- Added an option for beeping on a private message while minimized.
+
+- Up to 500 servers are now permitted in the server tree.
+
+- Menu merging (what happens when multiple scripts vie for the same
+  menu item) is smarter in regards to separator bars.
+
+- Reloading a script maintains it's order in the list of scripts.
+
+- A script can now unload itself.
+
+- Popup menus are now rebuilt after a TCL source command.
+
+- Added the much anticipated TCL window command.  The sub-commands
+  for window are exists, focus, close, minimize, maximize, restore,
+  state, set_title, get_title, clear, type, and name.
+
+- Added the [raw_args] TCL command that returns [args] as a string
+  (not a list) with the original spacing preserved.
+
+- Added [dcc_info] and [dcc_count] TCL commands.
+
+- Added the [dcc_accept] and [dcc_cancel] TCL commands.
+
+- Added the [active] TCL command, which returns a 1 or 0 depending on
+  whether the current script is associated with the active window.
+
+- Added a chat_send event to compliment the chat_text event.
+
+- The RAW/QUOTE command can be used prior to "registration" with the
+  IRC server.
+
+- Reconnect logic is better.
+
+- The current directory is now set to the executable path on startup.
+
+- Corrected the CTRL-O interpretation.
+
+- Changed the way that clicking in an inactive window is handled.
+
+- Notify functionality works correctly with multiple servers now.
+
+- Channel properties now supports modification of a key or limit.
+
+- Fixed the windowbar context menu problem.
+
+- Fixed a window focus problem introduced in B3.
+
+- Fixed the problems with funny log filenames (again).
+
+- Fixed a problem with multiple simultaneous dcc send prompts.
+
+- The "Minimize On Escape" option is actually being checked.
+
+- Channel keys are remembered when automatically rejoining a channel.
+
+- The /join alias is always used when automatically joining a channel.
+
+- The /part alias is always used when a channel window is closed.
+
+- The /quit alias is always used when disconnecting.
+
+- A 433 event can be "completed" so no default messages are displayed.
+
+- The load and unload events can be "completed" to not show any text.
+
+- Made the XeD Navigator customizable through the options dialog.
+
+- Added bookmarks to XeD.
+
+======================================================================
+
+1.0B3   06/30/97
+
+- Packaged everything with a real installation program.
+
+- Included a script editing application named XeD.
+
+- Added a Scripts page to the server window with integrated loading,
+  unloading and editing.
+
+- Timestamping is now implemented as a tooltip.  Check it out.
+
+- Wildcards are now supported in Op and Ban channel specifications.
+
+- The Topic and Ban channel property pages now show who set the topic
+  or ban and when it was set.
+
+- Added a "status_page" TCL command to set the current status page.
+
+- Added a "version" TCL command to return the client version.
+
+- Added multiple selection capability to Fonts page.
+
+- Added a reset button to Colors page.
+
+- Added "alert border" and "pause border" color customization.
+  Setting them to black turns them off.
+
+- Added an "invisible mode" checkbox to the connect dialog.
+
+- Added automatic detection of externally modified scripts.
+
+- Added some more context menus in various places.
+
+- Added on_since and on_mask as read-only user properties to help
+  with notify functionality.
+
+- Shift-F10 is now properly supported for all context menus.
+
+- Stopped display of PONG messages from clients.
+
+- Fixed the "time-remaining" display in the dcc window.
+
+- Fixed the lagmeter to support non-compliant irc servers.
+
+- Fixed problem with funny log filenames.
+
+- Fixed [user_count] command to return the correct number of users.
+
+- Fixed the ON DENOTIFY event which was broken in B2.
+
+======================================================================
+
+1.0B2   04/06/97
+
+- Added Action and URL colors.
+
+- DCC status now shows the estimated time remaining.
+
+- Added options for "Minimize On Escape" and "Auto Create Queries".
+
+- Added the /timestamp command for global timestamping.  Changed
+  timestamp format specifications to be ANSI/TCL compatible.
+
+- The /query and /dcc chat commands take an extra optional parameter,
+  "min", to specify a minimized window.
+
+- Scripts are now evaluated in reverse load order.  This means the
+  most recently loaded script will always get first crack at aliases,
+  events, menus, and hotkeys.
+
+- Added support for multiple-selection in the nicknames listbox. 
+  WARNING: This may break some scripts.  [args] may return more than
+  one element in a USERS popup menu.
+
+- The [my_host] command now returns your resolved host name as the
+  server resolved it and the new [my_ip] command returns your address.
+
+- Added an ON URL_OUTPUT event to catch a URL appearing in a window.
+
+- Added an ON URL_SELECT event to catch a click on a URL.
+
+- Added an [event] command that returns the current execution context. 
+
+- Added a [connected] command to simplify connection state tracking.
+
+- Added a [beep] command to sound a beep through the PC speaker.
+
+- Added a [random] command to generate random numbers.
+
+- Split mode hooks, DCC hooks, and MOTD events can now be "completed".
+
+- Ctrl-O now turns off any color codes.
+
+- Fixed page faults resulting from naughty channel list code.
+
+- Fixed System menu problems.
+
+- Fixed some obscure windowbar problems.
+
+- Upgraded the TCL implementation to 7.6P2.  This fixes many Windows
+  Sockets bugs.  Also, you can now execute DOS programs under Win95.
+
+======================================================================
+
+1.0B1   03/15/97
+
+- First public release.

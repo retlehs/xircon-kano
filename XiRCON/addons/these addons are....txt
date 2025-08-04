@@ -1,0 +1,9 @@
+bots.ka - autobot and botinv
+emacs.ka - emacs hotkeys
+games.ka - fun stuff
+kick.ka - funban, screwban, repeatkick, etc.
+lookup.ka - dictionary, translation, etc.
+mail.ka - pop3 checker, email sender
+mass.ka - massdeop, masskick, etc.
+paste.ka - colorpaste, delaypaste
+spellfix.ka - spelling fix!

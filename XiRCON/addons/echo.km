@@ -1,0 +1,190 @@
+kmod echo 15 "echo enhancements (/unecho)"
+
+ac check @use_ini @0 INI colors (ansi.ini, etc.)
+ac check @converse @0 Use white background
+ac check @bold2white @0 Bold to white
+ac check @dupekill @1 Fix text with same back and foreground
+ac check @cleanecho @0 Use cleanEcho (doubles text output speed but looks weird)
+ac check @autolog @0 Automatically log all channels to logs/ dir
+ac edit @autologtimefmt "@\[%m/%d/%y %H:%M\]" Autolog time format
+ac check @unprintable @1 Show unprintable control-characters <25% slowdown>
+ac check @activestatus @0 Activewindow goes to status
+ac check @p_urls @0 Show possible url's (/purl)
+ac check @noclick @0 Url's NOT clickable
+ac check @beepecho @0 PC peaker beep on text output
+ac check @ctcp2 @1 Support upcoming ctcp/2 standard
+ac check @autoconverse @1 Automatically check for white background
+
+proc echo_cookies {} {
+    foreach {a b} [list activestatus 0 linesec 30 unprintable 1 ctcp2 1 noclick 0 p_urls 0 regurl {} bold2white 0 converse 0 dupekill 1 use_ini 0 pexcept {} beepecho 0] {
+	set a [string toupper $a]
+	global $a
+	set $a [get_cookie $a $b]
+    }
+}
+
+regexp -nocase {^([0-9a-f])[0-9a-f]$} [color default] junk bg
+set bg $ansivc([format %i 0x$bg])
+if {$bg == 0 && ![get_cookie converse 0]} {
+    set_cookie converse 1
+    addecho "[kano] turned converse on due to white background"
+} elseif {$bg == 1 && [get_cookie converse 0]} {
+    set_cookie converse 0
+    addecho "[kano] turned converse off due to black background"
+}
+
+
+on_minute echo_cookies
+echo_cookies
+
+set echoExp(noturl) {^((.*)://(.*)|ftp\.(.*)|www\.(.*)|irc(.*)\.(.*)|.*[\*\?\!](.*)|(.*)@(.*)@(.*)|(.*)\.\.(.*)|(.*)[()](.*))$}
+set echoExp(url) {^(([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)|.+\.([a-z][a-z]|com|gov|org|mil|net|edu|arpa))(:([0-9]+))?$}
+
+lappend addechos {
+    #0.0
+    global ACTIVESTATUS LINESEC UNPRINTABLE CTCP2 NOCLICK P_URLS REGURL \
+	    BOLD2WHITE CONVERSE DUPEKILL USE_INI PEXCEPT BEEPECHO
+
+    set echot [clock clicks]
+    set echo $string
+    set lsc $LINESEC
+    if {$lsc} {
+	global linesec lastls
+	set sec [clock seconds]
+	if {[array names linesec] != $sec} {catch {set lastls $linesec([array names linesec])};catch {unset linesec};set linesec($sec) 0}
+	incr linesec($sec)
+	if {$linesec($sec) > $lsc} return
+    }
+    #0.4
+    
+    if {$channel == ""} {set chon $wintype} else {set chon $channel}
+    if {$name == ""} {set nom $winname} else {set nom $name}
+    set nom [string tolower $nom]
+
+    #0.3
+    #get this done
+    global relaytext kanobg grep_for onEcho analyze end_urls redir \
+	redir_text isredir rdecho delredir echolines
+    
+    #activewindow goes to status?
+    if {$ACTIVESTATUS} {
+	if {$channel == ""} {set channel status}
+    }
+    #0.4
+
+    
+    #are we redirecting?
+    if {$redir != ""} {append redir_text \n$string}
+    #or is /analyze on?
+    if {$analyze} {set string [analyze $string]} elseif {$UNPRINTABLE} {
+	for {set x 1} {$x < 31} {incr x} {
+	    if {[lsearch -exact {2 3 6 7 9 10 15 22 27} $x] != -1} continue
+	    regsub -all [format %c $x] $string [format %c [expr {$x + 64}]] string
+	}
+	#1.3
+    }
+
+    if {$CTCP2} {set string [ctcp2 $string]}
+    set echo $string
+
+    #4.3ms
+    #don't underline url's?
+    set oldurl ""
+    if {$NOCLICK} {
+	regsub -all :// $echo :// echo
+	regsub -all {(www|ftp)\.} $echo {\1.} echo
+    } elseif {$P_URLS} {
+	#or grab potential url's?
+	set urls ""
+	set oldurl $end_urls
+	set end_urls ""
+	set s [split $echo]
+	foreach i $s {
+	    set i [string trim [strip $i] [punct2]]
+	    set x [lindex [file split $i] 0]
+	    set sp [split $x .]
+	    if {![regexp -nocase $echoExp(noturl) $x] && ![regexp -nocase ^([join $REGURL |])\$ $x] && [regexp -nocase $echoExp(url) $x]} {
+		lappend urls $i
+	    }
+	}
+	foreach i $urls {
+	    set j ""
+	    if {[string match *?@* $i] && ![string match *:*@* $i] && [llength [file split $i]] == 1} {
+		lappend j mailto://$i
+	    } else {
+		lappend j http://$i
+	    }
+	    foreach m $j {
+		if {[lsearch $oldurl $m] == -1} {lappend end_urls $m}
+	    }
+	}
+    }
+    #1.2
+
+    #getting into bold2white/use_ini
+    if {[string first  $echo] != -1} {
+	if {$BOLD2WHITE} {set echo [ech bold $echo]}
+    }
+
+    #converse!
+    if {$CONVERSE} {set echo [ech converse $echo]}
+
+    #dupekill
+    if {$DUPEKILL} {set echo [ech kill $echo]}
+    if {$USE_INI} {set echo [ech ini $echo]}
+
+    #yuck. are we rediring an event (e.g., /redir /whois kano)?
+    if {[info exists isredir([event])]} {
+	if {[strip $echo] != ""} {
+	    lappend rdecho [list $isredir([event]) $echo]
+	}
+    }
+    #1.0
+
+    #is the /grep window open?
+    if {$grep_for != ""} {
+	if {[window exists query .Grep.]} {
+	    if {[string match *[string tolower $grep_for]* [string tolower [strip $echo]]]} {
+		if {$channel == "status"} {set typ (status)} \
+			else {set typ $channel\($name)}
+		if {$channel == ""} {set typ $wintype($winname)}
+		myecho "$typ: $echo" query .Grep.
+	    }
+	} else {set grep_for ""}
+    }
+
+    #0.0
+    #now echo the possible-url's if we have any
+    if {$end_urls != ""} {
+	if {[lsearch $PEXCEPT [event]] == -1} {
+	    echo "[kano] Possible url[s [llength $end_urls]]:\
+		    [listify $end_urls] " $channel $name
+	} else {set end_urls $oldurl}
+    }
+    autolog $string $channel $name
+    #0.1
+}
+proc myecho {string {channel ""} {name ""}} {
+    global BEEPECHO
+    if {$BEEPECHO} beep
+    my_real_echo $string $channel $name
+}
+
+proc my_real_echo args {eval base_echo $args}
+
+alias unecho {
+    if {[info exists addechos]} {
+	set temp_add $addechos
+	unset addechos
+	echo "[kano] Switched to fastecho (/[event] again to switch back)"
+    } else {
+	if {![catch {set addechos $temp_add}]} {
+	    echo "[kano] Switched back enhanced-echo (/[event] again to switch to fastecho)"
+	} else {
+	    echo "[kano] No echo mods detected..."
+	}
+    }
+    complete
+}
+
+kaddhelp unecho "Switches between fast and enhanced echo procedures." "/unecho" "Echo Speed Toggle"

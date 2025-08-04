@@ -1,0 +1,631 @@
+#conio.thm v3!
+#thanks to all my beta testers and those
+#who contributed bug finds and new ideas.
+
+
+
+# Types:  1-Color   2-Character   3-Style   4-Binary   5-2Chars   6-Justify   7-Integer
+#
+#                                      Name     Value    Description               Type
+#======================================================================================
+set ctheme(bright)   [get_cookie ctheme(bright)   "11      {bright color}           1"]
+set ctheme(dark)     [get_cookie ctheme(dark)     "10      {dark color}             1"]
+set ctheme(gray)     [get_cookie ctheme(gray)     "14      {gray color}             1"]
+set ctheme(white)    [get_cookie ctheme(white)    "00      {white color}            1"]
+set ctheme(norm)     [get_cookie ctheme(norm)     "15      {normal color}           1"]
+set ctheme(back)     [get_cookie ctheme(back)     "01      {background color}       1"]
+set ctheme(arrow)    [get_cookie ctheme(arrow)    "Ø       {arrow character}        2"]
+set ctheme(bullet)   [get_cookie ctheme(bullet)   ":       {bullet character}       2"]
+set ctheme(sep)      [get_cookie ctheme(sep)      "!       {separation character}   2"]
+set ctheme(style)    [get_cookie ctheme(style)    "default {style to use}           3"]
+set ctheme(about)    [get_cookie ctheme(about)    "on      {show /about on load}    4"]
+set ctheme(menus)    [get_cookie ctheme(menus)    "off     {use query config menus} 4"]
+set ctheme(tstamp)   [get_cookie ctheme(tstamp)   "off     {timestamp events}       4"]
+set ctheme(pars)     [get_cookie ctheme(mpars)    "\[]     {mode parentheses}       5"]
+set ctheme(cpars)    [get_cookie ctheme(cpars)    "<>      {channel parentheses}    5"]
+set ctheme(justify)  [get_cookie ctheme(justify)  "none    {channel justification}  6"]
+set ctheme(nlength)  [get_cookie ctheme(nlength)  "9       {nickname length}        7"]
+set cfirsttime       [get_cookie ctheme(first)    "1"]
+
+proc var { which args } {
+    global ctheme
+    if { $args != "" } {
+        set ctheme($which) "[join $args] [list [lindex $ctheme($which) 1]] [lindex $ctheme($which) 2]"
+        set_cookie ctheme($which) $ctheme($which)
+        set_cookie kano [cd][bu][cb][bu][cw][bu]
+    }
+    return [lindex $ctheme($which) 0]
+}
+
+catch {rename cd coniocd}
+proc cc { color args } { set x [var $color]; if { [join $args] != "" } { append x ,[var [join $args]] }; return $x }
+proc cb args { return [cc bright $args] }
+proc cd {{x ""}} { if {$x != ""} {if [file exists $x] {return [coniocd $x]} {return [cc dark $x]}} {return [cc dark $x]} }
+proc cg args { return [cc gray $args] }
+proc cw args { return [cc white $args] }
+proc cn args { return [cc norm $args] }
+proc ck args { return [cc back $args] }
+proc bu args { return [var bullet] }
+proc ar args { return [var arrow] }
+proc cgf1 args { set y [join $args]; foreach x [split ywdhms {}] { set y [rep $y $x [cg]$x[cn]] }; return $y }
+proc cgf2 args { set y [join $args]; foreach x [split @+ {}] { set y [rep $y $x [cg]$x[cn]] }; return $y }
+proc cp1 args { return [string index [var pars] 0] }
+proc cp2 args { return [string index [var pars] 1] }
+proc cp3 args { return [string index [var cpars] 0] }
+proc cp4 args { return [string index [var cpars] 1] }
+proc cs args { return [var sep] }
+proc arrows args { return [cd][ar][cb][ar][cw][ar][cn] }
+proc cts args { if {$args == ""} {set q [cg][cs]} {set q " "}; return [iph {[var tstamp] == "on"} [cn][cform %H[cg]:[cn]%M]$q {}] }
+proc ctform { type args } {
+    set one [lindex $args 0]; set two [lindex $args 1]
+    switch $type {
+        0 { return [cg][cp1][cts][cb][string index $one 0][cd][string range $one 1 end][cg][cs][cb]$two[cg][cp2][cn] }
+        1 { return [cg][cp1][cts][cn]$one[cg][cs][cw][join $two][cg][cp2][cn] }
+        2 { return [cw][nick][cg][cp1][cn][user][cg]@[cn][rep [host] . [cg].[cn]][iph {[country [lrange [split [host] .] end end]] != ""} [cg][cs][cn][string tolower [country [lrange [split [host] .] end end]]] {}][cg][cp2][cn] }
+        3 { return [cw][lindex [args] 1][cg][cp1][cn][lindex [args] 2][cg]@[cn][rep [lindex [args] 3] . [cg].[cn]][iph {[country [lrange [split [lindex [args] 3] .] end end]] != ""} [cg][cs][cn][string tolower [country [lrange [split [lindex [args] 3] .] end end]]] {}][cg][cp2][cn] }
+    }
+}
+proc space string {
+    switch [var justify] {
+        left { return [format %-[var nlength]s $string] }
+        right { return [format %[var nlength]s $string] }
+        center { if {[var nlength] >= [string length $string]} {set x [expr int(([var nlength] / 2) - ([string length $string] / 2))]; return [format %${x}s ""]$string[format %[expr [var nlength] - $x - [string length $string]]s ""]} {return $string} }
+        default { return $string }
+    }
+}
+proc ctaway args {
+    set m [get_cookie msglog 1]; set p [get_cookie page(on) 1]
+    if {$m && $p} {return lp[cs]on} elseif {$m && !$p} {return l[cs]on} elseif {!$m && $p} {return p[cs]on} else {return l[cs]off}
+}
+
+alias about { echo [box -win [lindex [args] 0] [lindex [args] 1] "                                      [cb]‹€‹\n    [cd]‹‹‹‹       ‹‹‹‹           ‹‹‹‹‹    [cb]ﬂ[cd]      ‹‹‹‹\n [cd]‹€€€€ﬂﬂ€€‹ ‹€€€ﬂ  ﬂ€€‹ ﬂﬂ€€‹ﬂ  ﬂ€€€‹[cb]ﬂ€€€‹ [cd]‹€€€ﬂ  ﬂ€€‹\n [cd]€€€€  €€€€ €€€€    €€€€  €€€    €€€€ [cb]€€€€ [cd]€€€€    €€€€\n [cd]€€€€       €€€€    €€€€  €€€    €€€€ [cb]€€€€[cd] €€€€    €€€€\n [cd]ﬂ€€€‹   ‹‹  ﬂ€€‹  ‹€€€ﬂ ‹€€€    €€€€ [cb]ﬂ€€€[cd]  ﬂ€€‹  ‹€€€ﬂ\n   [cd]ﬂﬂﬂﬂﬂﬂﬂ       ﬂﬂﬂﬂ   ﬂﬂﬂﬂﬂﬂ  ‹€ﬂﬂ    [cb]ﬂﬂﬂ[cd]     ﬂﬂﬂﬂ\n                      [cb]conio[cd].[cb]thm[cg]..  [cn]v[cw]3 [cn]for [cw]kano[cg].[cw]tcl\n"] ; complete }
+proc null args return
+alias globeval { eval [args]; complete }
+
+set wistring ""
+set banlist ""
+set cbox(default) ""
+set cpreset(default) ""
+set startqueue ""
+set servstats ""
+set wholist ""
+set kanofile [lindex [scripts] [lsearch [scripts] *kano*.tcl]]
+set themefile [info script]
+
+
+
+#formatting procs
+#these are kinda cool
+
+proc sp { number args } {
+    set x [format %-${number}s ""]
+    if { [join $args] != "" } {
+        set x [rep $x "" [string index [join $args] 0]]
+    }; return $x
+}
+
+proc column { number spaces args } {
+    set str [split [string trim [join $args] \n] \n]
+    set high 0; set count 0
+
+    set highn 0
+    foreach x $str {
+        if { [string length $x] > $highn } { set high $count;set highn [string length [strip $x]]}
+        incr count
+    }
+
+    set total [expr $spaces + $highn]
+    set items [llength $str]
+    set length [expr $items / $number.0]
+    if { "[expr int($length)].0" != $length } { set length [expr int($length) + 1] }
+    set length [expr int($length)]
+    set output ""
+
+    for { set x 0 } { $x < $length } { incr x } {
+        for { set y $x } { $y < $items } { set y [expr $y + $length] } {
+            set a [lindex $str $y]
+            append output $a[sp [expr $total - [string length [strip $a]]]]
+        }
+        append output \n
+    }
+
+    return $output
+}
+
+
+
+#style file shit
+
+proc cstyle { name args } {
+    global cbox
+    return [set cbox($name) $args]
+}
+
+proc cpreset { name args } {
+    global cpreset
+    return [set cpreset($name) $args]
+}
+
+proc upreset name {
+    global cpreset
+    set x [lrange $cpreset($name) 1 end]
+    foreach y $x { var [lindex $y 0] [lindex $y 1] }
+}
+
+proc loadstyles args {
+    global themefile
+    set styles [glob -nocomplain [file dirname $themefile]/*.sty]
+    if { [file dirname $themefile] != [pwd] } { append styles " [glob -nocomplain [pwd]/*.sty]" }
+
+    echo "[kano] Found [llength $styles] conio.thm style file(s)." status
+    if { $styles != "" } { foreach x $styles { source "$x" } }
+}
+
+
+
+#check out these inefficient box routines!
+#W0W0! (another reason not to use this theme)
+
+proc box args {
+    global cbox
+    if { [lindex $args 0] == "-win" } { set string [split [string trim [join [lrange $args 3 end]] \n] \n] ; set typ [lindex $args 1] ; set win [lindex $args 2] } { set string [split [string trim [join $args] \n] \n] ; set typ "" ; set win "" }
+    if { $string == "" } return
+    if {[llength $string] > 3} {set half [expr {([llength $string] / 2)+1}]} {set half 0}
+    set count 0
+    set temp ""
+    ;#echo [subst [lindex $cbox([var style]) 1]] $typ $win
+    append temp [subst [lindex $cbox([var style]) 1]]\n
+    foreach x $string {
+        incr count
+        ;#if {$count > $half || $count == [expr {$half - 1}]} {echo "[subst [lindex $cbox([var style]) 3]] [cn]$x" $typ $win} {echo "[subst [lindex $cbox([var style]) 2]] [cn]$x" $typ $win}
+        if {$count > $half || $count == [expr {$half - 1}]} {append temp "[subst [lindex $cbox([var style]) 3]] [cn]$x\n"} {append temp "[subst [lindex $cbox([var style]) 2]] [cn]$x\n"}
+    };#echo [subst [lindex $cbox([var style]) 4]] $typ $win
+    append temp [subst [lindex $cbox([var style]) 4]]
+    return $temp
+}
+
+
+
+#the aliases.
+#they're mad elite
+
+alias conio { conio [args] ; complete }
+alias style { style [args] ; complete }
+alias preset { preset [args] ; complete }
+alias creset { set sets [lsort [array names ctheme]]; foreach x $sets { set_cookie ctheme($x) "" }; echo "[kano] Cleared all variables."; after 1 /theme ; complete }
+alias firsttime { firsttime ; complete }
+
+proc conio args {
+    global ctheme
+    set args [split [join $args]]
+    set sets [lsort [array names ctheme]]
+    set x "[cw]conio[cn].[cw]thm[cn] settings[cg].."
+    set w ""
+
+    if { [lindex $args 0] == "-l" } {
+        append x "[cg]/conio <setting> <value>\n"
+        append w "[cb][format %-8s Name] [format %-8s Value] [format %-15s Description]\n"
+        foreach y $sets {
+            append w "[cw][format %-8s $y] [cn][format %-8s [var $y]] [cg][format %-15s [lindex $ctheme($y) 1]]\n"
+        }
+        echo [box $x$w]
+        return
+    }
+
+    if { [lindex $args 0] == "" } {
+        append x "[cg]/conio <setting> <value>\n"
+        foreach y $sets {
+            set z [random 1 [expr [string length $y] - 1]]
+            append w "[format %-[expr 8 - [string length $y]]s ""][cd][string range $y 0 [expr [string length $y] - $z - 2]][cb][string range $y [expr [string length $y] - $z - 1] end] [cn][var $y]\n"
+        }
+    } elseif { [lindex $args 0] != "" && [lindex $args 1] == "" } {
+        set z [string tolower [lindex $args 0]]; set found 0
+        foreach y $sets {
+            if [string match "$z*" $y] {
+                if !$found { set found 1; append x "[cw]$z[cg] is ambiguous\n" }
+                set q [random 1 2]
+                append w "[format %-[expr 6 - [string length $y]]s ""][cd][string range $y 0 [expr [string length $y] - $q - 2]][cb][string range $y [expr [string length $y] - $q - 1] end] [cn][var $y]\n"
+            }
+        }; if !$found { append x "no such variable [cw]$z\n" }
+    } elseif { [lindex $args 0] != "" && [lindex $args 1] != "" } {
+        if { [lsearch -exact $sets [string tolower [lindex $args 0]]] == -1 } {
+            append x "no such variable [cw][string tolower [lindex $args 0]]\n"
+        } else {
+        switch [lindex $args 0] {
+            style { style [lindex $args 1] ; set x "" ; set w "" }
+            default {
+                set val [lindex $args 1]; set err 1
+                switch [lindex $ctheme([lindex $args 0]) 2] {
+                    1 {
+                        if [isnum $val] {
+                            if { $val >= 0 && $val <= 15 } {
+                                if { [string length $val] == 1 } { set val 0$val }
+                                set err 0
+                            } else {
+                                append x "value of [cw][lindex $args 0][cg] must be from 0 to 15\n"
+                            }
+                        } else {
+                            append x "value of [cw][lindex $args 0][cg] must be a color integer\n"
+                        }
+                    } 2 {
+                        set val [string index [lindex $val 0] 0]
+                        set err 0
+                    } 4 {
+                        set val [string tolower $val]
+                        if { $val == "toggle" } {
+                            if { [var [lindex $args 0]] == "on" } { set val "off" } { set val "on" }
+                            set err 0
+                        } elseif { $val == "on" || $val == "off" } { set err 0 }
+                        if $err { append x "value of [cw][lindex $args 0][cg] must be [cn]on[cg],,, [cn]off[cg],,, or [cn]toggle\n" }
+                    } 5 {
+                        set val [lindex $val 0]
+                        if { [string length $val] != 2 } {
+                            append x "value of [cw][lindex $args 0][cg] must be two characters\n"
+                        } else { set err 0 }
+                    } 6 {
+                        set val [string tolower [lindex $val 0]]
+                        switch -- [lsearch -glob {none left right center} $val*] {
+                            0 { set val none ; set err 0 }
+                            1 { set val left ; set err 0 }
+                            2 { set val right ; set err 0 }
+                            3 { set val center ; set err 0 }
+                            default { append x "value of [cw][lindex $args 0][cg] must be [cn]none[cg],,, [cn]left[cg],,, [cn]right[cg],,, or [cn]center[cg]\n" }
+                        }
+                    } 7 { if [isnum $val] { set err 0 } { append x "value of [cw][lindex $args 0][cg] must be an integer\n" } }
+                }
+                if !$err {
+                    var [lindex $args 0] $val
+                    append x "variable [cw][lindex $args 0][cg] set to [cw]$val\n"
+                    cthmstart
+                }
+            }
+        } }
+    }
+    echo [box $x[column 3 4 $w]]
+}
+
+proc style args {
+    global ctheme cbox
+    set args [split [join $args]]
+    set styles [lsort [array names cbox]]
+    if {[var menus] == "on" && [lindex $args 0] == ""} {set m 1} {set m 0}
+
+    if $m {if ![window exists query .coniosty.] {/query .coniosty. ; window set_title "conio.thm styles \[[llength $styles]]" query .coniosty.}}
+
+    if { [lindex $args 0] == "" } {
+        if $m {set y "[cw]conio[cn].[cw]thm[cn] styles [cp1][cw][llength $styles][cn][cp2][cg]..arrow keys scroll\n"} {set y "[cw]conio[cn].[cw]thm[cn] styles [cp1][cw][llength $styles][cn][cp2][cg]../style <whichstyle>\n"}
+        foreach x $styles { if { $x == [var style] } { append y "[cb][bu] [cw][format %-10s $x] [lindex $cbox($x) 0]\n" } { append y "  [cb][format %-10s $x] [cd][lindex $cbox($x) 0]\n" } }
+    } else {
+        if { [set x [lsearch $styles [lindex $args 0]*]] != -1 } {
+            set z ""; lappend z [lindex $styles $x] [lindex $ctheme(style) 1] [lindex $ctheme(style) 2]
+            set ctheme(style) $z
+            set_cookie ctheme(style) $z
+            set y "[cw]conio[cn].[cw]thm[cn] styles [cp1][cw][llength $styles][cn][cp2][cg]..now using style [cw][lindex $styles $x]\n"
+        } {
+            set y "[cw]conio[cn].[cw]thm[cn] styles [cp1][cw][llength $styles][cn][cp2][cg]..no such style [cw][lindex $args 0]\n"
+        }
+    }
+    if $m {echo [box $y] query .coniosty.} {echo [box $y]}
+}
+
+hotkey up {
+    if {"[window type] [window name]" == "query .coniosty."} {
+        set styles [lsort [array names cbox]]
+        if {[set x [expr [lsearch $styles [var style]] - 1]] == -1} {set x [expr [llength $styles] - 1]}
+        var style [lindex $styles $x]
+        window clear query .coniosty. ; /style ; complete
+    }
+}
+
+hotkey down {
+    if {"[window type] [window name]" == "query .coniosty."} {
+        set styles [lsort [array names cbox]]
+        if {[set x [expr [lsearch $styles [var style]] + 1]] == [llength $styles]} {set x 0}
+        var style [lindex $styles $x]
+        window clear query .coniosty. ; /style ; complete
+    }
+}
+
+proc preset args {
+    global cpreset
+    set args [split [join $args]]
+    set presets [lsort [array names cpreset]]
+    set y "[cw]conio[cn].[cw]thm[cn] presets [cp1][cw][llength $presets][cn][cp2][cg].."
+
+    if { [lindex $args 0] == "" } {
+        append y "/preset <whichpreset>\n"
+        foreach x $presets { append y "[cb][format %-10s $x] [cd][lindex $cpreset($x) 0]\n" }
+    } elseif { [lindex $args 0] == "save" } {
+        
+    } else {
+        if { [set x [lsearch $presets [lindex $args 0]*]] != -1 } {
+            upreset [lindex $presets $x]
+            append y "now using preset [cw][lindex $presets $x]\n"
+        } else {
+            append y "no such preset [cw][lindex $presets $x]\n"
+        }
+    }
+    echo [box $y]
+}
+
+proc firsttime args {
+    /query .firsttime.
+    window set_title "Welcome to conio.thm" query .firsttime.
+    echo [box [wrap "Thank you for loading conio.thm, the revolutionary new theme for [kanovers]. What makes conio.thm so special, you ask? The answer is simple -- conio.thm is anything you want it to be. You can customize virtually every aspect of the theme, from colors to bullets to box styles to slashes and parentheses. What's more, conio.thm is endlessly configurable -- you can write new styles and presets by simply typing them into .sty files (the theme will automatically load them at startup).\n\nconio.thm is configured with three simple commands: /conio, /style, and /preset. Try playing around with them -- and if you need more help, read the documentation (CONIO.TXT) included in your archive. Have fun, and enjoy conio.thm!" 50]] query .firsttime.
+}
+
+
+
+#theme load/restart procedure
+
+proc cthmstart args {
+    global kanobg kanofile startqueue curtheme identerr verreply cfirsttime
+    set name {conio.thm v3 by conio (sam@conio.net)}
+    if [info exists curtheme(wisign)] { set x $curtheme(wisign) } { set x "" }
+
+    if { [var about] == "on" } { lappend startqueue {/about status} }
+    lappend startqueue {set litehelp [cb]}
+    lappend startqueue {set darkhelp [cd]}
+    if { [info exists identerr] && $x != "" && ![info exists themerevision] } { lappend startqueue {if {$kanofile != -1} {echo "[kano] Reloading kano.tcl to update events..."; /load $kanofile} {echo "[kano] [cw]Please RELOAD KANO now!!"} } }
+    if { $cfirsttime == 1 } { lappend startqueue {/firsttime ; set_cookie ctheme(first) "0"} }
+
+    cstyle default {the fat, controversial default style} {[cb]€ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ[cd]ﬂ[cb]ﬂﬂ[cd]ﬂﬂ[cb]ﬂ[cd]ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ ﬂﬂ  ﬂ} {[cb]€} {[cd]€} {[cd]€‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹ ‹‹  ‹}
+
+    set kanobg [cn back]
+    nt themename $name
+    set_cookie kv 1
+    set_cookie kano [cd][bu][cb][bu][cw][bu]
+}
+
+
+
+#script things
+
+nt awaypubform {is away.[iph {[arg] != ""} ". [arg]" {}] [cp1][ctaway][cp2]}
+nt awayform {[arg] ..[cp1][ctaway] since [string trimleft [clock format [unixtime] -format %I:%M] 0][string tolower [string index [clock format [unixtime] -format %p] 0]][cp2]}
+nt backform {is back.[iph {[arg] != ""} ". [arg]" {}] [cp1]gone %gone[cp2]}
+nt xdccstart {.- [cp1]kano[lindex [kanovers] 1][cs]xdcc[cp2]: [llength [get_cookie xdcc]] pack(s) offered}
+nt xdcclist {:  [cp1]%num[cp2] [format "%-12s %4s [cp1]%2s gets[cp2]: %desc" %file %size %gets]}
+nt xdccend {`- /ctcp [my_nick] xdcc send #n to get pack #n}
+nt chanwallops {[cp1]WallOPS[cs][channel][cp2] [raw_args]}
+nt chanwallx {[cp1]WallEX[cs][channel][cs][nick2nick [lindex [args] 0]][cp2] [join [lrange [args] 1 end]]}
+nt socketfailed {[kano] [cw]%type[cn] socket creation failed[cg]: [cn]%error}
+nt ident {[kano] Returned [cw]ident[cn] request from %host[cg]: [cn][get_cookie ident(user)]}
+nt identoff {[kano] Ignoring ident request from [cw]%host}
+nt page {[kano] [ctform 0 page [nick]] at [cform %I[cg]:[cn]%M][cg][string tolower [cform %p]]}
+nt sound {[cg][cp1][cn][lrange [split [lindex [args] 2] \] end end][cg][cp2] [cw][bu] [nick][cn] [lrange [args] 3 end]}
+nt mysound {[cg][cp1][cn][lrange [split [lindex [args] 0] \] end end][cg][cp2][cb] [bu] [my_nick][cn] [lrange [args] 1 end]}
+nt autoignoreall {[kano] Ignored *!*@* for 30 seconds}
+nt autoignore {[kano] %type flood from [nick]![user]@[host]; ignoring for 30secs}
+nt unignore {[kano] Unignoring %host [cg][cp1][cn]autoignored[cg][cp2]}
+nt dictsearching {[kano] Searching for: [arg]}
+nt dicterr {[kano] [cw]Dictionary[cg]:[cn] Server error: %dict}
+nt dicterrnotfound {[kano] [cw]Dictionary[cg]:[cn] %word not found; no suggestions}
+nt dicterrfound {[kano] [cw]Dictionary[cg]:[cn] Spelling error in %word. Suggestions:}
+nt dictfound {[kano] [cw]Dictionary[cg]:[cn] Definition for %word:}
+nt dictdef {[box %gets]}
+nt dictunknown {[box %gets]}
+nt tempkickban {[kano] Unbanning [join [lindex [args] 0]] in [lindex [args] 1]}
+nt tkbunban {[kano] [cw]TempKickBan[cg]:[cn] Unbanning %host on %chan}
+nt topiclock {[kano] Channel topic locked for [cw][channel]}
+nt topicunlock {[kano] Channel topic unlocked for [cw][channel]}
+nt addperm {[kano] Added %nick [cg][cp1][cn]%user[cg][cp2][cn] from permban}
+nt remperm {[kano] Removed %nick [cg][cp1][cn]%user[cg][cp2][cn] from permban}
+
+
+
+#message events     ;#ACK!!#@$##@%)(%@#)*(
+
+nt mymsg {[cts 1][cb][cp3][cn][space [my_nick]][cb][cp4][cn] %text}
+nt pubmsg {[cts 1][cd][cp3][cn][space [nick]][cd][cp4][cn] %text}
+nt rot14 {[cts 1][cd][cp3][cn][space [nick]][cd][cp4][cg][cp1][cn]R14[cg][cp2] [cn][rot [string trimleft [join [lrange [args] 1 end]] ß]]}
+nt highlight {[cts 1][cd][cp3][cb][space [nick]][cd][cp4][cn] %text}
+nt dcctext {[cts 1][cd][cp3][cn][space [nick]][cd][cp4][cn] [lindex [args] 0]}
+nt action {[cw][bu] [cts][cw][nick][cn] %text}
+nt dccact {[cw][bu] [cts][cw][nick][cn] [lrange [lindex [args] 0] 1 end]}
+nt myaction {[cb][bu] [cts][cw][my_nick][cn] %text}
+nt actionnoquery {[cw][bu] [cts][cw][nick][cg][cp1][cn][user][cg]@[cn][host][cg][cp2][cn] [lindex [args] 2]}
+nt mymsgnoquery {[arrows] [ctform 0 msg %nick] %text}
+nt msg {[cg][cp1][cts][cb][nick][cg][cs][cd][user]@[host][cg][cp2][cn] %text}
+nt msgnoquery {[cg][cp1][cts][cb][nick][cg][cs][cd][user]@[host][cg][cp2][cn] %text}
+nt pubnotice {[cd]-[cts][cb][nick][cg][cp1][cd][user]@[host][cg][cp2][cd][cs][cb][join [lindex [args] 0]][cd]-[cn] %text}
+nt notice {[cd]-[cts][cb][nick][cg][cp1][cd][user]@[host][cg][cp2][cd]-[cn] %text}
+nt servnotice {[cd]![cts][cb][rep [lindex [server] 0] . [cd].[cb]][cd]![cn] %text}
+nt mynotice {[arrows] [ctform 0 notice [lindex [args] 0]] %text}
+nt mynoticenoquery {[arrows] [ctform 0 notice [lindex [args] 0]] %text}
+
+
+
+#channel events
+
+nt joincountry {}
+nt join {[kano] [ctform 0 join [lindex [args] 0]] [ctform 2]}
+nt myjoin {[kano] [ctform 0 join [lindex [args] 0]] [ctform 2]}
+nt part {[kano] [ctform 1 part [split [lindex [args] 0]]] [ctform 2]}
+nt quit {[kano] [ctform 1 signoff [split [nick]]] [cn][arg]}
+nt kick {[iph {[nick] == [my_nick]} "[arrows] [ctform 0 kick [lindex [args] 0]] [cw][lindex [args] 1] [cg][cp1][cn][lindex [args] 2][cg][cp2]" "[kano] [ctform 0 kick [lindex [args] 0]] [cw][lindex [args] 1][cn] by [nick] [cg][cp1][cn][lindex [args] 2][cg][cp2]"]}
+nt kickedyou {[arrows] [cd]you[cg][cp1][cb][my_nick][cg][cp2] [cn]were kicked from [cw][lindex [args] 0][cn] by [cw][nick] [cg][cp1][cn][lindex [args] 2][cg][cp2]}
+nt modechange {[kano] [ctform 0 mode [lindex [args] 0]] [iph {[lindex [args] 2] != ""} [lindex [args] 1][cg][cp1][cw][lrange [join [args]] 2 end][cg][cp2] [cw][lindex [args] 1]] [cn]by %nick}
+
+nt mynick {[arrows] [cd]you[cg][cp1][cb][nick][cg][cp2][cn] are now [cw][arg]}
+nt nick {[kano] [ctform 0 nick [nick]] is now [cw][lindex [args] 0]}
+nt wallops {[kano] WallOPS: [arg]}
+nt dccbegin {[kano] [ctform 0 dcc [string tolower [lindex [args] 0]]] connection with [cw][lindex [args] 1][iph { [uhost [lindex [args] 1]] != "" } "[cg][cp1][cn][rep [uhost [lindex [args] 1]] @ [cg]@[cn]][cg][cp2]" ""] [cn]established}
+nt dccdone {[kano] [ctform 0 dcc [string tolower [lindex [args] 0]]] of [file tail [lindex [args] 2]][cg][cp1][cn][filesize [lindex [args] 2]][cg][cp2][cn] [iph {[lindex [args] 0] == {SEND}} to from] [cw][lindex [args] 1][cn] is complete [cg][cp1][cn][lindex [args] 4]k/s[cg][cp2]}
+nt dccerr {[kano] [ctform 0 dcc error] closed [cw][string tolower [lindex [args] 0]][cn] [iph {[lindex [args] 0] == {SEND}} to from] [cw][lindex [args] 1]}
+nt dccreq {[kano] [ctform 0 dcc get] request [cg][cp1][cn][file tail [lindex [args] 2]][cg][cs][cn][filesize [lindex [args] 3]][cg][cp2][cn] from [cw][lindex [args] 1]}
+nt dccsend {[arrows] [ctform 0 dcc send] [file tail [lindex [args] 2]][cg][cp1][cn][filesize [lindex [args] 2]][cg][cp2] [cn]to [cw][lindex [args] 1]}
+nt getnick {[kano] Getting nick [cw][arg]..}
+nt getnickerr {[kano] Your nick is already [cw][nick]}
+nt askopschan {[kano] Asking %bots for %opsorauth}
+nt askopsmain {[kano] Asking %bots for %opsorauth on [cw]%chan}
+nt cycleforops {[kano] Cycling [cw]%chan[cn] to gain ops}
+nt newconn {[kano] Attempting to connect to [lindex [args] 0]:[lindex [args] 1]}
+nt closedconn {[kano] Connection closed}
+nt tclconsoleinput {[cw]%[cn] [join [lrange [args] 1 end]]}
+nt notifyon {[kano] [ctform 2] is on IRC}
+nt notifyoff {[kano] [ctform 2] has left IRC}
+nt invitedyou {[kano] [ctform 0 invite [lindex [args] 1]] from [ctform 2] [cw]^I[cn] joins}
+nt ctcpreply {[kano] [ctform 0 ctcp [lindex [args] 1]] reply from [cw][nick][cg]:[cn] %reply}
+nt ctcptimereply {[kano] [ctform 0 ctcp [lindex [args] 1]] reply from [cw][nick][cg]:[cn] %reply}
+nt ctcpcloaked {[kano] [ctform 0 ctcp [concat [lindex [args] 1] [lindex [args] 2]]] [cn]from [cw][nick][cn]%to [cg][cp1][cn]cloaked[cg][cp2]}
+nt myctcp {[arrows] [ctform 0 ctcp [join [lindex [args] 0]]] [join [lrange [args] 1 end]]}
+nt xdcc {[kano] [ctform 0 xdcc [string tolower [lindex [args] 2]]] [cn]from [ctform 2][iph {[string tolower [lindex [args] 0]] != [string tolower [my_nick]]} "[cn] to [lindex [args] 0]" {}]}
+nt ctcp {[kano] [ctform 0 ctcp [string tolower %cmd]] [cn]from [ctform 2][iph {[string tolower [lindex [args] 0]] != [string tolower [my_nick]]} "[cn] to [lindex [args] 0]" {}]}
+
+
+
+#raw stuff
+
+nt stats {[kano] [lrange [args] 1 end]}
+nt motd {[kano] [lrange [args] 1 end]}
+nt dline {[kano] Line: [lrange [args] 1 end]}
+nt umode {[kano] Your usermode is now [cw][lindex [args] 1]}
+nt lusercrap {[null [eval {global servstats
+switch -glob -- [args] {
+    "*There are*" {lappend servstats [lindex [split [args]] 3] [lindex [split [args]] 6] [lindex [split [args]] 9]}
+    "*perator*s*" {lappend servstats [lindex [args] 1]}
+    "*channels formed*" {lappend servstats [lindex [args] 1]}
+    "*I have*" {lappend servstats [lindex [split [args]] 3]
+}}}]][box "[cw][rep [lindex [server] 0] . [cn].[cw]] [cn]statistics
+[cd]total users      [cn][expr [lindex $servstats 0] + [lindex $servstats 1]] [cg][cp1][format %.1f [expr [lindex $servstats 1].0 / ([lindex $servstats 0].0 + [lindex $servstats 1].0) * 100.0]]% invisible[cg][cp2]
+[cd]local clients    [cn][lindex $servstats 5] [cg][cp1][format %.1f [expr [lindex $servstats 5].0 / ([lindex $servstats 0].0 + [lindex $servstats 1].0) * 100.0]]%[cg][cp2]
+[cd]ircops online    [cn][lindex $servstats 3] [cg][cp1][format %.1f [expr [lindex $servstats 3].0 / ([lindex $servstats 0].0 + [lindex $servstats 1].0) * 100.0]]%[cg][cp2]
+[cd]channels formed  [cn][lindex $servstats 4] [cg][cp1]avg. [expr ([lindex $servstats 0] + [lindex $servstats 1]) / [lindex $servstats 4]] users per channel[cg][cp2]
+[cd]linked servers   [cn][lindex $servstats 2] [cg][cp1]avg. [expr ([lindex $servstats 0] + [lindex $servstats 1]) / [lindex $servstats 2]] users per server[cg][cp2]"]}
+nt admincrap {[kano] [lrange [args] 1 end]}
+nt overloaded {[kano] [lrange [args] 1 end]}
+nt silenced {[kano] [lrange [args] 1 end]}
+nt killed {[kano] [cw][string trimright [lindex [split [arg]] 8] .][cn] was killed by [cw][lindex [split [arg]] 10][cn] [join [lrange [split [arg]] 13 end]]}
+nt trace {[kano] [format %-9s [lindex [args] 1]]: [lrange [args] 1 end]}
+nt line {[kano] Line: [lrange [args] 1 end]}
+nt away {[kano] You are now marked as being away}
+nt notaway {[kano] You are no longer marked as being away}
+
+
+
+#this whois is pretty elite
+
+nt wwaddr {}; nt wwname {}; nt wiaddr {}; nt winame {}
+if ![info exists themerevision] { 
+    nt wwnick {[null [eval {append wistring "whowas[cg][cs][ctform 3]\n[cb]irc[cd]name   [cn][lindex [args] 5]\n"; /globeval set wwactive 1}]]}
+    nt wiserv {[null [eval {append wistring "[cb]serv[cd]er    [cn][cgf2 [lindex [args] 2]] [cg][cp1][lindex [args] 3][cp2]\n"; if [info exists wwactive] {echo [box $wistring]; set wistring ""; unset wwactive}}]]}
+    on 318 {echo [box $wistring]; set wistring ""}
+} else { ;#use kano12's new events (yay!)
+    nt wwnick {[null [eval {append wistring "whowas[cg][cs][ctform 3]\n[cb]irc[cd]name   [cn][lindex [args] 5]\n"}]]}
+    nt wiserv {[null [eval {append wistring "[cb]serv[cd]er    [cn][cgf2 [lindex [args] 2]] [cg][cp1][lindex [args] 3][cp2]\n"}]]}
+    nt wiend {[box $wistring][null [eval {set wistring ""}]]}
+    nt wwend {[box $wistring][null [eval {set wistring ""}]]}
+}
+
+nt winick {[null [eval {append wistring "whois[cg][cs][ctform 3]\n[cb]irc[cd]name   [cn][lindex [args] 5]\n"}]]}
+nt wichan {[null [eval {append wistring "[cb]chan[cd]nels  [cn][cgf2 [lindex [args] 2]]\n"}]]}
+nt wioper {[null [eval {append wistring "[cb]oper[cd]ator  [cn][join [lrange [args] 1 end]]\n"}]]}
+nt helpful {[null [eval {append wistring "[cb]help[cd]ful   [cn][join [lrange [args] 1 end]]\n"}]]}
+nt wiaway {[null [eval {append wistring "[cb]awa[cd]y      [cn][lindex [args] 1] - [lindex [args] 2]\n"}]]}
+nt wiidle {[null [eval {append wistring "[cb]id[cd]le      [cn][cgf1 [since [lindex [args] 2]]] [cg][cp1]signon [string trim [clock format [lindex [args] 3] -format {%m/%d/%y %H:%M:%S %Z}]][cp2]\n"}]]}
+
+
+
+#other shit
+
+nt isaway {[kano] [lindex [args] 1] is away: [lindex [args] 2]}
+nt ismode {[kano] [ctform 0 mode [lindex [args] 1]] is [iph {[lindex [args] 3] != ""} [lindex [args] 2][cg][cp1][cw][lindex [args] 3][cg][cp2] [cw][lindex [args] 2]]}
+nt notopic {[kano] [ctform 0 topic [lindex [args] 0]] unset by [cw][nick][cg]}
+nt istopic {[kano] Topic for [cw][lindex [args] 1][cn][cg]: [cn][lindex [args] 2]}
+nt settopic {[kano] topic set by [cw][lindex [args] 2][cn] [cg][cp1][cn][clock format [lindex [args] 3]][cg][cp2]}
+nt topicchange {[kano] [ctform 0 topic [lindex [args] 0]] by [cw][nick][cg]: [cn][lindex [args] 1]}
+nt topiclocked {[kano] Channel topic locked. Switching back...}
+nt inviting {[arrows] [ctform 0 invite [lindex [args] 1]] to [cw][lindex [args] 2]}
+nt summoning {[arrows] [ctform 0 summon [lindex [args] 1]] at [cform %I[cg]:[cn]%M][cg][string tolower [cform %p]]}
+nt atversion {[kano] [lindex [args] 2] is at version [lindex [args] 1][lindex [args] 3]: [lindex [args] 4]}
+nt who {[null [eval {append wholist [format "[cd]%1s [cb]%2s [cn]%-9s [cw]%-9s [cn]%10s[cg]@[cn]%s" [lindex [lindex [args] 7] 0] [lindex [args] 6] [string range [lindex [args] 1] 0 8] [lindex [args] 5] [lindex [args] 2] [lindex [args] 3]]\n}]]}
+nt users {[null [eval {
+    set names [split [join [lindex [args] 3]]]
+    set fn ""
+    foreach x $names {
+        switch [string index $x 0] {
+            @ { append fn "[cg][bu] [cw]@[cb][format %-10s [string range $x 1 end]]\n" }
+            + { append fn "[cg][bu] [cw]+[cd][format %-10s [string range $x 1 end]]\n" }
+            default { append fn "[cg][bu]  [cd][format %-10s $x]\n" }
+        }
+    }
+}]][box "   users[cg][cs][cw][lindex [args] 2] [cn][cp1][cw][llength $names][cn][cp2]\n[column 4 1 $fn]"]}
+nt bans {[null [eval {append banlist "[cw][format %-30s [string range [lindex [args] 2] 0 29]][cn] [format %-13s [lindex [split [lindex [args] 3] !] 0]] [cg][format %13s [clock format [lindex [args] 4] -format {%b %d %H:%M}]]\n"}]]}
+if ![info exists themerevision] {
+    on 368 { if { $banlist != "" } { catch { echo [box "[format "[cw][lindex [args] 1][cn] banlist at [cform %I[cg]:[cn]%M][cg][string tolower [cform %p]][cn]\n[cb]%-30s %-14s %-13s" ban setby time]\n$banlist"] ; set banlist "" } ; complete } } 
+    on 315 {box $wholist; set wholist ""}
+} else {
+    nt banend {[null [eval {if { $banlist != "" } { catch { echo [box "[format "[cw][lindex [args] 1][cn] banlist at [cform %I[cg]:[cn]%M][cg][string tolower [cform %p]][cn]\n[cb]%-30s %-14s %-13s" ban setby time]\n$banlist"] ; set banlist "" } ; complete }}]]}
+    nt whoend {[box $wholist][null [eval {set wholist ""}]]}
+}
+nt nowoper {[kano] You are now an [cw]IRCop}
+nt time {[kano] Current time on [lindex [args] 1] is [cw][lindex [args] 2]}
+nt user {[kano] [lrange [args] 1 end]}
+nt nosuchnick {[kano] No such nick [cw][lindex [args] 1]}
+nt nosuchserver {[kano] No such server [cw][lindex [args] 1]}
+nt invalidchan {[kano] Invalid channel [cw][lindex [args] 1]}
+nt cannotsendmoderated {[kano] Cannot send to [cw][lindex [args] 1]}
+nt toomanychans {Cannot join [cw][lindex [args] 1][cn] [cg][cp1][cn]too many active channels[cg][cp2]}
+nt wasnonick {[kano] There was no nickname [cw][lindex [args] 1]}
+nt occurs {[kano] [cw][lindex [args] 1][cn] occurs more than once; no message sent}
+nt pingorigin {[kano] No ping/pong origin specified}
+nt notext {[kano] No text to send}
+nt notoplvl {[kano] No toplevel domain specified for [cw][lindex [args] 1]}
+nt topwild {[kano] [cw][lindex [args] 1][cn]  Cannot have wildcard in toplevel domain}
+nt cmdunknown {[kano] [cw][lindex [args] 1][cn]  Unknown command}
+nt noadmin {[kano] No admin information for [cw][lindex [args] 1]}
+nt nonickgiven {[kano] No nickname given}
+nt badnick {[kano] [cw][lindex [args] 1][cn]  Erroneous nickname}
+nt nickinuse {[kano] [cw][lindex [args] 1][cn]  Nickname already in use}
+nt nickcollision {[kano] Nickname collision}
+nt notonchan {[kano] [cw][lindex [args] 1][cw] isn't on [cw][lindex [args] 2]}
+nt notinchan {[kano] Not in [cw][lindex [args] 1]}
+nt alreadyonchan {[kano] [cw][lindex [args] 1][cn] is already on [cw][lindex [args] 2]}
+nt notlogged {[kano] Cannot summon [cw][lindex [args] 1][cn] [cg][cp1][cn]not logged on[cg][cp2]}
+nt summondisabled {[kano] Summon has been disabled}
+nt usersdisabled {[kano] Users has been disabled}
+nt notregistered {[kano] Not registered}
+nt toofewparms {[kano] Not enough parameters for [cw][lindex [args] 1]}
+nt alreadyregistered {[kano] Already registered}
+nt notprivileged {[kano] Your host is not among the privileged}
+nt badpass {[kano] Incorrect password}
+nt bannedfromserver {[kano] Banned from [cw][server]}
+nt keyset {[kano] Channel key for [cw][lindex [args] 1][cn] already set}
+nt chanfull {[kano] Cannot join [cw][lindex [args] 1][cn] [cg][cp1][cn]channel full[cg][cp2]}
+nt chaninvite {[kano] Cannot join [cw][lindex [args] 1][cn] [cg][cp1][cn]invite-only[cg][cp2]}
+nt chanbanned {[kano] Cannot join [cw][lindex [args] 1][cn] [cg][cp1][cn]banned[cg][cp2]}
+nt chanbadkey {[kano] Cannot join [cw][lindex [args] 1][cn] [cg][cp1][cn]invalid key[cg][cp2]}
+nt banlistfull {[kano] [cw][lindex [args] 1][cg]:[cn] banlist is full [cg][cp1][cn]DALnet: 60 bans; Undernet: 30 bans; EFNet: 20 bans[cg][cp2]}
+nt nopermission {[kano] Permission denied -- you're not an IRCop}
+nt notop {[kano] [cw][lindex [args] 1][cg]:[cn] you're not an op[iph [isop [my_nick] [join [lindex [args] 1]]] " [cg][cp1][cn]ack, desync[cg][cp2]" ""]}
+nt unknownmode {[kano] [cn][lindex [args] 1][cw]: unknown /mode flag}
+nt serverkill {[kano] Cannot kill a server}
+nt notoper {[kano] Your host has no O-lines}
+nt notyourmode {[kano] Cannot change others' modes}
+nt silencefull {[kano] Your silence list is full}
+nt nogline {[kano] No such G-line [cw][lindex [args] 1]}
+nt created {[kano] [cw][lindex [args] 1][cn] was created on [clock format [lindex [args] 2]]}
+
+
+
+#new to kano12
+
+nt dccs {$dccx(file)\[[filesize $dccx(upto)]/[filesize $dccx(size)]([format %.1f [expr $dccx(upto) / $dccx(size).0 * 100]]%)\]: $dccx(nick)/$dccx(pass) @$dccx(rate)k/s}
+nt hashed {[kano] [ctform 0 hash [lindex [args] 1]] [cw][llength [chanlist [lindex [args] 1]]][cn] userhosts in [cw]$t [cn]secs}
+nt timestamp {[kano] [cw]timestamp[cg]:[cn] [rep [clock format [clock seconds]] : [cg]:[cn]]}
+nt split {[kano] [ctform 0 split [lindex [join [args]] 1]] [cn]from [cw][lindex [join [args]] 0] [cg][cp1][cn]press [cw]Ctrl+F[cn] to see who left[cg][cp2]}
+nt rejoin {[kano] [ctform 0 split rejoin] [lindex [args] 4]}
+
+
+
+#start the fucking theme!@$%
+
+loadstyles
+cthmstart
+nt wisign {}
+after 1 {foreach startloop $startqueue {eval $startloop}; unset startqueue startloop}
+
+
+
+#eof

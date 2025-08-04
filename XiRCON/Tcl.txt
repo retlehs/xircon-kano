@@ -1,0 +1,370 @@
+XiRCON 1.0B4
+Copyright (c) 1996-97 by Mark Hanson - All Rights Reserved.
+
+
+XiRCON 1.0B4 TCL DOC
+======================================================================
+
+This documentation is highly technical.  It is not meant to serve as
+an introduction to TCL or IRC in general. 
+
+Each script runs in it's own private interpreter.  Use /load
+<filename> to load a script.  Use /unload <filename> to unload it. If
+you re-load a script, it will be automatically unloaded, then loaded.
+
+Also, scripts are only loaded into the current server context.  If
+you are connected to more than one server, you must load each script
+into each server.  Currently, scripts are blissfully unaware of the
+multiple-server support.
+
+There are four basic entry points to a script: aliases, event hooks,
+menus, and hotkeys.  Aliases allow you to create new commands.  Event
+hooks allow you to intercept events from the irc server and other
+sources.  Menus execute code when a menu option is selected.  Hot keys
+allow you to execute code when a certain key is pressed.
+
+I have extended TCL by adding quite a few custom commands that
+pertain to IRC.  Some commands perform tasks, while others simply
+return information.  A few special commands provide "parameters" to
+aliases, event hooks, and menu handlers.
+
+One nice thing about aliases, hooks, menus, and hotkeys is that they
+are executed in a global variable context, so you don't need to use
+the global command to access global variables.  Another nice feature
+is that recursion is fully supported.  Aliases can call other
+aliases, and can even (carefully...) call themselves.  There is no
+special way to execute an IRC command from within a script.  Just mix
+IRC commands in with your TCL code.  Be sure to prefix IRC commands
+with a / so the client knows it's an IRC command.
+
+Aliases, event hooks, and hotkeys may be "overloaded".  This means
+that there can be more than one definition for a specific alias,
+hook, or hotkey.  Definitions are processed in the order in which
+they were encountered by the parser.  If you wish to explicitly halt
+further processing, you must call the "complete" command.  It is
+almost always a good idea to call "complete" at the end of an alias
+definition, or the command will be passed on to the irc server.
+
+
+Commands
+======================================================================
+
+Please note that all TCL core commands are supported.  The following
+list details commands that are unique to my IRC client.
+
+----------------------------------------------------------------------
+
+alias <name> <script>
+Whenever <name> is invoked from the command line (or a script),
+<script> will be executed.  While executing the alias, [args] will
+return the arguments to the command as a TCL list.  The <name> may
+contain wildcards.  If it contains wildcards, the first element of
+[args] will contain the actual command.
+
+on <event> <script>
+Whenever <event> is triggered, <script> will be executed.  The
+<event> can be any server reply or a custom event.  While executing
+the event, [args] will return the argument list. Also, [nick],
+[user], and [host] will usually identify the event source.
+
+menu <owner> <text> <script>
+Allows you to define popup menus for the status window, channel
+windows, query windows, chat windows, and user lists.  Menus can be
+nested any number of levels deep.  Placing a * at the beginning of
+<text> designated the menu item as the default item.
+
+hotkey <key> <script>
+Executes <script> whenever a certain key is pressed.  The <key> can
+be any letter or number key, or the special values F1-F12, ESCAPE, or
+TAB.  The <key> can also include the modifiers "alt+", "control+",
+and/or "shift+".
+
+complete
+Halts further processing of an alias, hook, menu, or hotkey.
+
+----------------------------------------------------------------------
+
+say <text>
+Types the text into the current window, as if you had "said" it.
+
+echo <text> [windowtype] [windowname]
+Displays text to a window, for your eyes only.  [windowtype] may be
+"status", "channel", "query", or "chat".  [windowname] is ignored if
+[windowtype] is "status", since there can be only one status window.
+
+color <name>
+Returns a TCL color attribute string that represents the user's
+preferred color for <name>.  <name> may be default, public, private,
+action, notice, CTCP, change (mode change), join, part, quit,
+highlight, error, nick, channel, mode, url, command, or users.
+
+----------------------------------------------------------------------
+
+window_name
+Returns the name of the current window.
+
+window_type
+Returns the type of the current window (status, channel, query, chat,
+or finger).
+
+channel
+Returns the name of the current channel (if any).
+
+query
+Returns the name of the current query (if any).
+
+chat
+Returns the name of the current dcc chat (if any).
+
+server
+Returns the name and port of the current irc server.
+
+status_page <number>
+Sets the current "page" of the server widow.  There are currently
+five pages, numbered 0 through 4.
+
+window <exists|focus|close|minimize|maximize|restore|state|
+        set_title|get_title|clear|type|name> [...]
+The window command implements many sub-commands related to windows. 
+Whenever <type> is mentioned, it can be either "main", "status",
+"channel", "query", "chat", or "finger".  The "main" type allows you
+to manipulate the main XiRCON window.
+
+window exists <type> [name]
+Returns 1 if the window exists, 0 if not.
+
+window focus <type> [name]
+Sets input focus to the window.
+
+window close <type> [name]
+Closes the window.
+
+window minimize <type> [name]
+Minimizes the window.
+
+window maximize <type> [name]
+Maximizes the window.
+
+window restore <type> [name]
+Restores the window.
+
+window state <type> [name]
+Returns the state of the window ("minimize", "maximize", "restore").
+
+window set_title <title> <type> [name]
+Sets the window title or caption.  Setting it to an empty string
+restores the default title.
+
+window get_title <type> [name]
+Retrieves the window title.
+
+window clear <type> [name]
+Clears all text in the window.
+
+window name
+Synonym for window_name.
+
+window type
+Synonym for window_type.
+
+active
+Returns 1 if the script is associated with the active window, else 0.
+
+----------------------------------------------------------------------
+
+channels [mask]
+Returns a TCL list of open channel windows, optionally only those
+matching mask.
+
+queries [mask]
+Returns a TCL list of open query windows, optionally only those
+matching mask.
+
+chats [mask]
+Returns a TCL list of open chat windows, optionally only those
+matching mask.
+
+nicks <channel> [mask]
+Returns a TCL list of all nicks on channel <channel>.  If [mask] is
+provided, only nicks matching [mask] (in a wildcard fashion) are
+returned.
+
+scripts
+Returns a TCL list composed of all loaded script files.
+
+----------------------------------------------------------------------
+
+event
+Returns the current execution context such as the alias name or the
+event name.
+
+args
+Returns a TCL list composed of the arguments to the current alias,
+hook, or menu.
+
+nick
+Returns the nickname of the current event source (if any).
+
+user
+Returns the userid of the current event source (if any).
+
+host
+Returns the host name or ip address of the current event source (if any).
+
+my_nick
+Returns your current nickname.
+
+my_user
+Returns your current userid.
+
+my_ip
+Returns your ip address.
+
+my_host
+Returns your host name or ip address.
+
+mode [channel]
+Returns a channel mode string.  If [channel] is omitted, it returns
+your usermode.
+
+topic <channel>
+Returns a channel topic.
+
+connected
+Returns 1 if you are connected, 0 if not.
+
+version [major|minor|beta]
+Returns the client version.  The major, minor, and beta numbers may
+be queried individually if desired.
+
+raw_args
+Returns the raw arguments as a string (instead of a TCL list) with
+the original spacing preserved.  Mostly useful in a PRIVMSG alias.
+
+----------------------------------------------------------------------
+
+whois <nick>
+Performs a silent whois on a nickname.  When the whois is complete,
+and all information has been gathered, the "whois" event hook will be
+executed.
+
+lookup <host>
+Performs a host lookup.  <host> can be either a host name or numeric
+ip address.  When the lookup is complete, the "lookup" event will be
+executed with appropriate arguments.
+
+prompt [title] [label] [default]
+Displays a simple dialog to prompt the user for a value.
+
+msgbox <title> <text>
+Displays a message dialog box to the user.  Options to specify the
+buttons and icon will be added soon.  The text may contain more than
+one line (separate lines with a \n character).
+
+input <get_text | set_text |
+       get_sel_start | set_sel_start |
+       get_sel_length | set_sel_length>
+Manipulates the command "input" line in the current window.
+
+show_props <channel | user> <name>
+Displays a properties dialog for an object.  Currently, the only
+properties dialog is channel properties.  User properties will be
+added soon.
+
+mmplay <filename>
+Plays a multimedia file.  Currently supported types include .wav,
+.mid, and .rmi files.
+
+mmstop <wave|midi|all>
+Stops playing of a multimedia file.  Type must be specified.
+
+beep
+Emits a beep from the PC speaker.
+
+random <min> <max>
+Returns a random number between <min> and <max>.
+
+----------------------------------------------------------------------
+
+add_user <mask>
+Adds a new entry to the user list and returns it's index.
+
+delete_user <index>
+Deletes the specified entry from the user list.
+
+find_user <mask>
+Finds the closes match for the given <mask> and returns it's index.
+Returns -1 if no matching entry is found.
+
+get_user <index> <property>
+Retrieves a user property value, which can be mask, notify, ignore,
+op, ban, or notes.
+
+set_user <index> <property> <value>
+Sets a user property value, which can be mask, notify, ignore, op,
+ban, or notes.
+
+user_count
+Returns the number of users.
+
+----------------------------------------------------------------------
+
+set_cookie <name> <value>
+Stores a named value for your script in the system registry.
+
+get_cookie <name> [default]
+Retrieves a named value for your script from the system registry.
+
+----------------------------------------------------------------------
+
+dcc_count
+Returns the current number of dcc file transfers.
+
+dcc_info <index>
+Returns a TCL list containing information about a specific dcc file
+transfer.  The index is zero-based.
+
+dcc_accept <index>
+Attempt to start a specific dcc file transfer.
+
+dcc_cancel <index>
+Closes and cancels a specific dcc file transfer.
+
+
+Events
+======================================================================
+
+In addition to server replies, I have added some special events.
+
+on connect         upon connection to an irc server
+on disconnect      upon disconnecting from an irc server
+on timer           once per second
+on load            after a script has been loaded
+on unload          just before a script unloads
+on ctcp            on a CTCP message from a user
+on ctcp_reply      on a "CTCP reply" notice from a user
+on chat_connect    when a dcc chat has been established
+on chat_accept     when another user has accepted a dcc chat
+on chat_text       whenever a complete line of text is received in chat
+on chat_send       whenever a line of text has been sent in a chat
+on chat_disconnect upon closing of any dcc chat connection
+on whois           whenever a whois request has completed on a nickname
+on lookup          upon completion of a lookup command
+split mode hooks   on mode+o, on mode+b, on mode-s, etc...
+on dcc_create      when a dcc send or receive is first created
+on dcc_rename      when a dcc receive has been renamed
+on dcc_begin       when a dcc send or receive has started
+on dcc_complete    when a dcc has completed successfully
+on dcc_error       when an error occurred during a dcc
+on notify          when a user in your notify list has arrived on IRC
+on denotify        when a user in your notify list has parted IRC
+on url_output      when a url is displayed in a window
+on url_select      when a url is selected with a mouse click
+
+
+Please remember that this is a technology preview release of XiRCON.
+All of the extensions documented here are subject to change before
+the final release.
+
+Mark Hanson
+mhanson@servtech.com

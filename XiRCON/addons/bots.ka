@@ -1,0 +1,353 @@
+
+#RememberBotPass stuff
+proc botpass nick {
+    set f [find_user $nick![uhost $nick]]
+    if {$f != -1} {
+	set notes [get_user $f notes]
+	set noten [lsearch -glob $notes "bot *"]
+	if {$notes != -1} {
+	    return [rot_old [ret [lindex [split [lindex $notes $noten]] 2]]]
+	}
+    }
+    return ""
+}    
+
+proc bottype nick {
+    set f [find_user $nick![uhost $nick]]
+    if {$f != -1} {
+	set notes [get_user $f notes]
+	set noten [lsearch -glob $notes "bot *"]
+	if {$notes != -1} {
+	    return [ret [lindex [split [lindex $notes $noten]] 1]]
+	}
+    }
+    return ""
+}
+
+
+
+if ![get_cookie changedbots 0] {
+    set changed 0
+    for {set usr 0} {$usr < [user_count]} {incr usr} {
+	set notes [get_user $usr notes]
+	set noten [lsearch -glob $notes "bot *"]
+	set typ op
+	set typ2 bot
+	if {$noten == -1} {
+	    set noten [lsearch -glob $notes "incu *"]
+	    set typ auth
+	    set typ2 incu
+	}
+	if {$noten != -1 && [llength [split [lindex $notes $noten]]] <= 2} {
+	    if {[llength [split $noten]] < 3} {
+		while {[lsearch -glob [get_user $usr notes] "$typ2 *"] != -1} {
+		    set_user $usr notes [lreplace [get_user $usr notes] [lsearch -glob [get_user $usr notes] "$typ2 *"] [lsearch -glob [get_user $usr notes] "$typ2 *"]]
+		}
+		set_user $usr notes "\{[list bot $typ [lindex [lindex $notes $noten] 1]]\} [get_user $usr notes]"
+		incr changed
+	    }
+	}
+    }
+    if {$changed} {
+	echo "[kano] Updated $changed BotPass entries."
+    }
+    set_cookie changedbots 1
+}
+
+alias bots {
+    if {[raw_args] == ""} {set ch [channel]} {set ch [raw_args]}
+    set askn ""
+    foreach i [oplist $ch] {
+	if {[botpass $i] != ""} {
+	    lappend askn $i
+	}
+    }
+    echo "[kano] Bots: [listify $askn]"
+    complete
+}
+
+
+alias ops {
+    if {[string index [raw_args] 0] != "#"} {set ch [channel];set nix [args]} {set ch [lindex [args] 0];set nix [lrange [args] 1 end]}
+    if {![ison [my_nick] $ch] || [isop [my_nick] $ch]} {complete;return}
+    set opz ""
+    catch {unset asknpass}
+    set askn ""
+    set found ""
+    set noway ""
+    if {$nix == ""} {set nix [oplist $ch]}
+    foreach i $nix {
+	if {[botpass $i] != "" && [bottype $i] != "none"} {
+	    lappend askn $i
+	    set uin [find_user $i![uhost $i]]
+	    set v "asknpass([list [bottype $i] [botpass $i]])"
+	    if {[lsearch -exact $found $uin] != -1} {
+		set f [lsearch -exact [set $v] $i]
+		if {$f != -1} {
+		    set $v [lreplace [set $v] $f $f]
+		    lappend noway $i
+		}
+	    } {
+		lappend found $uin
+		lappend $v $i
+	    }
+	}
+    }
+    if {$askn == ""} {complete;return}
+    if {$noway != ""} {echo "[kano] NOT asking for ops from [listify $noway] (duplicate hostmask matches)"}
+    if {[get_cookie pingbots 1] && [llength $askn] > 1} {
+	echo "[kano] Pinging [llength $askn] bots. Type /bots to see which." channel $ch
+	while {$askn != ""} {
+	    /quote privmsg [join [lrange $askn 0 9] ,] :PING OPCHECK$ch
+	    set askn [lrange $askn 10 end]
+	}
+    } {
+	if {[llength $askn] == 1} {set s ""} {set s s}
+	echo "[kano] Asking [llength $askn] bot$s for ops. Type /bots to see which." channel $ch
+	foreach i [array names asknpass] {
+	    while {$asknpass($i) != ""} {
+		set first [join [lrange $asknpass($i) 0 9] ,]
+		set last [lrange $asknpass($i) 10 end]
+		/quote privmsg $first :$i
+		set asknpass($i) $last
+	    }
+	}
+    }
+    set lastop [unixtime]
+    set didbotop([string tolower $ch]) 0
+    catch {unset askn}
+    catch {unset asknpass}
+    complete
+}
+
+on mode-o {
+    if {[lindex [args] 1] == [my_nick] && [get_cookie opsonjoin] && [nick] != [my_nick] && [isop [my_nick] [lindex [args] 0]]} {
+	/ops [lindex [args] 0]
+    }
+}
+
+set lastop [clock seconds]
+
+
+alias botinv {
+    set nick [lindex [args] 0]
+    if {[uhost $nick] == ""} {
+	echo "[kano] Who?"
+	complete;return
+    }
+    set cmd [lindex [args] 1]
+    set pass [lindex [args] 2]
+    set chan [lindex [args] 3]
+    if {$chan == ""} {set chan [channel]}
+    if {$pass == ""} {set pass [botpass $nick]}
+    if {$pass == "" || $cmd == ""} {
+	echo "[kano] Usage: /[event] <nick> <invite /msg cmd> \[bot's pass defaults to autobot pass (/bot)\] \[channel defaults to current\]"
+	complete;return
+    }
+    if {$chan == ""} {complete;return}
+    set host *!*[string trimleft [uhost $nick] ~]
+    set x [add_user $host]
+    set notes [get_user $x notes]
+    set f [lsearch $notes "invite *"]
+    if {$f != -1} {
+	set notes [lreplace $notes $f $f]
+	set added 0
+    } {
+	lappend notes [list invite $nick $cmd [string tolower $chan]]
+	if {[bottype $nick] == ""} {/bot $nick none $pass}
+	set added 1
+    }
+    set_user $x notes $notes
+    if $added {
+	echo "[kano] Remembering pass for $nick (matching $host)"
+    } {
+	echo "[kano] Removed invitepass for $nick"
+    }
+    complete
+}
+
+alias bot {
+    set nick [ret [lindex [args] 0]]
+    if {[join [args]] == ""} {
+	echo "[kano] Usage: /[event] <bot's current nick> <op command (for eggdrops it's just op)> <pass>, /bot -join"
+	echo "    Also see /botinv."
+	complete
+	return
+    }
+    if {$nick == "-join"} {
+	if [get_cookie opsonjoin] {set_cookie opsonjoin 0;echo "[kano] Not asking for ops on join."} {set_cookie opsonjoin 1;echo "[kano] Asking for ops on join."}
+	complete
+	return
+    }
+    if {[uhost $nick] == ""} {
+	echo "[kano] I don't know $nick's user@host."
+	complete
+	return
+    }
+    set type [ret [lindex [args] 1]]
+    set pass [ret [lindex [args] 2]]
+    set usr [add_user *!*[string trimleft [uhost $nick] ~]]
+    while {[lsearch -glob [get_user $usr notes] "bot *"] != -1} {
+	set_user $usr notes [lreplace [get_user $usr notes] [lsearch -glob [get_user $usr notes] "bot *"] [lsearch -glob [get_user $usr notes] "bot *"]]
+    }
+    if {[rot_old $pass] != ""} {set_user $usr notes "\{[list bot $type [rot_old $pass]]\} [get_user $usr notes]";echo "[kano] Remembering pass for *!*[string trimleft [uhost $nick] ~]"} {echo "[kano] Removed pass for $nick."}
+    complete
+}
+
+
+on chat_text {
+    if {[arg] == "Enter your password." && [botpass [nick]] != ""} {
+	after idle "/msg =[nick] [botpass [nick]]"
+    }
+}
+
+on kick {
+	if {[lindex [args] 1] == [my_nick]} {
+	if [string match *i* [lindex [split [mode $chan]] 0]] {
+	    set botz 0
+	    catch {unset bots}
+	    foreach i [oplist $chan] {
+		if {[botpass $i] != ""} {
+		    lappend bots([botpass $i]) $i
+		    incr botz
+		}
+	    }
+	    if $botz {
+		foreach i [array names bots] {
+		    /quote privmsg [join $bots($i) ,] :invite $i $chan
+		}
+		unset bots
+		echo "[kano] Asking $botz bots for invite to $chan."
+		set auto_inv $chan
+	    }
+	}
+    }
+}
+
+on ctcp_reply {
+    if {[string tolower [lindex [args] 1]] == "ping"} {
+	if {[string range [string tolower [lindex [args] 2]] 0 7] == "opcheck#"} {
+	    set chan [string trimleft [lindex [args] 2] OPCHECK]
+	    if ![info exists lastbotop([string tolower $chan])] {set lastbotop([string tolower $chan]) ""}
+	    if ![info exists didbotop([string tolower $chan])] {set didbotop([string tolower $chan]) 0}
+	    set fu [find_user [nick]![user]@[host]]
+	    if {![isop [my_nick] $chan] && [ison [my_nick] $chan] && $lastbotop([string tolower $chan]) != $fu && !$didbotop([string tolower $chan])} {
+		/quote PRIVMSG [nick] :[bottype [nick]] [botpass [nick]]
+		echo "[kano] [nick] is the least lagged bot; asking for ops." channel $chan
+		set lastbotop([string tolower $chan]) $fu
+		set didbotop([string tolower $chan]) 1
+	    }
+	    complete
+	    return
+	}
+    }
+}
+
+set definv ""
+on 315 {
+    set askinv ""
+    foreach i [array names invbot] {
+	set k $invbot($i)
+	set ct 0
+	foreach j $invbot($i) {
+	    if {[lsearch -exact $definv [string tolower [lindex $j 1]]] == -1} {
+		set invbot($i) [lreplace $invbot($i) $ct $ct]
+	    } {incr ct}
+	}
+    }
+    set tnix ""
+    set chan ""
+    foreach i [array names invbot] {
+	set k $invbot($i)
+	set chan [lindex [lindex $k 0] 2]
+	set nix ""
+	foreach j $k {
+	    set n [lindex $j 1]
+	    if {[botpass $n] != ""} {
+		lappend nix $n
+		lappend tnix $n
+	    }
+	}
+	while {$nix != ""} {
+	    /raw privmsg [join $nix ,] :[lindex $i 0] [rot_old [lindex $i 1]] $chan
+	    set nix [lrange $nix 10 end]
+	}
+    }
+    if {$chan != "" && $tnix != ""} {
+	echo "[kano] Asking $tnix for an invite to $chan"
+    }
+    catch {unset invbot}
+    if {![isop [my_nick] [lindex [args] 1]] && [ison [my_nick] [lindex [args] 1]] && [get_cookie opsonjoin]} {
+	/ops [lindex [args] 1]
+    }
+}
+
+on 473 {
+    if ![info exists gotkicked([string tolower [lindex [args] 1]])] {set gotkicked([string tolower [lindex [args] 1]]) 0}
+    set chan [string tolower [lindex [args] 1]]
+    if $gotkicked([string tolower [lindex [args] 1]]) {/remnants [lindex [args] 1];set gotkicked([string tolower [lindex [args] 1]]) 0}
+    catch {unset invbot}
+    catch {unset yesdoinv}
+    set found ""
+    for {set userc 0} {$userc < [user_count]} {incr userc} {
+	set notes [get_user $userc notes]
+	set find [lsearch $notes "invite * $chan"]
+	if {$find != -1} {
+	    set invite [lrange [lindex $notes $find] 1 end]
+	    set pass [lindex $notes [lsearch $notes "bot *"]]
+	    if {$pass == ""} continue
+	    #nick cmd chan
+	    #invite pass = mask nick chan
+	    lappend invbot([list [lindex $invite 1] [lindex $pass 2]]) [list [get_user $userc mask] [lindex $invite 0] [lindex $invite 2]]
+	    set yesdoinv([string tolower [lindex $invite 0]]) [get_user $userc mask]
+	}
+	FALC_yield
+    }
+    echo $found
+    set nix ""
+    foreach i [array names invbot] {
+	foreach j $invbot($i) {
+	    lappend nix [lindex $j 1]
+	}
+    }
+    if {$nix != ""} {
+	/who [join $nix ,]
+	echo "[kano] Querying userhosts of [listify $nix] for potential invite to $chan"
+	incr do_who
+    } {echo "[kano] No /botinv bots found for $chan"}
+    set definv ""
+}
+
+kaddhelp bot "Sets a bot's RememberBotPass. This will remember their password when you DCC chat them or ask for ops, among other /msg commands. Using the -join option, you tell it whether or not to ask all bots on the list in the channel for ops when you join a channel. The -join option now also joins your auto-join channels if you are not in them. This whole -join thing is designed for people who leave [kclient xircon] on all day while at work/school/somewhere else." "/bot <current nick of bot> <op command (usually just op)> <pass>, /bot -join" "Set BotPass" "/ops"
+kaddhelp ops "Asks all bots in the channel (or only those nicks specified) on your RememberBotPass list for ops." "/ops \[#chan\] \[bot1 bot2 bot3 etc.\]" "Gain Ops" "/bot"
+kaddhelp botinv "Sets bots' nick!user@hosts to automatically ask for invite if you can't join due to +i." "/botinv <nick> <invite /msg cmd> \[bot's pass defaults to autobot pass (/bot)\] \[channel defaults to current\]"
+
+menu users "&Eggdrop->Set Bot&Pass..." {
+    set prompt [prompt [kanovers] "Enter the command to op for [listify [args]]." op]
+    set prompt2 [prompt [kanovers] "Enter your password for [listify [args]]." [botpass [lindex [args] 0]]]
+    foreach i [args] {
+	/bot $i $prompt $prompt2
+    }
+}
+menu users "&Eggdrop->As&k for Ops" {
+    /ops [join [args]]
+}
+
+ac check @pingbots @1 Ping bots before asking for ops (/ops)
+
+on_minute {
+    if {[expr [unixtime] - $lastop] > 300 && [get_cookie opsonjoin] && [connected]} {
+	foreach i [channels] {
+	    if ![isop [my_nick] $i] {/ops $i}
+	}
+	if {$whoami == 1 && [get_cookie ajoin_ok 1]} {
+	    set blah ""
+	    foreach i [split [get_cookie ajoin([curnet])] ,] {
+		if ![ison [my_nick] $i] {lappend blah $i}
+	    }
+	    if {$blah != ""} {/JOIN [join $blah ,]}
+	}
+	set lastop [unixtime]
+    }
+    
+}

@@ -1,0 +1,2249 @@
+kmod aliases 15 "lots of aliases"
+
+kaddhelp count "Returns the name of the country that the two-letter hostname ... type? ... that you specify, or if -nick is used, a nickname's hostname type." "/count <-nick nick|2-letter country abbrev>" "Country Lookup"
+kaddhelp avg "Gives you your exact average ping reply." "/avg" "Average Ping Reply"
+kaddhelp expr "Does some math." "/expr <math string>" "Calculator"
+kaddhelp fake "\;Send someone fake DCC/CTCP commands."
+kaddhelp cstat "Echoes those nifty channel stat (ops x%, voices x%, etc.) in the channel window, using BAR GRAPHS!!! =). Try it! Or, to show your whole channel how l33t you are, type /cstat -s!" "/cstat \[-s\]" "Channel Stats"
+kaddhelp urls "Gives you a list of url's that have been said within [kclient XiRCON]." "/urls" "URL Catcher Display"
+kaddhelp prot {
+User represents a user on our protect list.
+Evil represents a user not on our protect list.
+ 
+Active protect INCLUDES the properties of passive protect. So if a user is actively protected, he/she is also passively protected.
+ 
+op:
+ active:  if Evil deops User, we deop Evil and op
+          User.
+ passive: the script never deops User under any
+          circumstances, unless you type /deop or
+          such.
+kick:
+ active:  if Evil kicks User, we deop Evil and invite
+          User back.
+ passive: the script never kicks User under any
+          circumstances, unless you type /kick or such.
+ban:
+ active:  if Evil bans User, we deop Evil and unban
+          User.
+ passive: we never ban User under any circumstances,
+          unless you type /kb or such.
+deop:
+ active, passive: we never allow User to be opped,
+                  under any circumstances, unless
+                  you type /op or such.
+voice:
+ active, passive: we never allow User to be devoiced,
+                  under any circumstances, unless you
+                  type /dv or such.
+} "/prot <nick>, /prot <nick> active|passive <any combination of 'kick' 'ban' 'voice' 'deop' and 'op'>" "Protect List Management"
+kaddhelp wallx "Sends a message to everyone but a certain person in the channel. Not recommended for big channels" "/wallx <nick>" "WallExcept"
+kaddhelp play "Like mIRC's /play command, kinda." "/play <filename>" "Play File"
+kaddhelp auser "Adds a user to the userlist." "/auser -h <hostmask>, /auser <nick>" "Add User"
+kaddhelp ruser "Removes a nickname from the userlist." "/ruser <host>" "Remove User"
+kaddhelp userl "Displays all users to you." "/userl" "User List"
+kaddhelp sound "Sends a sound request to the channel and does an action." "/sound <filename> <text>" "Sound Request"
+kaddhelp scr "Tells you which scripts you have loaded." "/scr" "Scripts Loaded"
+kaddhelp ban "Bans someone from your current channel using the Internal Address List. If you have enforce-bans on, it will just use [k h]/kb[k d]." "/ban <nick>" "Ban User"
+kaddhelp conn "A very raw socket connection to a server." "/conn <server> <port> \[name (for your own reference purposes)\]" "Open Connection" "/killc"
+kaddhelp killc "Kills a connection opened with /conn, /dict, or the email check (/check)." "/killc" "Kill Connection" "/conn"
+kaddhelp ver "Does a /ctcp version to your current chat, query, or channel, or nick you specify." "/ver \[nick\]" "CTCP Version Shortcut"
+kaddhelp dccs "More information than you could possibly need about current DCC's." "/dccs" "DCC Status"
+kaddhelp ts "Toggles timestamping. /ts on/off turns timestamping on or off in ALL windows." "/ts, /ts <on|off>" "Time Stamp"
+kaddhelp lt "Sets topic to the last topic set before topic change." "/lt" "Switch to Last Topic"
+kaddhelp said "Brings up a list of what someone said since you loaded [kanovers]. Good for compiling out-of-context quotes or showing that someone contradicted theirself..or lied..whatever. If -nonick is specified, what this user said will be printed without any <nick> prefix." "/said <nick> \[-nonick\]" "What they Said"
+kaddhelp kv "Decides whether to append [kanoverz] or <sig kick> to all /kicks." "/kv <on|off>, /kv <sig kick|none>" "Set Kick Signature"
+kaddhelp perm "Adds or removes someone from the shitlist." "/perm <nick> \[reason\]" "Add/Remove Permanent Ban"
+kaddhelp unban "Unbans all matches of someone's userhost on a channel." "/unban <nick>" "Unban User"
+kaddhelp timer "Starts a timer. If <times> is 0, it will go on forever." "/timer\[#\] <interval> <times> <what to do>, /timer# off" "Set Timer" "/timers"
+kaddhelp timers "Lists all active timers." "/timers" "View Timers" "/timer"
+kaddhelp kq "Kills all open queries." "/kq" "Kill Open Queries"
+kaddhelp ansi "Converts an ansi file to mirc colors and saves a backup." "/ansi <filename>" "ANSI-mIRC File Converter"
+kaddhelp showj "Toggles showing joins, parts, and quits. These can get annoying in xdcc channels, etc." "/showj" "ShowJoins Toggle"
+kaddhelp weed "Deletes groups of users. For example, /weed mask *.uu.* will delete any users with a hostmask matching *.uu.*. Just /weed with no args will delete any users just taking up space--no notify, ignore, etc." "/weed \[<mask|notify|op|ban|notes> <value (for notify on: Y)>\]" "Weed Users"
+kaddhelp match "Spits out users, their hostmasks, and the channels they're in that you're in that match a certain mask. Masks are matched against nick!user@host. If -all is used, all channels will be scanned, not just the current window." "/match <mask>, /match -all <mask>" "Find Matching Users"
+kaddhelp lb "Undoes the last ban placed in a channel." "/lb" "Undo Last Ban"
+kaddhelp lu "Redoes the last ban undid in a channel." "/lu" "Redo Last UnBan"
+kaddhelp mlist "Combines all text inputted into the window into one line. For when you want to paste something from a program that really messes up copying (like Netscape). Once the window opens up, just paste into it and type a single dot when you want it to combine." "/mlist" "Compact Lines"
+kaddhelp open "Opens a windows open-file box listing files matching <filetype>." "/open <filetype \[filetype filetype filetype etc.\]>" "Open File"
+kaddhelp url "Displays the URL in your last-used Netscape window. Cool, eh? =)" "/url \[comments\]" "Display Netscape URL"
+kaddhelp hilite "Configures which words to highlight in channel text." "/hilite" "Word Highlight" /exclude
+kaddhelp dccext "Adds a DCC Extension. This will move files of type *.<extension> to <dir> when the DCC get is completed." "/dccext <extension> <dir>, /dccext -view" "DCC Extensions"
+kaddhelp msgwin "Creates a MsgWindow in which all /msgs are displayed." "/msgwin" "Dedicated Query Window"
+kaddhelp stealver "Sends someone a CTCP VERSION and then uses their reply till [kclient xircon] is closed. Or, with no arguments, reverts to your original version reply." "/stealver \[nick\]" "Steal Version"
+kaddhelp redir "Redirects output from a command to your current window, saying (and echoing) it." "/redir <command>" "Redirect Command Output"
+kaddhelp remnants "Brings up the last [get_cookie echolines 100] lines of a channel window. Even after you got kickbanned or such." "/remnants <channel>" "Channel Remnants"
+kaddhelp setsound ";Configures what sounds to play on certain events such as connect or on new email."
+kaddhelp filter "Configures what public text to not display." "/filter -add <wildcard>, /filter -rem <number>, /filter" "Filter Public Text"
+kaddhelp dcc "/dcc relay: Relays a file from a user to a user, without getting in between the two. A little 'exploit,' if you will, of the DCC standard.\n/dcc send: sends a file (or all files matching a wildcard) to another user.\n/dcc chat: opens a direct chat connection to another user.\n/dcc get: begins recieving a file that another user is trying to send you\n/dcc: shows current DCC progress" "/dcc relay <fromnick> <tonick>, /dcc send <nick> <file or wildcard>, /dcc get <nick>, /dcc chat <nick>, /dcc" "DCC File Transfer"
+kaddhelp analyze "Picks apart all incoming text to show you where control characters are hidden...Good for when someone joins #^B^BSomeChannel... or something.." "/analyze" "Text Analyzer"
+kaddhelp lj "Kickbans the last person to join a channel" "/lj \[reason\]" "Last Join Kickban"
+kaddhelp gt "Inserts the topic for your current channel into the command line." "/gt" "Grab Topic"
+kaddhelp until "Tells you the time until or since a certain date. e.g., /until 12:59:59 PM December 31, 1999. If the 'set' option is used, it saves the date for later use. Example: '/until set y2k january 1, 2000' will save so that you can: '/until y2k' without typing 'january 1, 2000' again." "/until <time>, /until set <name> <time>" "Until/Since Date"
+kaddhelp relm "Relays last message sent to you." "/relm" "Relay Message"
+kaddhelp relsm "Relays last outgoing message sent." "/relsm" "Relay Self Message"
+kaddhelp getnick "Attempts to regain a nickname." "/getnick <nick>" "Regain Nick"
+kaddhelp help "Quick help reference: anything in <brackets> is a required parameter; anything in \[square brackets\] is an optional parameter." "/help \[command\]" "Help System"
+kaddhelp purl "Adds/removes words from the Possible URL Exception list. These are events that, when they display text, Possible URL's are not displayed. Example events you might want to exclude are join, part, notify, denotify, 311 (whois), and 352 (who)." "/purl \[event name\]" "Possible URL Exception List"
+kaddhelp shortcut "Adds/removes a shortcut alias, like '/shortcut m msg' or something. Just for convenience or if you're used to how another script/client does something." "/shortcut <alias name> \[shortcut to\]" "Create Shortcut" /alias
+kaddhelp reload "Reloads $kanopath." /reload "Reload Script"
+kaddhelp cycle "Cycles your current channel." /cycle "Cycle channel"
+kaddhelp tz "Computes the time in another time zone." "/tz region \[hours away\], /tz list" "Time Zone Computer"
+kaddhelp clones "Scans your current channel for clones." /clones "Clone Scan" /clone
+kaddhelp pronounce "Pronounces a number. Fun fun." "/pronounce <integer>" "Number Pronounciation"
+kaddhelp searchw "Searches the current window for text." "/searchw <wildcard>" "Search Current Window"
+kaddhelp what "Shows you what <text> looks like in your default nonfixed font. Real simple but useful to see what it is people in non-ansi fonts like Fixedsys are saying." "/what <text>" "Font Changer"
+kaddhelp defaults "Set default kick messages, quit messages, etc." /defaults "Set Default Messages"
+kaddhelp net "Adds and removes nets from the net mask list. These are used for autojoin and soon other things." /net "IRC Net Configuration" /nets
+kaddhelp nets "Lists currently set nets" /nets "IRC Net List" /net
+kaddhelp regexp {
+A regular expression is zero or more branches, separated by "|". It matches anything that matches one of the branches. 
+
+A branch is zero or more pieces, concatenated. It matches a match for the first, followed by a match for the second, etc. 
+
+A piece is an atom possibly followed by "*", "+", or "?". An atom followed by "*" matches a sequence of 0 or more matches of the atom. An atom followed by "+" matches a sequence of 1 or more matches of the atom. An atom followed by "?" matches a match of the atom, or the null string. 
+
+
+An atom is a regular expression in parentheses (matching a match for the regular expression), a range (see below), . (Matching any single character), a \ followed by a single character (matching that character), or a single character with no other significance (matching that character). 
+
+A range is a sequence of characters enclosed in "[]". It normally matches any single character from the sequence. If the sequence begins with "^", it matches any single character not from the rest of the sequence. If two characters in the sequence are separated by "-", this is shorthand for the full list of ASCII characters between them (e.g. "[0-9]" matches any decimal digit). To include a literal "]" in the sequence, make it the first character (following a possible "^"). To include a literal "-", make it the first or last character.
+-- taken from the Tcl manual pages, slightly edited
+
+Examples:
+regexp             to exclude
+.*\.ka             anything ending in ".ka"
+.*[0-9]            IP addresses
+.*@.*\..*\..*\..*  user@hosts with more than 3 hostname levels (x@x.x.x)
+} {} {Regular Expressions}
+kaddhelp exclude "Edits your list of words which will stop hiliting of a line (your exclude list). For example, if you have 'val' hilited (/hilite), you could add 'invalid' to your exclude list, so that if someone said 'invalid,' it wouldn't trigger nick highlight." /exclude "Nick Highlight Exclusion" /hilite
+kaddhelp lock "Locks or unlocks a channel topic. Locked topics cannot be changed by anyone but you." "/lock" "Topic Lock"
+kaddhelp cal "Shows a calendar!" "/cal \[<month> \[<year>\]\]" "Monthly\
+	Calendar"
+
+alias cat {
+    if {[catch {open [raw_args]} chan]} {
+	echo "[kano] $chan"
+    } else {
+	echo [read $chan]
+	close $chan
+    }
+    complete
+}
+
+alias nets {
+    catch {unset nets}
+    foreach i [get_cookie nets] {
+	lappend nets([string tolower [lindex $i 0]]) [lindex $i 1]
+    }
+    foreach i [lsort [array names nets]] {
+	echo "[kano] $i: [listify $nets($i)]"
+    }
+    complete
+}
+
+alias net {
+    set il ""
+    switch -glob -- [lindex [args] 0] {
+	-rem {set dowhat "Remove Add"}
+	* {set dowhat "Add Remove"}
+    }
+    lappend il [list combo addrem 5 5 45 100 $dowhat]
+    set fix ""
+    set wordz ""
+    foreach i [get_cookie nets] {
+	lappend fix [lindex $i 0]
+	lappend wordz [lindex $i 1]
+    }
+    lappend il [list combo -e chan 55 5 75 100 $fix]
+    lappend il [list combo -e chanfix 135 5 65 100 $wordz]
+    set ans [FALC_dialog -t "[kanovers] Net Definitions" 200 20 $il]
+    set ch [lindex [lindex $ans 1] 1]
+    set fix [lindex [lindex $ans 2] 1]
+    if {$ans != ""} {
+	if {[lindex [lindex $ans 0] 1] == "Add"} {
+	    set x [get_cookie nets]
+	    lappend x [list $ch $fix]
+	    set_cookie nets $x
+	    /[event]
+	} else {
+	    set t ""
+	    foreach i [get_cookie nets] {
+		if {[string tolower [lindex $i 1]] != [string tolower $fix]} {
+		    lappend t $i
+		}
+	    }
+	    set_cookie nets $t
+	    /[event] -rem
+	}
+    } else {/nets}
+    set current_net [getnet]
+    complete
+}
+alias url {
+    set got 0
+    foreach topic {Netscape IEXPLORE} {
+	if {![catch {lindex [FALC_dde r $topic WWW_GetWindowInfo \
+		0xFFFFFFFF] 0} url]} {
+	    set got 1
+	    break
+	}
+    }
+    complete
+
+    if {!$got} {
+	echo "[kano] Error.. Netscape/IE window not open?"
+    } else {
+	if {![regexp {^"([^"]*)","([^"]*)"} $url junk url desc]} {
+	    echo "[kano] Got strange(?) response from browser: $url"
+	} else {
+	    set arg [expr {[raw_args] == "" ? $desc : [raw_args]}]
+	    say "$url - $arg"
+	}
+    }
+}
+
+alias arraylist {
+    echo "Array list of [raw_args]:"
+    echo [join [lsort [arraylist [raw_args]]] \n]
+    complete
+}
+
+alias what {
+    msgbox [raw_args] [raw_args]
+    complete
+}
+
+alias filter {
+    switch -glob -- [lindex [args] 0] {
+	-add {
+	    set_cookie noshowpub [string trim "[get_cookie noshowpub] [list [join [lrange [args] 1 end]]]"]
+	    echo "[kano] Added public filter."
+	}
+	-rem* {
+	    set num [expr {[lindex [args] 1] -1}]
+	    if {[string trim $num 01234567890] == "" && $num != ""} {
+		set nsp [get_cookie noshowpub]
+		set_cookie noshowpub [lreplace $nsp $num $num]
+		if {$nsp == [get_cookie noshowpub]} {
+		    echo "[kano] No such filter number."
+		} else {
+		    echo "[kano] Deleted filter."
+		}
+	    } else {
+		echo "[kano] Usage: /[event] [lindex [args] 0] <number> "
+	    }
+	}
+	"" {
+	    set ct 1
+	    set num [llength [get_cookie noshowpub]]
+	    if {$num == 0} {set num No}
+	    echo "[kano] $num filters"
+	    foreach i [get_cookie noshowpub] {
+		echo "    $ct. $i"
+		incr ct
+	    }
+	}
+	* {
+	    echo "[kano] Usage: /[event] -add <string>, /[event] -rem <number>, /[event]"
+	}
+	
+    }
+    complete
+}
+
+alias klist {
+    /kfile
+    complete
+}
+
+alias fx {
+    set ch [chanlist [channel]]
+    foreach i $ch {/query $i}
+    foreach i $ch {window close query $i}
+    complete
+}
+
+alias stealver {
+    if {[arg] == ""} {
+	set verreply $old_fullver
+	echo "[kano] Reverted to default version reply."
+	complete;return
+    }
+    /ver [arg]
+    set stealver [string tolower [arg]]
+    complete
+}
+
+alias sc {/names [raw_args];complete}
+
+#for my own reference
+#SEND 895892422 kano kano5.tcl 6144 97893 8 119 0.7500
+#SEND 895892842 kano kano5.tcl 0    97893 0 -1 -1.0000
+
+set dccs_stage 0
+alias dccs {
+    set a [raw_args]
+    if {[isnum $a]} {
+	if {![get_cookie dccwin 1]} {complete;return}
+	set win .dcc:$a.
+	set curt [window type]
+	set curn [window name]
+	if {![window exists query $win]} {
+	    /query $win
+	    window minimize query $win
+	    window set_title Waiting.. query $win
+	    window focus $curt $curn
+	}
+	set i [dcc_info $a]
+	if {$i != ""} {
+	    set dccx(send) [expr {[lindex $i 0] == "SEND"}]
+	    set dccx(time) [lindex $i 1]
+	    set dccx(nick) [lindex $i 2]
+	    set dccx(file) [lindex $i 3]
+	    set dccx(upto) [lindex $i 4]
+	    set dccx(size) [lindex $i 5]
+	    set dccx(pass) [since [lindex $i 6]]
+	    set dccx(left) [lindex $i 7]
+	    set dccx(rate) [lindex $i 8]
+	    set fs [filesize $dccx(upto) no]
+	    set fs2 [filesize $dccx(size) no]
+	    window set_title [format \
+		    "%s %.1f%% %s: %s ( %.1f%s of %.1f%s with %s left )" \
+		    [expr {$dccx(send) ? ">>" : "<<"}] \
+		    [expr \
+		    {(double($dccx(upto)) / (abs($dccx(size))+1)) * 100}] \
+		    $dccx(nick) \
+		    [file tail $dccx(file)] \
+		    [lindex $fs 0] \
+		    [lindex $fs 1] \
+		    [lindex $fs2 0] \
+		    [lindex $fs2 1] \
+		    [mmss $dccx(left)]] query $win
+	    if {[window state query $win] != "minimize"} {
+		window clear query $win
+		set ltcolor [lindex [split $litehelp ,] 1]
+		set dkcolor [lindex [split $darkhelp ,] 1]
+		set string \n[rep [string trim [wrap [t dccs] 56] \n] \n "\n   "]\n
+		foreach string [split $string \n] {
+		    echo [graph $ltcolor $dkcolor $dccx(upto) $dccx(size) 80 0 01 01 $string] query $win
+		}
+	    }
+	}
+	complete
+	return
+    }
+    if {![dcc_count]} {
+	if {[args] != "-q"} {
+	    echo "[kano] No active DCC's."
+	} else {
+	    window clear query .Dccs.
+	}
+	complete
+	return
+    }
+    set dccs 0
+    set dcclist ""
+    set send ""
+    set get ""
+    while {$dccs != [dcc_count]} {
+	set dcci [dcc_info $dccs]
+	lappend [string tolower [lindex $dcci 0]] $dcci
+	incr dccs
+    }
+    set dccs 1
+    if {[queries .Dccs.] == "" && [args] != "none"} {
+	/query .Dccs.
+	if {[args] != "-q"} {
+	    if {[window state query .dccs.] == "minimize"} {
+		window restore query .dccs.
+	    }
+	    window focus query .Dccs.
+	}
+    }
+    if {[args] == "none"} {
+	set win1 ""
+	set win2 ""
+    } else {
+	set win1 query
+	set win2 .dccs.
+    }
+    window clear query .Dccs.
+
+    set dccz ""
+    foreach j "send get" {
+	foreach i [set $j] {
+	    set dccx(send) [expr {[lindex $i 0] == "SEND"}]
+	    set dccx(time) [lindex $i 1]
+	    set dccx(nick) [lindex $i 2]
+	    set dccx(file) [lindex $i 3]
+	    set dccx(upto) [lindex $i 4]
+	    set dccx(size) [lindex $i 5]
+	    set dccx(pass) [since [lindex $i 6]]
+	    set dccx(left) [lindex $i 7]
+	    set dccx(rate) [lindex $i 8]
+	    if {int($dccx(rate)) != -1} {
+		set ltcolor [lindex [split $litehelp ,] 1]
+		set dkcolor [lindex [split $darkhelp ,] 1]
+		set l1 $litehelp
+		set l2 $darkhelp
+		set l3 15
+		if {$dccs_stage == 0} {
+		    set c1 $l1
+		    set c2 $l2
+		    set c3 $l3
+		} elseif {$dccs_stage == 1} {
+		    set c1 $l2
+		    set c2 $l3
+		    set c3 $l1
+		} elseif {$dccs_stage == 2} {
+		    set c1 $l3
+		    set c2 $l1
+		    set c3 $l2
+		}
+		set string [rep [string trim [wrap [t dccs] 56] \n] \n "\n   "]
+		set io [expr {$dccx(send) ? "$c1>$c2>$c3>" : "$c3<$c2<$c1<"}]
+		foreach string [split $string \n] {
+		    echo "$io [graph $ltcolor $dkcolor $dccx(upto) $dccx(size) 60 0 01 01 $string]" $win1 $win2
+		}
+	    } else {
+		echo "[expr {$dccx(send) ? ">>>" : "<<<"}] $dccx(file)\[inactive/[filesize $dccx(size)](0%)\]: $dccx(nick)\([since c$dccx(time)]/ago)" $win1 $win2
+	    }
+	    incr dccs
+	}
+    }
+    window set_title $dccz query .Dccs.
+    refresh status
+    if {$dccs_stage >= 1} {incr dccs_stage -1} else {set dccs_stage 2}
+    complete
+}
+
+alias dccext {
+    set ext [lindex [args] 0]
+    if {[string index $ext 0] == "."} {set ext [string range $ext 1 end]}
+    set dir [file split [lindex [args] 1]]
+    if {[arg] == ""} {
+	echo "[kano] Usage: /[event] -view, /[event] <extension> <dir>"
+	complete
+	return
+    }
+    catch [concat file join $dir] dir
+    set end ""
+    foreach i [get_cookie dccext] {
+	if {![string match $ext [lindex $i 0]]} {
+	    lappend end $i
+	}
+    }
+    set_cookie dccext $end
+    switch -- $ext {
+	-view {
+	    echo "[kano] [llength [get_cookie dccext]] bound extensions"
+	    foreach i [get_cookie dccext] {
+		echo "   *.[lindex $i 0] goes to [lindex $i 1]"
+	    }
+	    complete
+	    return
+	}
+    }
+    if {[lindex [args] 1] == ""} {
+	echo "[kano] Removed DCCExt for $ext."
+	complete
+	return
+    }
+    set x [get_cookie dccext]
+    lappend x [list $ext $dir]
+    set_cookie dccext $x
+    echo "[kano] Added DCC extension *.$ext."
+    complete
+}
+
+alias ts {
+    if {[raw_args] == "on" || [raw_args] == "off"} {
+	set which_window ""
+	lappend which_window [window type] [window name]
+	window focus status
+	/timestamp [raw_args]
+	foreach i [channels] {
+	    window focus channel $i
+	    /timestamp [raw_args]
+	}
+	foreach i [queries] {
+	    window focus query $i
+	    /timestamp [raw_args]
+	}
+	foreach i [chats] {
+	    window focus chat $i
+	    /timestamp [raw_args]
+	}
+	window focus [lindex $which_window 0] [lindex $which_window 1]
+	echo "[kano] Timestamped all windows: [raw_args]"
+    } elseif {[args] == ""} {
+	/timestamp toggle
+    } else {
+	echo "[kano] Usage: /ts <on|off>, /ts"
+	echo "[kano]        on/off turns timestamping for ALL windows on or off."
+    }
+    complete
+}
+
+alias getnick {
+    if {[string tolower [nick]] != [string tolower [lindex [args] 0]]} {
+	set getnick [lindex [args] 0]
+	set_cookie getnick $getnick
+	echo [t getnick]
+	set lastget 0
+    } else {
+	echo [t getnickerr]
+    }
+    complete
+}
+
+alias * {
+    if {$redir != ""} {
+	set ev [string tolower [lindex [args] 0]]
+	if {[info exists addpipe($ev)]} {
+	    set delredir([lindex $addpipe($ev) 0]) [lindex $addpipe($ev) 1]
+	    foreach i [lindex $addpipe($ev) 1] {
+		set isredir($i) [window name]
+	    }
+	}
+    }
+}
+
+alias host {
+    if {[uhost [arg]] != ""} {
+	echo "[kano] [arg] is [maskhost [uhost [arg]]]."
+    } else {
+	echo "[kano] Can't find [arg]'s uhost."
+    }
+    complete
+}
+
+alias cycle {
+    if {[arg] == ""} {set ch [channel]} else {set ch [arg]}
+    /quote part $ch\012join $ch [get_cookie chankey([string tolower $ch])]
+    complete
+}
+
+alias setsound {
+    switch -- [lindex [args] 0] {
+	page {
+	    if {[lindex [args] 1] == "off"} {set_cookie page(sound) "";complete;return}
+	    set ans [FALC_fileopen -t "[kanovers] Page Sound" -d [ddirname [get_cookie page(sound)]] -f "MIDI Files (*.rmi, *.mid)|*.MID;*.RMI|Wave Sounds (*.wav)|*.WAV"]
+	    if {$ans == ""} {complete;return}
+	    set_cookie page(sound) $ans
+	}
+	connect {
+	    if {[lindex [args] 1] == "off"} {set_cookie sound(connect) "";complete;return}
+	    set ans [FALC_fileopen -t "[kanovers] Connect Sound" -d [ddirname [get_cookie sound(connect)]] -f "MIDI Files (*.rmi, *.mid)|*.MID;*.RMI|Wave Sounds (*.wav)|*.WAV"]
+	    if {$ans == ""} {complete;return}
+	    set_cookie sound(connect) $ans
+	}
+	email {
+	    if {[lindex [args] 1] == "off"} {set_cookie sound(email) "";complete;return}
+	    set ans [FALC_fileopen -t "[kanovers] New Mail Sound" -d [ddirname [get_cookie sound(email)]] -f "MIDI Files (*.rmi, *.mid)|*.MID;*.RMI|Wave Sounds (*.wav)|*.WAV"]
+	    if {$ans == ""} {complete;return}
+	    set_cookie sound(email) $ans
+	}
+	chan {
+	    if {[lindex [args] 1] == "off"} {set_cookie sound(chan) "";complete;return}
+	    set ans [FALC_fileopen -t "[kanovers] Channel Text Sound" -d [ddirname [get_cookie sound(chan)]] -f "MIDI Files (*.rmi, *.mid)|*.MID;*.RMI|Wave Sounds (*.wav)|*.WAV"]
+	    if {$ans == ""} {complete;return}
+	    set_cookie sound(chan) $ans
+	}
+	msg {
+	    if {[lindex [args] 1] == "off"} {set_cookie sound(msg) "";complete;return}
+	    set ans [FALC_fileopen -t "[kanovers] Incoming Message Sound" -d [ddirname [get_cookie sound(msg)]] -f "MIDI Files (*.rmi, *.mid)|*.MID;*.RMI|Wave Sounds (*.wav)|*.WAV"]
+	    if {$ans == ""} {complete;return}
+	    set_cookie sound(msg) $ans
+	}
+	nick {
+	    if {[lindex [args] 1] == "off"} {set_cookie sound(nick) "";complete;return}
+	    set ans [FALC_fileopen -t "[kanovers] Nick Highlight Sound" -d [ddirname [get_cookie sound(nick)]] -f "MIDI Files (*.rmi, *.mid)|*.MID;*.RMI|Wave Sounds (*.wav)|*.WAV"]
+	    if {$ans == ""} {complete;return}
+	    set_cookie sound(nick) $ans
+	}
+	default {
+	    echo "[kano] Usage: /[event] <connect|page|email|nick|chan|msg> \[off\]"
+	}
+    }
+    complete
+}
+
+alias kq {
+    foreach i [queries] {
+	if {![string match .*. $i]} {
+	    window close query $i
+	}
+    }
+    complete
+}
+
+alias query {if {[get_cookie onewindow 0]} complete}
+
+alias window {
+    if {$curwin(chan) == [string tolower [list [lindex [args] 0] [lindex [args] 1]]]} {complete;return}
+    set curwin(chan) [string tolower [list [lindex [args] 0] [lindex [args] 1]]]
+    window set_title [window get_title [lindex [args] 0] [lindex [args] 1]] [lindex [args] 0] [lindex [args] 1]
+    if {![string match .*. [lindex [args] 1]]} {
+	echo "[kano] now talking in [lindex [args] 0]([lindex [args] 1])"
+    }
+    complete
+}
+
+alias analyze {
+    if {!$analyze} {
+	set analyze 1
+	echo "[kano] Now analyzing text."
+    } else {
+	set analyze 0
+	echo "[kano] No longer analyzing text."
+    }
+    complete
+}
+
+alias pex {
+    if {[args] != ""} {
+	set arg [raw_args]
+	if {[lsearch -exact [get_cookie regurl] $arg] == -1} {
+	    set_cookie regurl [concat [get_cookie regurl] [list $arg]]
+	} else {
+	    set_cookie regurl [lrem [get_cookie regurl] $arg]
+	}
+    }
+    echo "[kano] [llength [get_cookie regurl]] regexp(s)"
+    set maxlen 0
+    foreach i [get_cookie regurl] {
+	if {[string length $i] > $maxlen} {set maxlen [string length $i]}
+    }
+    catch {unset a b c d}
+    foreach {a b c d} [get_cookie regurl] {
+	echo "[kano] [format %-${maxlen}s $a] [format %-${maxlen}s $b] [format %-${maxlen}s $c] [format %-${maxlen}s $d]"
+    }
+    echo "[kano] Type /pUrl to configure events to disallow\n[kano] Type '/help regexp' for help on regexp strings"
+    complete
+}
+
+alias purl {
+    if {[args] != ""} {
+	set arg [raw_args]
+	if {[lsearch -exact [get_cookie pexcept] $arg] == -1} {
+	    set_cookie pexcept [concat [get_cookie pexcept] [list $arg]]
+	} else {
+	    set_cookie pexcept [lrem [get_cookie pexcept] $arg]
+	}
+    }
+    echo "[kano] [llength [get_cookie pexcept]] exception(s)"
+    set maxlen 0
+    foreach i [get_cookie pexcept] {
+	if {[string length $i] > $maxlen} {set maxlen [string length $i]}
+    }
+    catch {unset a b c d}
+    foreach {a b c d} [get_cookie pexcept] {
+	echo "[kano] [format %-${maxlen}s $a] [format %-${maxlen}s $b] [format %-${maxlen}s $c] [format %-${maxlen}s $d]"
+    }
+    echo "[kano] Type /pEx to configure strings to disallow"
+    complete
+}
+
+alias redir {
+    set redir [list [window type] [window name]]
+    set redirme $redir
+    set redir_text ""
+    say [raw_args]
+    window focus [lindex $redir 0] [lindex $redir 1]
+    set tstr ""
+    set redir_text [string trim $redir_text \n]
+    set redir ""
+    set r [strip [split $redir_text \n] g]
+    if {[llength $r] > [get_cookie pastelines 10]} {
+	eval [concat [list lappend readz($redirme)] $r]
+    } else {
+	foreach i $r {say $i}
+    }
+    complete
+}
+
+alias remnants {
+    set ch [string tolower [ret [lindex [args] 0]]]
+    if {[arg] == ""} {
+	echo "[kano] Possible remnants:"
+	foreach i [array names relaytext] {
+	    if {![string match .*. $i] && $i != "*"} {echo "    $i"}
+	}
+	complete;return
+    }
+    if {![info exists relaytext($ch)]} {
+	echo "[kano] No text to display for $ch."
+	complete;return
+    } else {
+	/query [set x .Remnants($ch).]
+	window set_title "Remnants of $ch" query $x
+	foreach i $relaytext($ch) {
+	    myecho $i query $x
+	}
+    }
+    complete
+}
+
+alias last {/searchw [raw_args]; complete}
+
+alias searchw {
+    if {[args] == ""} {/help [event];complete;return}
+    set chan [string tolower [window name]]
+    if {![info exists relaytext($chan)]} {
+	echo "[kano] No text here..."
+	complete
+	return
+    }
+    set x $relaytext($chan)
+    set match [lindex [args] 0]
+    if {![string match {[*?]} $match]} {
+	set match *[string tolower $match]*
+	set low 1
+    } else {set low 0}
+    echo "[kano] Searching [llength $x] lines back..."
+    foreach i $x {
+	if {$low} {set j [string tolower $i]} else {set j $i}
+	if {[string match $match $j]} {echo $i}
+    }
+    complete
+}
+
+alias lc {
+    input set_text $lastprivmsg([string tolower [channel][query]])
+    input set_sel_start 512
+    complete
+}
+
+alias ansi {
+    if {![file exists [raw_args]]} {
+	echo "[kano] File [raw_args] doesn't exist!"
+    } else {
+	set ansi ""
+	set x [open [raw_args]]
+	while {![eof $x]} {
+	    lappend ansi [ansitomirc [gets $x]]
+	}
+	close $x
+	catch {file copy [raw_args] [file root [raw_args]].bak}
+	set x [open [raw_args] w]
+	foreach i $ansi {
+	    puts $x $i
+	}
+	close $x
+	echo "[kano] Converted [raw_args] to mIRC color. Saved [file root [raw_args]].bak."
+    }
+    complete
+
+}
+
+alias showj {
+    if {[showj]} {
+	showj 0
+	echo "[kano] No longer showing joins, parts, or quits."
+    } else {
+	showj 1
+	echo "[kano] Now showing joins, parts, and quits."
+    }
+    complete
+}
+
+alias weed {
+    set type [string tolower [lindex [args] 0]]
+    set value [lindex [args] 1]
+    catch {unset mayz}
+    set mayz(mask)   ""
+    set mayz(notify) ""
+    set mayz(ignore) ""
+    set mayz(op)     ""
+    set mayz(ban)    ""
+    set mayz(notes)  ""
+    if {$type != "" && ![info exists mayz($type)]} {
+	echo "[kano] Invalid type $type: must be one of: [array names mayz]."
+	complete
+	return
+    } elseif {[arg] == ""} {
+	set z [expr {[user_count] -1}]
+	echo "[kano] Weeding $z users..."
+	set delled 0
+	while {$z >= 0} {
+	    if {[lsearch -glob [get_user $z notes] "seen *"] != -1} {set_user $z notes [lreplace [get_user $z notes] [lsearch -glob [get_user $z notes] "seen *"] [lsearch -glob [get_user $z notes] "seen *"]]}
+	    set a 1
+	    foreach i {notify ignore op ban notes} {
+		if {[get_user $z [lindex $i 0]] != ""} {
+		    set a 0
+		}
+	    }
+	    if {$a} {delete_user $z; incr delled}
+	    incr z -1
+	}
+	echo "[kano] Deleted $delled users."
+    } else {
+	set z [expr {[user_count] -1}]
+	echo "[kano] Weeding $z users..."
+	set delled 0
+	while {$z >= 0} {
+	    if {[string match $value [get_user $z $type]]} {
+		delete_user $z
+		incr delled
+	    }
+	    incr z -1
+	}
+	echo "[kano] Deleted $delled users. Made a huge mistake? Type /crash and then ctrl+alt+delete..\"End Task\" [kclient Xircon]."
+    }
+    complete
+}
+
+alias crash {while 1 continue}
+
+alias match {
+    if {[lindex [args] 0] == "-all"} {
+	set n [ret [lindex [args] 1]]
+	set ch ""
+	set chz ""
+	foreach i [channels] {
+	    if {[lsearch $ch $i] == -1} {append ch "[chanlist $i] "}
+	    lappend chz $i
+	}
+	set do 1
+    } else {
+	set n [ret [lindex [args] 0]]
+	set ch [chanlist [channel]]
+	set chz [channel]
+	set do 0
+    }
+    set matches ""
+    foreach i $ch {
+	if {[string match [strep [string tolower $n]] \
+		[string tolower $i![uhost $i]]]} {
+	    lappend matches $i
+	}
+    }
+    if {$matches == ""} {
+	echo "[kano] No users matching $n."
+    } else {
+	echo "[kano] [llength $matches] matches for $n found:"
+	set chosen ""
+	foreach i $matches {
+	    set chx ""
+	    foreach j [channels] {
+		if {[ison $i $j]} {lappend chx $j}
+	    }
+	    if {[isop $i $chz]} {set op @} \
+		    elseif {[isvoice $i $chz]} {set op +} \
+		    elseif {[llength $chz] > 1} {set op ""} \
+		    else {set op " "}
+	    if {[lsearch $chosen $i] != -1} {lappend chosen $i}
+	    echo "    $op[format %-9s $i]: [uhost $i]\
+		    [iph $do ([join $chx ", "]) ""]"
+	}
+    }
+    complete
+}
+
+set makelist ""
+alias mlist {
+    /query .Makelist.
+    window set_title "Makelist(0)" query .Makelist.
+    window clear query .Makelist.
+    set makelist ""
+    echo "[kano] Use one single dot (\".\") to end the list."
+    complete
+}
+
+alias grep {
+    /query .Grep.
+    if {[window state query .Grep.] == "minimize"} {window restore query .Grep.}
+    window set_title "Grepping for: [raw_args]" query .Grep.
+    myecho "[kano] Now grepping for [raw_args]" query .Grep.
+    set grep_for [raw_args]
+    complete
+}
+
+alias tz {
+    set loc [lindex [args] 0]
+    set hrs [lindex [args] 1]
+    if {$loc == ""} {
+	/help [event]
+	complete
+	return
+    }
+    if {$loc == "list"} {
+	echo "[kano] [llength [array names tzt]] time zone entries"
+	foreach i [array names tzt] {
+	    /tz $i
+	}
+	complete;return
+    }
+    if {$hrs == ""} {
+	set ct [low $loc]
+	if {[info exists tzt($ct)]} {
+	    set i $tzt($ct)
+	    echo "[kano] in $litehelp[lindex $i 0],\
+		    [lindex $i 1] hours away,\
+		    it is [clock format [clock scan "[lindex $i 1]\
+		    hours"] -format "$litehelp%A, %B %d and the\
+		    time is $litehelp%I:%M %p"]"
+	} else {
+	    echo "[kano] No tz entry for $loc"
+	}
+    } else {
+	set val [list $loc $hrs]
+	set tzt([low $loc]) $val
+	set z [get_cookie tzones]
+	set f [lsearch -glob "[low $loc] *" $z]
+	if {$f != -1} {
+	    set z [lreplace $z $f $f]
+	}
+	set_cookie tzones [concat $z [list $val]]
+	echo "[kano] Set tz entry for $loc to $hrs hours away"
+    }
+    complete
+}
+
+alias since {/until [raw_args];complete}
+alias until {
+    set time [raw_args]
+    set split [split $time]
+    if {[lindex $split 0] == "set"} {
+	set var [lindex $split 1]
+	set time [lrange $split 2 end]
+    } else {set var {}}
+    if {[catch {clock scan $time} x]} {
+	set var [get_cookie until($time)]
+	if {$var == ""} {
+	    echo "[kano] Invalid date string '$time.'"
+	    complete;return
+	} else {
+	    set x [get_cookie until($time)]
+	    set var $time
+	}
+    }
+    set_cookie until($var) $x
+    set time [since c$x]
+    set x [string tolower [clock format $x -format "%a, %h %d, %I:%M:%S %p"]]
+    if {[string index $time 0] == "-"} {set until until;set time [string \
+	    range $time 1 end]} else {set until since}
+    echo "[kano] Time $until [expr {$var == "" ? "" : "$var "}]($x): $time"
+    complete
+}
+
+alias conn {
+    set serv [lindex [args] 0]
+    set port [FALC_port [lindex [args] 1]]
+    if {[set snam($serv:$port) [join [lrange [args] 2 end]]] != ""} {
+	set snam($serv:$port) "$snam($serv:$port)($serv:$port)"
+    }
+    if {[llength [args]] < 2} {echo "[kano] Usage: [k highlight]/[event] <server> <port> \[name (for your own reference purposes)\][k default].";complete;return}
+    if {[info exists sock([string trimleft $serv:$port .])]} {
+	echo "[kano] Socket already open to $serv:$port."
+	complete
+	return
+    }
+    echo [t newconn]
+    if {[catch {socket -async $serv $port} x]} {
+	echo [rep [rep [t socketfailed] %type /Conn] %error $x]
+	complete
+	return
+    }
+    set sock($serv:$port) $x
+    set sck $sock($serv:$port)
+    fconfigure $sck -buffering line
+    fileevent $sck readable "getconn $sck $serv:$port"
+    fileevent $sck writable "writeconn $sck $serv:$port"
+    /query $serv:$port
+    if {$snam($serv:$port) != ""} {
+	window set_title "$snam($serv:$port) - Connecting" query $serv:$port
+    } else {
+	window set_title "$serv:$port - Connecting" query $serv:$port
+    }
+    set issck($sck) 0
+    complete
+}
+
+alias userhost {
+    set m ""
+    foreach i [args] {
+	set i [join $i]
+	if {[get_user [find_user $i!*@*] notify] == "Y"} {
+	    lappend m $i
+	}
+    }
+    /quote USERHOST :[join $m]
+    complete
+}
+
+alias kill {
+    /quote KILL [lindex [args] 0] :[lrange [args] 1 end]
+    complete
+}
+
+alias killc {
+    set conz ""
+    foreach i [array names sock] {
+	if {$snam($i) != ""} {set m "$snam($i) - "} else {set m ""}
+	lappend conz "Connection: $m$i"
+    }
+    if {[info exists mailv]} {lappend conz "Email check"}
+    if {![catch {eof $dict} x] && $x != 1} {lappend conz Dictionary}
+    if {[array names webdone] != "*" && [array names webdone] != ""} {lappend conz WWW}
+    if {[info exists trans_sock]} {lappend conz Translation}
+    set ans [FALC_listbox -t "[kanovers] Kill Connection" -m "Kill which connection?" $conz]
+    switch -glob -- $ans {
+	Connection:* {killconn $sock([set m [join [lrange [split $ans] end end]]]) $m}
+	Dictionary {catch {close $dict}}
+	Email* {catch {close $mailv};unset mailv}
+	WWW {foreach i [array names webdone] {unset webdone($i);close $i};echo [array names webdone]}
+	Translation {catch {close $trans_sock};unset trans_sock}
+    }
+    complete
+}
+
+alias opdop {
+    set nick [lindex [args] 0]
+    if {![isop $nick [channel]]} {
+	/mod +o-o $nick $nick
+    } else {
+	/mod -o+o $nick $nick
+    }
+    complete
+}
+
+alias dop {/deop [arg];complete}
+
+alias timer* {
+    set timerz [string trimleft [lindex [args] 0] TIMER]
+    if {[string trim $timerz 1234567890] != "" && $timerz != ""} return
+    set args [join [lrange [args] 1 end]]
+    if {[string tolower [lindex $args 0]] == "off" && $timerz != ""} {
+	if {[catch "unset timer($timerz)"]} {
+	    echo "[kano] No such timer $timerz."
+	} else {
+	    echo "[kano] Killed timer $timerz."
+	}
+	complete
+	return
+    }
+    if {![isn [lindex [args] 1]] || ![isn [lindex [args] 2]] || [llength [args]] < 4} {
+	echo "[kano] Usage: /timer\[#\] <interval> <times> <what to do>"
+	complete;return
+    }
+    timer [ret [lindex [args] 1]] [ret [lindex [args] 2]] [join [lrange [args] 3 end]] $timerz 
+    set m 1
+    while {$timerz == ""} {
+	if {[info exists timer($m)]} {incr m} else {set timerz $m}
+    }
+    echo "[kano] Set timer [expr {$timerz -1}]."
+    complete
+}
+
+alias dotimers {
+    foreach i [array names timer] {
+	set m $timer($i)
+	set n 0
+	set o [expr {[lindex $m 1] - 1}]
+	set p 1
+	if {[lindex $m 1] == 1} {
+	    if {[catch [lindex $m 4] y]} {
+		echo "[kano] Error in timer [lindex $m 0]: $y."
+		/timer[lindex $m 0] off
+		continue
+	    }
+	    if {[lindex $m 3] != 0} {set n -1}
+	    set o [lindex $m 2]
+	    if {[lindex $m 3] == 1} {set p 0}
+	}
+	#0_num 1_left 2_total 3_howmany 4_scr
+	if {$p} {
+	    set timer($i) "[lindex $m 0] $o [lindex $m 2] [expr \
+		    {[lindex $m 3] + $n}] [lrange $m 4 end]"} else {
+		catch {unset timer($i)}
+	    }
+    }
+    complete
+}
+
+alias timers {
+    foreach i [lsort -integer [array names timer]] {
+	set j $timer($i)
+	if {[lindex $j 3] == 0} {set m ", forever"} \
+		else {set m " for [lindex $j 3] more times"}
+	echo "[kano] Timer [lindex $j 0]: every [since [lindex $j 2]] ([since [lindex $j 1]] left)$m"
+	echo "[format %-[string length [strip [kano]]]s ""] > [lindex $j 4]"
+    }
+    complete
+}
+
+alias idle {
+    catch {unset idlez}
+    set idlez(*) *
+    if {[queries .IdleTime.] == ""} {/query .IdleTime.}
+    window set_title "Idle Scan([clock format [clock seconds] -format %m/%d/%y(%H:%M:%S)])" query .IdleTime.
+    window clear query .IdleTime.
+    foreach i [array names ircidle] {
+	lappend idlez($ircidle($i)) $i
+    }
+    unset idlez(*)
+    foreach i [lsort -decreasing -integer [array names idlez]] {
+	foreach j [join $idlez($i)] {
+	    echo "[kano] [format "%-9s %-27s" $j ([string range [uhost $j] 0 24])]: [since $i]" query .IdleTime.
+	}
+    }
+    set whoistype none
+    complete
+}
+
+alias showlink* {show_links;complete}
+
+alias setprog {
+    switch -- [string tolower [lindex [args] 0]] {
+	ftp {
+	    set x [FALC_fileopen -t "FTP Client" -d [ddirname [get_cookie client(ftp)]] -f "Programs|*.exe|All Files|*.*"]
+	    if {$x == ""} {complete;return}
+	    set_cookie client(ftp) $x
+	    echo "[kano] FTP client is [get_cookie client(ftp)]"
+	}
+	default {echo "[kano] usage: /[event] ftp"}
+    }
+    complete
+}
+
+alias ecolor {echo "[kano] 1one 2two 3three 4four 5five 6six 7seven 8eight 9nine 10ten 11eleven 12twelve 13thirteen 14fourteen 15fifteen" ; complete}
+
+alias say {say [raw_args];complete}
+
+alias info {
+    if {[string trim [arg] 1234567890] == ""} {
+	if {[get_user [arg] mask] != ""} {
+	    set user [arg]
+	} else {
+	    echo "[kano] Invalid user \"[arg]\"!"
+	    complete
+	    return
+	}
+    } elseif {[string match *@* [arg]]} {
+	set user [mask2real [arg]]
+	if {$user == "-1"} {
+	    echo "[kano] Can't find a user matching [arg]."
+	    complete
+	    return
+	}
+    } else {
+	if {[uhost [arg]] == ""} {
+	    FALC_askbox -i exclamation -t "User info" "Try again in a few seconds, I don't have [arg]'s user@host."
+	    /quote who [arg]
+	    incr do_who
+	    complete
+	    return
+	}
+	set user [real2mask [arg]![uhost [arg]]]
+	if {$user == "-1"} {
+	    FALC_askbox -i exclamation -t "User info" "[arg] isn't a valid user!"
+	    complete
+	    return
+	}
+    }
+    echo "[kano] User info for [get_user $user mask]:"
+    echo "     Ignore: [get_user $user ignore]"
+    if {[set op [listify [split [get_user $user op] ,]]] == ""} {set op None.}
+    echo "     AutoOp: $op"
+    if {[set op [listify [split [get_user $user ban] ,]]] == ""} {set op None.}
+    echo "    AutoBan: $op"
+    if {[set notify [get_user $user notify]] == "Y"} {
+	set notify Yes.
+    } else {
+	set notify No.
+    }
+    echo "     Notify: $notify"
+    set notes [get_user $user notes]
+    set notez ""
+    foreach i [list kick op ban] {
+	if {[lsearch -exact $notes protect-[string tolower $i]] != "-1"} {
+	    lappend notez $i
+	}
+    }
+    if {$notez == ""} {
+	set notez None.
+    } else {
+	set notez [listify $notez]
+	set notez [string toupper [string index $notez 0]][string tolower [string range $notez 1 end]].
+    }
+    echo "    Protect: $notez"
+    complete
+}
+
+alias bans {
+    if {[channel] != ""} {
+	/mode [channel] +b
+    }
+    complete
+}
+
+alias exit {
+    if {[FALC_askbox -i stop -t "[kanovers]" -b yes_no "Close [kclient XiRCON]?"] == "yes"} {window close main}
+    complete
+}
+
+alias avg {
+    if {[llength [get_cookie avgping]] != 0} {
+	set ttp 0
+	foreach i [get_cookie avgping] {
+	    incr ttp [expr {int($i)}]
+	}
+	echo "[kano] Average PING Reply: [expr {($ttp) / \
+		[llength [get_cookie avgping]]}] sec."
+	echo "[kano]  Median PING Reply: [expr {[lindex [lsort -real \
+		[get_cookie avgping]] \
+		[expr {int([llength [get_cookie avgping]] / 2)}]]}] sec."
+    }
+    complete
+}
+
+alias lj {
+    if {[channel] == ""} {echo "[kano] Do this in a channel.";complete;return}
+    if {![info exists chanjoin([string tolower [channel]])]} {
+	echo "[kano] No last join exists."
+	complete
+	return
+    }
+    /kb $chanjoin([string tolower [channel]]) [raw_args]
+    complete
+}
+
+alias country {/count [raw_args];complete}
+alias count {
+    if {[lindex [args] 0] == "-nick"} {
+	set niq [lrange [arg] 1 end]
+	if {[uhost $niq] == ""} {
+	    /quote who $niq
+	    echo "[kano] Sorry, no user@host for $niq. Try again in a few seconds."
+	    incr do_who
+	    complete
+	    return
+	} else {
+	    set uh [split [uhost $niq] .]
+	    set blah [lindex $uh [expr {[llength $uh] - 1}]]
+	    set x [country $blah]
+	    set args $blah
+	}
+    } else {
+	set x [country [args]]
+	set args [args]
+    }
+    if {$x == ""} {
+	echo "[kano] Country for *.$args not found."
+    } else {
+	echo "[kano] *.$args is $x."
+    }
+    complete
+}
+
+alias clones {
+    catch {unset clones}
+    foreach i [chanlist [channel]] {
+	if {[uhost $i] == ""} continue
+	lappend clones([lindex [split [uhost $i] @] end]) $i
+    }
+    foreach i [array names clones] {
+	set x $clones($i)
+	if {[llength $x] == 1} {unset clones($i)}
+    }
+    set len [llength [array names clones]]
+    echo "[kano] $len set[s $len] of clones"
+    set findlong %[findlong [array names clones]]s
+    foreach i [array names clones] {
+	echo "[kano] [format $findlong $i]: [listify [lsort $clones($i)]]"
+    }
+    complete
+}
+
+alias kano {
+    set styles "5-4=> 7-8=> 3-9=> 10-11=> 2-12=> 6-13=> 14=15=0= 4·15ø4· 4ù15í4ù 3«7k3» 8«4k8» 10´7|10` 14\20015\2000\200 14\20015\2000\200 15\[10k15\] 14\[15!14\] 14\[10&&14\]"
+    if {[args] == "-help" || [args] == ""} {
+	echo "[kano] Some cool prompts:"
+	set c 0
+	foreach i $styles {
+	    echo "[rep $i && [my_nick]] [k d]/kano $c for this one."
+	    incr c
+	}
+    } elseif {[string trim [args] 1234567890] == ""} {
+	set_cookie kano [lindex $styles [args]]
+	echo "[kano] Prompt is set."
+    } else {
+	set_cookie kano [raw_args]
+	echo "[kano] Prompt is set (type [k h]/kano -help[k d] for some cool patterns)."
+    }
+    complete
+}
+
+alias roman {
+    catch {roman [raw_args]} r
+    echo "[kano] $r"
+    complete
+}
+
+alias pron* {
+    set num [lindex [args] 1]
+    if {$num == "" || [string trim $num 01234567890,] != ""} {
+	/help pronounce
+	complete
+	return
+    }
+    echo "[kano] [pron_form $num]"
+    complete
+}
+
+alias expr {
+    set x [catch {expr [raw_args]} msg]
+    if {$x} {
+	echo "[kano] $msg"
+    } else {
+	echo "[kano] [raw_args] = [k highlight]$msg"
+    }
+    complete
+}
+
+alias page {
+    set cmd [string tolower [lindex [args] 0]]
+    if {$cmd == "on"} {
+	set_cookie page(on) 1
+	echo "[kano] Paging is on."
+    } elseif {$cmd == "off"} {
+	set_cookie page(on) 0
+	echo "[kano] Paging is off."
+    } elseif {$cmd == "sound"} {
+	if {![file exists [set f [lrange [args] 1 end]]]} {
+	    echo "[kano][k error] No such file '$f'."
+	} else {
+	    if {![string match *.mid $f] \
+		    && ![string match *.wav $f] \
+		    && ![string match *.rmi $f]} {
+		echo "[kano][k error] File must be *.rmi, *.mid, or *.wav!."
+	    } else {
+		set_cookie page(sound) $f
+		echo "[kano] Page sound set to '$f'."
+	    }
+	}
+    } else {
+	echo "[kano] Usage: /page <on|off>, /page sound <filename>"
+    }
+    complete
+}
+
+alias repeat {
+    if {[llength [args]] < 2 \
+	    || [string trim [lindex [args] 0] 1234567890] != ""} {
+	echo "[kano] Usage: /[event] <number> <command>"
+    } else {
+	set c 0
+	while {$c < [lindex [args] 0]} {
+	    set err [catch [list say [join [lrange [args] 1 end]]] errd]
+	    input set_text "$c/[lindex [args] 0] ([expr \
+		    {round(100*(double($c)/[lindex [args] 0]))}]%)"
+	    update
+	    if {$err} {echo "[kano] Error: $errd"; break}
+	    incr c
+	}
+	input set_text ""
+    }
+    complete
+}
+
+alias fake {
+    set x [string tolower [lindex [args] 0]]
+    set arg [lrange [args] 1 end]
+    if {$x == "send"} {
+	if {[lindex $arg 1] == ""} {
+	    if {$arg == ""} {
+		echo "[kano] Usage: /[event] <type> <nick> \[text\]"
+		complete ; return
+	    }
+	    echo "[kano] Usage: /[event] send <nick> <fake-filename>"
+	    complete ; return
+	}
+	/ctcp [lindex $arg 0] DCC SEND [lindex $arg 1] 2130706433 113 [rand 1024 100000]
+    } elseif {$x == "chat"} {
+	if {$arg == ""} {
+	    echo "[kano] Usage: /[event] <type> <nick> \[text\]"
+	    complete
+	    return
+	}
+	/ctcp [lindex $arg 0] DCC CHAT chat 2130706433 113
+    } elseif {$x == "reply"} {
+	/notice [lindex [args] 1] \001[join [lrange [args] 2 end]]\001
+    } else {
+	echo "[kano] Usage: /[event] chat <nick> : sends a fake DCC chat request to <nick>"
+	echo "[kano]        /[event] send <nick> <fake-filename> : sends a fake DCC send request to <nick> using a random file size"
+	echo "[kano]        /[event] reply <nick> <ctcp-command> <reply-text> : sends a CTCP <ctcp-command> reply of to <nick>"
+    }
+    complete
+}
+
+set last_open_dir [pwd]
+alias open {
+    set args ""
+    foreach i [args] {
+	lappend args *.[string trimleft $i *.]
+    }
+    set file [FALC_fileopen -t "[kanovers] Open File" -f "([string toupper [join $args ", "]])|[join $args \;]|All Files (*.*)|*" -d $last_open_dir]
+    if {$file != ""} {FALC_shell -d [ddirname $file] $file} \
+	    else {complete;return}
+    set last_open_dir [file dirname $file]
+    complete
+}
+
+alias shell {
+    if {[catch [list open |[raw_args]] x]} {
+	echo "[kano] Error: $x"
+    } else {
+	fconfigure $x -blocking 0 -buffering line
+	fileevent $x readable [list show_shell [raw_args] $x]
+    }
+    complete
+}
+
+alias cstat {
+    set chan [channel]
+    if {$chan == ""} {
+	echo "[kano] You're not in a channel!"
+	complete
+	return
+    }
+    set o [llength [oplist $chan]]
+    set n [llength [nvlist $chan]]
+    set v [llength [vlist $chan]]
+    set a [llength [chanlist $chan]]
+    if {[info command botpass] != ""} {
+	set obots 0
+	foreach i [oplist [channel]] {
+	    if {[botpass $i] != ""} {incr obots}
+	}
+	set nbots 0
+	foreach i [noplist [channel]] {
+	    if {[botpass $i] != ""} {incr nbots}
+	}
+	if {$obots != 0} {set obots " ($obots bots)"} else {set obots ""}
+	if {$nbots != 0} {set nbots " ($nbots bots)"} else {set nbots ""}
+    } else {set obots ??; set nbots ??}
+    if {[string match *m* [lindex [split [mode $chan]] 0]]} {
+	set spk [expr {$a - ($o + $v)}]
+    }
+    set lite [string range $litehelp 1 2]
+    set dark [string range $darkhelp 1 2]
+    [expr {[lindex [args] 0] == "-s" ? "say" : "echo"}] [graph $lite $dark $o $a 30 0 $dark $lite " $o ops$obots"]\n[graph $lite $dark $v $a 30 0 $dark $lite " $v voices"]\n[graph $lite $dark $n $a 30 0 $dark $lite " $n nonops$nbots"]
+    complete
+}
+
+alias urls {
+    /query .URLs.
+    if {[window state query .URLs.] == "minimize"} {
+	window restore query .URLs.
+    }
+    window focus query .URLs.
+    window set_title "Caught URL's" query .URLs.
+    foreach i $urls {
+	echo "[kano] $i" query .URLs.
+    }
+    complete
+}
+alias protect {/prot [raw_args];complete}
+alias prot {
+    if {[args] == ""} {
+	/help prot
+	complete;return
+    }
+    set nick [lindex [args] 0]
+    if {[uhost $nick] == ""} {
+	echo "[kano] Who?"
+	complete;return
+    }
+    set type [lindex [args] 1]
+    set new [lrange [args] 2 end]
+    if {$type != "" && $type != "*"} {
+	set valid [list active passive]
+	set f [lsearch -glob $valid $type*]
+	set type [lindex $valid $f]
+	if {$type == ""} {/help [event];complete;return}
+    }
+    if {[set user [find_user $nick![uhost $nick]]] == -1} {
+	if {$type != ""} {
+	    set user [add_user [maskhost [uhost $nick]]]
+	} else {set user -1}
+    }
+    set notes [get_user $user notes]
+    set f [lsearch $notes "protect *"]
+    set j [lindex $notes $f]
+    if {$j != "" && $type == "*"} {set type [lindex $j 2]}
+    if {$type == ""} {
+	if {$f == -1} {set type no; set vers ""} \
+		else {set type [lindex $j 2]; set vers [lindex $j 1]}
+	if {$user != -1} {set mask [get_user $user mask]} else {set mask $nick}
+	echo "[kano] $mask has $type protect [listify $vers]"
+    } else {
+	if {$new == ""} {set new [lindex $j 1]}
+	set 0 [string index $new 0]
+	set end [string range $new 1 end]
+	switch -- $0 {
+	    + {
+		set new [lindex $j 1]
+		foreach i $end {
+		    if {[lsearch -exact $new $i] == -1} {lappend new $i}
+		}
+		set f -1
+	    }
+	    - {
+		set new [lindex $j 1]
+		foreach i $end {
+		    set f [lsearch -exact $new $i]
+		    if {$f == -1} continue
+		    set new [lreplace $new $f $f]
+		}
+	    }
+	}
+	set newprot [list protect $new $type]
+	if {$f == -1} {
+	    lappend notes $newprot
+	} else {
+	    set notes [lreplace $notes $f $f $newprot]
+	}
+	set_user $user notes $notes
+	/[event] $nick
+    }
+    complete
+}
+
+alias color {
+    set x [arg]
+    set g ""
+    foreach i [split $x {}] {
+	set 1 [random 0 15]
+	set 2 [random 16 31]
+	if {[string length $1] != 2} {set 1 0$1}
+	append g "$1,$2$i"
+    }
+    say $g
+    complete
+}
+
+alias hilite {
+    set il ""
+    switch -glob -- [lindex [args] 0] {
+	-rem {set dowhat "Remove Add"}
+	* {set dowhat "Add Remove"}
+    }
+    lappend il [list combo addrem 5 5 45 100 $dowhat]
+    lappend il [list combo -e chan 55 5 145 100 [get_cookie hilite(words)]]
+
+    lappend il [list check -v [get_cookie hilite(nick) 1] check 5 20 10 10]
+    lappend il [list label a 15 20 185 10 "Highlight own nick"]
+
+    set ans [FALC_dialog -t "[kanovers] Highlighted Words" 200 30 $il]
+    if {$ans != ""} {
+	set ch [lindex [lindex $ans 1] 1]
+	set n [lindex [lindex $ans 2] 1]
+	if {![catch {expr $n}]} {
+	    set_cookie hilite(nick) $n
+	}
+	if {[lindex [lindex $ans 0] 1] == "Add"} {
+	    if {[catch {lrem [get_cookie hilite(words)] $ch} x]} {
+		set x [get_cookie hilite(words)]
+	    }
+	    lappend x $ch
+	    set_cookie hilite(words) $x
+	    /[event]
+	} else {
+	    catch {set_cookie hilite(words) [lrem [get_cookie hilite(words)] $ch]}
+	    /[event] -rem
+	}
+    } else {echo "[kano] Highlighted: [join [get_cookie hilite(words)] ", "]."}
+    complete
+}
+
+
+alias exclude {
+    set il ""
+    switch -glob -- [lindex [args] 0] {
+	-rem {set dowhat "Remove Add"}
+	* {set dowhat "Add Remove"}
+    }
+    lappend il [list combo addrem 5 5 45 100 $dowhat]
+    lappend il [list combo -e chan 55 5 145 100 [get_cookie hilite(not)]]
+
+    set ans [FALC_dialog -t "[kanovers] Highlight Exclusions" 200 20 $il]
+    if {$ans != ""} {
+	set ch [lindex [lindex $ans 1] 1]
+	set_cookie hilite(nick) [lindex [lindex $ans 2] 1]
+	if {[lindex [lindex $ans 0] 1] == "Add"} {
+	    if {[catch {lrem [get_cookie hilite(not)] $ch} x]} {
+		set x [get_cookie hilite(not)]
+	    }
+	    lappend x $ch
+	    set_cookie hilite(not) $x
+	    /[event]
+	} else {
+	    catch {set_cookie hilite(not) [lrem [get_cookie hilite(not)] $ch]}
+	    /[event] -rem
+	}
+    } else {
+	echo "[kano] Excluded from hilite: [join \
+		[get_cookie hilite(not)] ", "]."
+    }
+    complete
+}
+
+alias ruser {
+    set ans [FALC_listbox -t "[kanovers] Userlist - Remove" -m "[llength [set u [userlist]]] users:" $u]
+    if {$ans != ""} {
+	delete_user [find_user $ans]
+	echo "[kano] Deleted $ans."
+    }
+    complete
+}
+
+alias userl {
+    set on_user 0
+    set count_user [expr {[user_count] -1}]
+    set notify "";set ban "";set protect "";set ignore ""
+    while {$on_user <= $count_user} {
+	if {[get_user $on_user notify] == "Y"} {
+	    lappend notify $on_user
+	}
+	if {[get_user $on_user ignore] != ""} {
+	    lappend ignore $on_user
+	}
+	if {[lsearch -glob [get_user $on_user notes] {perm *}] != -1} {
+	    lappend ban $on_user
+	}
+	if {[lsearch -glob [get_user $on_user notes] {protect *}] != -1} {
+	    lappend protect $on_user
+	}
+	incr on_user
+    }
+    /query .Users.
+    if {[window state query .Users.] == "minimize"} {window restore query .Users.}
+    window focus query .Users.
+    window set_title "User specs" query .Users.
+    if {$notify != ""} {echo "[kano] Notifies([llength $notify]):"}
+    foreach i $notify {
+	set mask [get_user $i mask]
+	echo "    [format %-9s [ret [lindex [split $mask !] 0]]] [join [lrange [split $mask !] 1 end]]" query .Users.
+	if {[set since [get_user $i on_since]] != 0} {
+	    echo "      online as [get_user $i on_mask] for [since c$since]" query .Users.
+	}
+	update
+    }
+    if {$ban != ""} {echo "[kano] Permbans([llength $ban]):"}
+    foreach i $ban {
+	echo "    [get_user $i mask]" query .Users.
+	set notes [get_user $i notes]
+	echo "      banned: [lindex [lindex $notes [lsearch -glob $notes {perm *}]] 1]" query .Users.
+	update
+    }
+    if {$ignore != ""} {echo "[kano] Ignores([llength $ignore]):"}
+    foreach i $ignore {
+	echo "    [get_user $i mask]" query .Users.
+	echo "      ignored: [get_user $i ignore]" query .Users.
+	update
+    }
+    if {$protect != ""} {echo "[kano] Protected([llength $protect]):"}
+    foreach i $protect {
+	set mask [get_user $i mask]
+	echo "    [format %-9s [ret [lindex [split $mask !] 0]]] [join [lrange [split $mask !] 1 end]]" query .Users.
+	set prot [get_user $i notes]
+	set f [lsearch $prot "protect *"]
+	echo "      protected: [listify [lindex [lindex $prot $f] 1]]" query .Users.
+	update
+    }
+    complete
+}
+
+benchmark
+
+hotkey enter {
+    if {[string range [input get_text] 0 5] == "/quit "} {
+	if [get_cookie qexit 0] {window close main}
+    }
+    if {[clock format [get_cookie lastret 0] -format "%m%d%y"] != [clock format [clock seconds] -format "%m%d%y"] && ([catch {sockon $env(KMOTD)} socky] || $socky == 0)} grab_motd
+    set_cookie lastret [clock seconds]
+}
+
+alias awayq {
+    set quick_away 1
+    /away [raw_args]
+    set quick_away 0
+    complete
+}
+
+alias topic {
+    set tchan [lindex [args] 0]
+    if {[regexp {^(.*) KV$} [raw_args] junk content]} {
+	/quote topic :$content
+	complete
+	return
+    }
+    set ra [raw_args]
+    set chan [ret [lindex [args] 0]]
+    set topiclength 80
+    set topic_string [join [lrange [split [raw_args]] 1 end]]
+    if {[string length [string trimright $topic_string]] > $topiclength} {
+	set x [FALC_askbox -t "Topic too long" -b ok_cancel -d ok -i exclamation "Topic you are trying to set may be too long ($topiclength+ characters). Continue?"]
+	if {$x == "cancel"} {
+	    set text "/topic $tchan "
+	    set length [string length $text]
+	    input set_text $text$topic_string
+	    input set_sel_start [expr {$length+$topiclength}]
+	    input set_sel_length 512
+	    complete
+	}
+    }
+}
+
+alias lock {
+    if {[channel] == ""} {echo "[kano] Try doing this in a channel.";complete;return}
+    if {[get_cookie lock([channel])] == ""} {
+	set_cookie lock([channel]) [topic [channel]]
+	echo [t topiclock]
+    } else {
+	set_cookie lock([channel]) ""
+	echo [t topicunlock]
+    }
+    refresh [channel]
+    complete
+}
+
+alias lb {catch {/mod -b $lastban([string tolower [channel]])};complete}
+
+alias lu {catch {/mod +b $lastunban([string tolower [channel]])};complete}
+
+alias lt {
+    if {[arg] == ""} {set t [channel]} else {set t [arg]}
+    if {![info exists lastopic($t)]} {
+	echo "[kano] dumbass"
+    } else {
+	/topic $t $lastopic($t) KV
+    }
+    complete
+}
+
+alias gt {
+    input set_text "/topic [channel] [topic [channel]]"
+    input set_sel_start 512
+    complete
+}
+
+alias ta {
+    /topic [channel] [topic [channel]] [raw_args]
+    complete
+}
+
+alias play {
+    if {[arg] == "-stop"} {
+	catch {unset "readz([window type] [window name])"}
+	echo "[kano] Stopped."    
+    } elseif {![file exists [arg]] && [arg] != ""} {
+	echo "[kano] No such file '[arg]'."
+    } else {
+	if {[arg] != ""} {
+	    set x [open [arg]]
+	} else {
+	    set x [open [FALC_fileopen -t [kanovers]]]
+	    if {$x == ""} {complete;return}
+	}
+	while {![eof $x]} {
+	    gets $x rzz
+	    if {[llength [split [string trim $rzz]]] != 0} {
+		lappend "readz([window type] [window name])" $rzz
+	    }
+	}
+	close $x
+	echo "[kano] Playing [arg].. hit escape to stop"
+    }
+    complete
+}
+
+alias wallx {
+    set niq [lindex [args] 0]
+    set arg [lrange [args] 1 end]
+    catch {unset xlist}
+    set xt 0
+    foreach i [chanlist [channel]] {
+	set 1 1
+	foreach j [split $niq ,] {
+	    if {[string tolower $i] == [string tolower $j]} {
+		set 1 0
+	    }
+	}
+	if {$1} {lappend xlist($xt) $i}
+	if {![info exists xlist($xt)]} {set xlist($xt) ""}
+	if {[llength $xlist($xt)] >= 10} {incr xt}
+    }
+    foreach i [array names xlist] {
+	/quote NOTICE [join $xlist($i) ,] :[t chanwallx]
+    }
+    complete
+}
+
+alias mme {/ame [arg] ; complete}
+
+alias gme {/ame [arg] ; complete}
+
+alias msay {/amsg [arg] ; complete}
+
+alias scr {
+    echo "[kano] [llength [scripts]] scripts loaded:"
+    set count 1
+    foreach i [scripts] {
+        echo "[kano] $count. $i"
+	incr count
+    }
+    complete
+}
+
+alias mode {
+    set chan [lindex [args] 0]
+    if {[string index $chan 0] != "#"} return
+    set mode [lindex [args] 1]
+    set modenix [lrange [args] 2 end]
+    set plus_minus +
+    set unbans ""
+    set ex ""
+    set bans ""
+    set unex ""
+    if {![info exists chanbans([string tolower $chan])]} {
+	set chanbans([string tolower $chan]) ""
+    }
+    if {![info exists chanex([string tolower $chan])]} {
+	set chanex([string tolower $chan]) ""
+    }
+    foreach i [string tolower [split $mode {}]] {
+	if {$i == "+" || $i == "-"} {set plus_minus $i;continue}
+	if {$plus_minus == "+" && ($i == "b" || $i == "e")} {
+	    set bannik [strep [set realnik [lindex $modenix 0]]]
+	    foreach j $chanbans([string tolower $chan]) {
+		if {$j == ""} continue
+		if {[string match [string tolower $bannik] \
+			[string tolower $j]]} {
+		    if {$i == "b"} {
+			lappend unbans $j
+		    } else {
+			lappend bans $j
+		    }
+		}
+	    }
+	    foreach j $chanex([string tolower $chan]) {
+		if {$j == ""} continue
+		if {[string match [string tolower $bannik] \
+			[string tolower $j]]} {
+		    if {$i == "b"} {
+			lappend ex $j
+		    } else {
+			lappend unex $j
+		    }
+		}
+	    }
+	}
+	if {[string first $i ohvbe] != -1} {
+	    set modenix [lrange $modenix 1 end]
+	}
+    }
+    if {$unbans != ""} {massmode $chan -b $unbans}
+    if {$unex != ""} {massmode $chan -e $unex}
+    if {$ex != ""} {
+	echo "[kano] The following exceptions were matched:" channel $chan
+	foreach i [killdupe $ex] {
+	    echo "    $i"
+	}
+    }
+    if {$bans != ""} {
+	echo "[kano] The following bans were matched:" channel $chan
+	foreach i [killdupe $bans] {
+	    echo "    $i"
+	}
+    }
+}
+
+
+alias perm {
+    if {[args] == ""} {
+	echo "[kano] Usage: /perm <nick> <reason>"
+	complete
+	return
+    }
+    set n [ret [lindex [args] 0]]
+    set r [join [lrange [args] 1 end]]
+    set u [maskhost [uhost $n]]
+    if {$u == [maskhost ""] && ![string match *!*@* $n]} {
+	echo "[kano] I don't have $n's userhost. Try again in a sec."
+	/quote who $n
+	incr do_who
+	complete
+	return
+    } elseif {[string match *!*@* $n]} {
+	set u $n
+    }
+    set pb 0
+    if {[lsearch -glob [set z [get_user $m notes]] "perm *"] != -1} {
+	if {[set y [find_user $n![uhost $n]]] != -1} {
+	    set m $y
+	    set u [get_user $y mask]
+	    if {[lsearch [get_user $m notes] "perm *"] != -1} {
+		set_user $m notes [lreplace [set z [get_user $m notes]] [set z [lsearch -glob $z "perm *"]] $z]
+		echo [rep [rep [t remperm] %nick $n] %user $u]
+	    } else {
+		set pb 1
+	    }
+	} else {
+	    set pb 1
+	}
+    } else {set pb 1}
+    if {$pb} {
+	if {[set y [find_user $n![uhost $n]]] != -1} {
+	    set m $y
+	    set u [get_user $y mask]
+	} else {
+	    set m [add_user $u]
+	}
+	set_user $m notes [string trim "$z {perm [list $r]}"]
+	set chz ""
+	foreach i [channels] {
+	    if {[ison $n $i]} {
+		lappend chz $i
+	    }
+	}
+	foreach i $chz {
+	    /mode $i -o+b $n $u
+	}
+	/kick [join $chz ,] $n shitlisted: $r
+	echo [rep [rep [t addperm] %nick $n] %user $u]
+    }
+    complete
+}    
+
+
+alias ban {
+    set nick [lindex [args] 0]
+
+    if {[string match {*[!@]*} $nick] || [arg] == ""} {
+	/mode [channel] +b $nick
+	complete
+	return
+    }
+    if {[info exists who([string tolower $nick])]} {
+	set host [maskhost [uhost $nick]]
+	if {[ison $nick [channel]]} {
+	    /mode [channel] -o+b $nick $host
+	} else {
+	    /mode [channel] +b $host
+	}
+    } else {
+	/quote WHO $nick
+	incr do_who
+	echo "[kano] No user@host for $nick: try again in a few seconds."
+    }
+    complete
+}
+
+alias unban {
+    if {[uhost [arg]] == ""} {
+	echo "[kano] I don't have [arg]'s userhost. Try again in a sec."
+	/quote WHO :[arg]
+	incr do_who
+    } else {
+	set modes ""
+	if {[info exists chanbans([string tolower [channel]])]} {
+	    foreach i $chanbans([string tolower [channel]]) {
+		if {[string match [strep [string tolower $i]] \
+			[string tolower [arg]![uhost [arg]]]]} {
+		    lappend modes $i
+		}
+	    }
+	    if {$modes != ""} {
+		massmode [channel] -b $modes
+	    } else {
+		echo "[kano] No [channel] bans match [arg]."
+	    }
+	} else {
+	    echo "[kano] No [channel] bans match [arg]."
+	}	    
+    }
+    complete
+}
+
+alias rot {
+    say ¨[enrot [raw_args]]
+    echo ([raw_args])
+    input set_text "/[event] "
+    input set_sel_start 512
+    complete
+}
+
+alias oldrot {
+    say §[rot_old [raw_args]]
+    echo ([raw_args])
+    input set_text "/[event] "
+    input set_sel_start 512
+    complete
+}
+
+alias crypt {
+    if {[arg] != ""} {
+	set_cookie crypt_key [arg]
+    }
+    echo "[kano] Crypt key is '[get_cookie crypt_key]'"
+    complete
+}
+
+alias default* {
+    set arg [lrange [args] 1 end]
+    if {$arg == ""} {
+	set ans [FALC_listbox -t "Default message configuration" -m "Select an area of messages to edit" {Clientinfo Kick Kickban Repeatkick Capkick Away Back Quit}]
+	if {$ans == ""} {complete;return}
+    } else {set ans $arg}
+    set list [get_cookie mesg($ans)]
+    set il ""
+    lappend il [list label x 0 0 200 10 "Enter each $ans message on a separate line"]
+    lappend il [list edit -m return 0 10 200 200 [join $list \r\n]]
+    set text [FALC_dialog -t "$ans messages.." 200 212 $il]
+    if {$text == ""} {complete;return}
+    set text [lindex [lindex $text 0] 1]
+    regsub -all \r $text {} text
+    set sp [split $text \n]
+    set end [list]
+    foreach i $sp {if {$i != ""} {lappend end $i}}
+    set sp $end
+    set_cookie mesg($ans) $sp
+    echo "[kano] [llength $sp] $ans messages.."
+    complete
+}
+
+alias getsocks {
+    getsocks
+    complete
+}
+
+
+alias said {
+    set arg [string tolower [lindex [args] 0]]
+    if {$arg == ""} {
+	echo "[kano] Usage: /said <nick> \[-nonick\]"
+	complete
+	return
+    }
+    /query .Said($arg).
+    if {[window state query .Said($arg).] == "minimize"} {
+	window restore query .Said($arg).
+    }
+    window focus query .Said($arg).
+    window set_title "What [nick2nick $arg] said.." query .Said($arg).
+    catch {
+	foreach i $said($arg) {
+	    if {[lindex [args] 1] == "-nonick"} {
+		echo [lindex $i 2]
+	    } else {
+		echo "([clock format [lindex $i 0] -format "%I:%M:%S"][string tolower [clock format [lindex $i 0] -format %p]],[lindex $i 1]) [expr {[lindex $i 4] == "" ? "<[lindex $i 3]>" : "* [lindex $i 3]"}] [lindex $i 2]"
+	    }
+	    FALC_yield
+	}
+    }
+    complete
+}
+
+alias msgwin {
+    /query .Messages.
+    window set_title "Message Window" query .Messages.
+    window focus query .Messages.
+    complete
+}
+
+
+alias relm {
+    say $last_privmsg
+    complete
+}
+
+alias relsm {
+    say $last_mymsg
+    complete
+}
+
+alias raw {/quote [raw_args];complete}
+
+alias quote parse_quote
+
+proc parse_quote {} {
+    global nonRFC
+    if {$nonRFC && [get_cookie usehybrid6 1]} {
+	set r [raw_args]
+	if {[string first \012 $r] != -1} {
+	    foreach i [split $r \012] {
+		/quote $i
+	    }
+	    complete;return
+	}
+	set s [split $r]
+	set cmd [string tolower [lindex $s 0]]
+	set list [list]
+	switch -- $cmd {
+	    privmsg - notice {
+		set dest [lindex $s 1]
+		set d [split $dest ,]
+		if {[llength $d] > 1} {
+		    set end [join [lrange $s 2 end]]
+		    foreach i $d {
+			lappend list [list /quote $cmd $i $end]
+		    }
+		    foreach i $list {eval $i}
+		    complete
+		}
+	    }
+	    kick {
+		set chan [lindex $s 1]
+		set dest [lindex $s 2]
+		set reason [lrange $s 3 end]
+		set d [split $dest ,]
+		if {[llength $d] > 1} {
+		    foreach i $d {
+			lappend list [list /quote $cmd $chan $i $reason]
+		    }
+		    foreach i $list {eval $i}
+		    complete
+		}
+	    }
+	}
+    }
+}
+
+alias ctcp {
+    if {[string tolower [lindex [args] 1]] == "xdcc"} {add_xdcc_nick [lindex [args] 0]}
+}
+
+alias privmsg {
+    set dest [string trim [lindex [args] 0] ,]
+    set ldest [string tolower $dest]
+    if {[string tolower [lindex [args] 1]] == "xdcc"} {add_xdcc_nick [lindex [args] 0]}
+    switch -- $ldest {
+	.kanomotd. {
+	    if {[catch {
+		puts $env(KMOTD) "12 [get_cookie MyKanoSerial] [join [lrange [split [raw_args]] 1 end]]"
+	    } x]} {
+		echo "[kano] Error: $x"
+		catch {close $env(KMOTD)}
+	    } else {set newmotd 1}
+	    return
+	}
+	.tcl. {
+	    /query .Tcl.
+	    if {[window state query .Tcl.] == "minimize"} {
+		window restore query .Tcl.
+	    }
+	    window focus query .Tcl.
+	    set cmd [string trimright [join [lrange [split [raw_args]] 1 end]] \r\n]
+	    if {![info exists tcl_completecmd]} {set tcl_completecmd ""}
+	    if {$tcl_completecmd == ""} {set echo "% $cmd"} \
+		    else {set echo "\\ $cmd"}
+	    echo $echo query .tcl.
+	    append tcl_completecmd $cmd\n
+	    if {[info complete $tcl_completecmd]} {
+		catch $tcl_completecmd x
+		echo "${litehelp}tcl$darkhelp: $x" query .tcl.
+		set tcl_completecmd ""
+	    }
+	    complete;return
+	}
+	.makelist. {
+	    if {[lrange [args] 1 end] == "."} {
+		window clear query .Makelist.
+		window set_title "Makelist(done)" query .Makelist.
+		echo $makelist
+		set makelist ""
+	    } else {
+		if {$makelist == ""} {
+		    window clear query .Makelist.
+		    window set_title "Makelist(1)" query .Makelist.
+		    set makelist [join [lrange [args] 1 end]]
+		} else {
+		    append makelist " [join [lrange [args] 1 end]]"
+		    window set_title "Makelist([expr {[string trim \
+			    [window get_title query .Makelist.] \
+			    Makelist()]+1}])" query .Makelist.
+		}
+		echo [join [lrange [args] 1 end]]
+	    }
+	}
+    }
+    if {[info exists sock($dest)]} {
+	set text [join [lrange [split [raw_args]] 1 end]]
+	if {[queries $dest] == ""} {/query $dest}
+	if {[catch {puts $sock($dest) $text}]} {
+	    killconn $sock($dest) $dest
+	    return
+	}
+	echo "[k highlight]> $text" query $dest
+	return
+    }
+    if {[string match .*. $dest]} {return} \
+	    elseif {[string index $dest 0] != "#" \
+	    && ![window exists query [nick]]} {add_tabnick $dest}
+    #    myecho b[expr {[clock clicks] - $start}]
+}
+
+alias split {
+    set f [lsearch $chan_splits [channel]]
+    if {$f == -1} {
+	lappend chan_splits [channel]
+	echo "[kano] added [channel] to chansplit list."
+    } else {
+	set chan_splits [lreplace $chan_splits $f $f]
+	echo "[kano] removed [channel] to chansplit list."
+    }
+    complete
+}
+
+alias cal* show_calendar
+
+proc show_calendar {} {
+    complete
+
+    set args [join [lrange [args] 1 end]]
+
+    if {[catch {clock scan $args} time]} {
+	if {[catch {clock scan "1 $args"} time]} {
+	    echo "[kano] usage: /[string tolower [lindex [args] 0]] \[<month>\
+		    \[<year>\]\]"
+	    set time [clock seconds]
+	}
+    }
+
+    set fday [clock scan [clock format $time -format %m/1/%Y]]
+
+    set start 0
+    set orig -[clock format $fday -format %w]
+    set first $orig
+
+    global litehelp darkhelp
+
+    echo "${litehelp}(${darkhelp}calendar for [string tolower [clock format \
+	    $time -format "%B %Y"]]${litehelp})"
+    echo "${litehelp}Sun Mon Tue Wed Thu Fri Sat"
+
+    set line $darkhelp
+    set lines [list]
+    while {![catch {
+	clock scan [
+	clock format $time -format %m/[expr {$first+1}]/%Y
+	]}]
+	|| $first < 0
+    } {
+	if {($first - $orig) % 7 == 0} {
+	    lappend lines $line
+	    set line {}
+	}
+	append line "[format %3s [expr {$first < 0 ? "" : $first+1}]] "
+	incr first
+    }
+    lappend lines $line
+
+    echo [join $lines \n$darkhelp]
+
+    complete
+}

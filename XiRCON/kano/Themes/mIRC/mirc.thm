@@ -1,0 +1,279 @@
+set litehelp 02
+set darkhelp 12
+if ![info exists mircload] {
+    set mircload 1
+    after idle {
+	ac check @mirc_host @1 Show user addresses \[mirc.thm\]
+	ac check @mirc_short @1 Short join/part messages \[mirc.thm\]
+	ac check @mirc_prefix @0 Prefix own messages \[mirc.thm\]
+    }
+
+    alias mircthm {
+	echo {
+for this theme to work up to its potential of looking almost EXACTLY like mIRC, I suggest you do the following:
+ 
+- go to the Tools->Preferences menu item
+  - go to the /Colors\ tab
+  - click the [Load] button
+  - find XiRCON\kano\Themes\mIRC\mirc-thm.ini
+  - click the [Open] button
+- type /config modules
+  - turn the [x] Use white background option on, if it's there.
+ 
+enjoy. =)
+}
+complete
+}
+}
+
+#non-display stuff
+set kanobg 1,00
+nt themename "mirc emulation - type /mircthm for more info"
+set vers {}
+set_cookie kano ***
+
+proc mircform args {
+    switch -- [lindex $args 0] {
+	join {
+	    if [get_cookie mirc_host 1] {set host ([user]@[host])} {set host [list]}
+	    if [get_cookie mirc_short 1] {return [concat Joins: [nick] $host]} {set form [concat [nick] $host has joined [lindex [args] 0]]}
+	    return $form
+	}
+	part {
+	    if [get_cookie mirc_host 1] {set host ([user]@[host])} {set host [list]}
+	    if {[lindex [args] 1] != ""} {set msg ([lindex [args] 1])} {set msg [list]}
+	    if [get_cookie mirc_short 1] {return [concat Parts: [nick] $host]} {set form [concat [nick] $host has left [lindex [args] 0]]}
+	    return [concat [mirc part][mircform kano] $form $msg]
+	}
+	quit {
+	    if {[lindex [args] 0] != ""} {set msg ([lindex [args] 0][mirc quit])} {set msg [list]}
+	    if [get_cookie mirc_short 1] {set form [concat Quits: [nick]]} {set form [concat [nick] has quit IRC}
+	    return [concat $form $msg]
+	}
+	mypre {
+	    if ![get_cookie mirc_prefix 0] {return >} {return <[my_nick]>}
+	}
+	invite {
+	    if [get_cookie mirc_host 1] {return ([user]@[host])} {return [list]}
+	}
+	ctcp {
+	    if {[lindex $args 1] == "cloak"} {set cl cloaked} {set cl [list]}
+	    if {[lindex [args] 0] == [my_nick]} {set to [list]} {set to [lindex [args] 0]}
+	    return "[mirc ctcp]\[[concat [nick]$to $cl]\] %cmd"
+	}
+	kano {
+	    return [string trimright [kano] ]
+	}
+	time {
+	    return [clock format [lindex $args 1] -format {%a %b %d %H:%M:%S}]
+	}
+    }
+}
+proc mirc color {
+    switch -- $color {
+	other {set color action}
+	notify -
+	info {set color quit}
+	info2 -
+	invite -
+	kick {set color join}
+    }
+    set c [color $color]
+    return [g2c [format %i 0x[string index $c 2]] [format %i 0x[string index $c 1]]]$c
+}
+
+#kano stuff
+nt awaypubform {is away: [t awayform]}
+nt awayform {[raw_args] (l:%msglog p:%page at:[cform %I:%M])}
+nt backform {is back: [raw_args] (gone:%gone)}
+nt xdccstart {[llength [get_cookie xdcc]] packs offered:}
+nt xdcclist {#%num [format "%-12s (%4s) (%2s gets) %desc" %file %size %gets]}
+nt xdccend {Type /ctcp [my_nick] XDCC SEND #N to get pack #N}
+nt chanwallops {[raw_args]}
+nt chanwallx {[join [lrange [args] 1 end]]}
+nt socketfailed {[mircform kano] %type socket creation failed: %error}
+nt rot14 {[mirc public]<[nick]:ROT-14> [rot [string trimleft [join [lrange [args] 1 end]] §]]}
+nt ident {[mirc other][mircform kano] Identd replied to %host: %user}
+nt identoff {[mirc other][mircform kano] *** Identd request from 209.1.214.123 (ignoring)}
+nt page {[mirc ctcp][mircform kano] [nick] paged you!}
+nt autoignoreall {[mirc info][mircform kano] Ignoring *!*@* for 30 seconds. I think I smell a flood.}
+nt autoignore {[mirc info][mircform kano] %type flood from [nick]. Ignoring for 30secs.}
+nt unignore {[mirc info][mircform kano] Unignoring %host (autoignored).}
+nt dictsearching {[mirc info][mircform kano] Searching for: [arg]}
+nt dicterr {[mirc info][mircform kano] Dictionary server error: %dict}
+nt dicterrnotfound {[mirc info][mircform kano] Dictionary: %word not found.}
+nt dicterrfound {[mirc info][mircform kano] Spelling error in %word. Suggestions:}
+nt dictfound {[mirc info][mircform kano] Definition for %word:}
+nt dictdef {[mirc info][mircform kano] %gets}
+nt dictunknown {[mirc info][mircform kano] %gets}
+nt tempkickban {[mirc change][mircform kano] Unbanning [lindex [args] 0] in [lindex [args] 1].}
+nt tkbunban {[mirc change][mircform kano] Removing tempkickban %host on %chan.}
+nt topiclock {[mirc topic][mircform kano] Channel topic locked for [channel].}
+nt topicunlock {[mirc topic][mircform kano] Channel topic locked for [channel].}
+nt addperm {[mirc change][mircform kano] Added %nick (%user) to permban.}
+nt remperm {[mirc change][mircform kano] Removed %nick (%user) from permban.}
+
+##basic stuff
+nt dcctext {[mirc private]<[nick]> [lindex [args] 0]}
+nt dccact {[mirc action]* [nick] [lrange [lindex [args] 0] 1 end]}
+nt myaction {[mirc action]* [my_nick] %text}
+nt action {[mirc action]* [nick] %text}
+nt actionnoquery {[mirc action]*[nick]![user]@[host] [lindex [args] 2]}
+nt pubmsg {[mirc public]<[nick]> %text}
+nt mymsg {[mirc own][mircform mypre] %text}
+nt mymsgnoquery {[mirc own]-> *%nick* %text}
+nt msg {[mirc private]<[nick]> %text}
+nt msgnoquery {[mirc notice]*[nick]* %text}
+nt pubnotice {[mirc notice]-[nick]:[lindex [args] 0]- %text}
+nt notice {[mirc notice]-[nick]- %text}
+nt servnotice {[mirc notice]-[host]- [lindex [args] 1]}
+nt mynotice {[mirc own]-> -[lindex [args] 0]- %text}
+nt mynoticenoquery {[t mynotice]}
+nt highlight {[mirc highlight]<[nick]> %text}
+
+nt joincountry {}
+nt join {[mirc join][mircform kano] [mircform join]}
+nt myjoin {[mirc join][mircform kano] Now talking in [lindex [args] 0]}
+nt part {[mirc part][mircform kano] [mircform part]}
+nt quit {[mirc quit][mircform kano] [mircform quit]}
+nt kick {[mirc kick][mircform kano] [lindex [args] 1] was kicked by [nick] ([lindex [args] 2][mirc kick])}
+nt kickedyou {[mirc kick][mircform kano] You were kicked by [nick] ([lindex [args] 2][mirc kick])}
+nt modechange {[mirc change][mircform kano] %nick sets mode: [concat [lindex [args] 1] [join [lrange [args] 2 end]]]}
+
+nt mynick {[t nick]}
+nt nick {[mirc change][mircform kano] [nick] is now known as [lindex [args] 0]}
+nt wallops {[mirc info][mircform kano] Wallops: [arg]}
+
+nt dccbegin {[mirc info][mircform kano] DCC connection to [lindex [args] 1] established; %fileetc}
+nt dccdone {[mirc info][mircform kano] Completed DCC [string tolower [lindex [args] 0]] of [file tail [lindex [args] 2]] [iph {[lindex [args] 0] == {SEND}} to from] [lindex [args] 1] at [lindex [args] 4]k/s}
+nt dccerr {[mirc info][mircform kano] Error: DCC connection closed ([file tail [lindex [args] 2]]) [iph {[lindex [args] 0] == {SEND}} to from] [lindex [args] 1]}
+nt dccreq {[mirc info][mircform kano] DCC send request ([file tail [lindex [args] 2]], [expr [lindex [args] 3] / 1024]K) from [lindex [args] 1]}
+nt dccsend {[mirc info][mircform kano] Attempting to send [file tail [lindex [args] 2]] to [lindex [args] 1].}
+
+nt getnick {[mirc info][mircform kano] Getting nick [arg].}
+nt getnickerr {[mirc info][mircform kano] Your nick is already [nick]!}
+nt cycleforops {[mirc join][mircform kano] Cycling %chan to gain ops.}
+nt newconn {[mirc other][mircform kano] Attempting to connect to [lindex [args] 0]:[lindex [args] 1]}
+nt closedconn {[mirc other][mircform kano] Connection closed.}
+nt notifyon {[mirc notify][mircform kano] [nick] is on IRC}
+nt notifyoff {[mirc notify][mircform kano] [nick] has left IRC}
+nt invitedyou {[mirc invite][mircform kano] [concat [nick] [mircform invite]] invites you to join [lindex [args] 1] (press control+i to join)}
+nt ctcpreply {[mirc ctcp]\[[nick] [lindex [args] 1] reply\] %reply}
+nt ctcptimereply {[t ctcpreply]}
+nt ctcp {[mircform ctcp]}
+nt ctcpcloaked {[mircform ctcp cloak]}
+nt myctcp {[mirc ctcp]-> \[[lindex [args] 0]\] [join [lrange [args] 1 end]]}
+nt xdcc {[t ctcp]}
+
+##raw stuff
+nt stats {[mircform kano] [lindex [args] 1] [lrange [args] 2 end]}
+nt motd {[mircform kano] [lrange [args] 1 end]}
+nt dline {[mircform kano] [lrange [args] 1 end]}
+nt umode {[mirc mode][mircform kano] [lindex [args] 0] sets mode: [lindex [args] 1]}
+nt lusercrap {[mircform kano] [lrange [args] 1 end]}
+nt admincrap {[mircform kano] [lrange [args] 1 end]}
+nt overloaded {[mircform kano] [lrange [args] 1 end]}
+nt silenced {[mircform kano] [lrange [args] 1 end]}
+nt killed {[mircform kano] [string trimright [lindex [args] 8] .] was killed by [k nick][lindex [args] 10] [join [lrange [args] 13 end]]}
+nt trace {[mircform kano] [format %-9s [lindex [args] 1]]: [lrange [args] 1 end]}
+nt line {[mircform kano] Line: [lrange [args] 1 end]}
+nt away {[mircform kano] You are now away.}
+nt notaway {[mircform kano] You are no longer away.}
+nt helpful {[mircform kano] [lrange [args] 1 end]}
+
+nt wwnick {[lindex [args] 1] was [lindex [args] 2]@[lindex [args] 3] [join [lrange [args] 4 5]]}
+nt wwaddr {}
+nt wwname {}
+
+nt winick {[lindex [args] 1] is [lindex [args] 2]@[lindex [args] 3] [join [lrange [args] 4 5]]}
+nt wiaddr {}
+nt winame {}
+nt wichan {[lindex [args] 1] on [lindex [args] 2]}
+nt wiserv {[lindex [args] 1] using [join [lrange [args] 2 end]]}
+nt wiaway {[lindex [args] 1] is away: [lindex [args] 2]}
+nt wiidle {[lindex [args] 1] has been idle [since [lindex [args] 2]], signed on [mircform time [lindex [args] 3]]}
+nt wisign {}
+nt wioper {[join [lrange [args] 1 end]]}
+
+nt isaway {[t wiaway]}
+nt ismode {[join [lrange [args] 1 end]]}
+nt notopic {[mirc mode][mircform kano] No topic is set on [k channel][lindex [args] 1]}
+nt istopic {[mirc mode][mircform kano] Topic '[lindex [args] 2][mirc mode]'}
+nt settopic {[mirc mode][mircform kano] Set by [lindex [args] 2] on [mircform time [lindex [args] 3]]}
+nt topicchange {[mirc change][mircform kano] [nick] sets topic: [lindex [args] 1]}
+nt topiclocked {[mircform kano] Channel topic locked. Switching back...}
+nt inviting {}
+nt atversion {[join [lrange [args] 1 end]]}
+nt who {[join [lrange [args] 1 end]]}
+nt users {[join [lrange [args] 1 end]]}
+nt bans {[join [lrange [args] 1 end]]}
+nt nowoper {[join [lrange [args] 1 end]]}
+nt time {[lindex [args] 2]}
+nt user {[join [lrange [args] 1 end]]}
+nt nosuchnick {[join [lrange [args] 1 end]]}
+nt nosuchserver {[mircform kano] No such server [k default][lindex [args] 1]}
+nt invalidchan {[join [lrange [args] 1 end]]}
+nt cannotsendmoderated {[join [lrange [args] 1 end]]}
+nt toomanychans {[join [lrange [args] 1 end]]}
+nt wasnonick {[join [lrange [args] 1 end]]}
+nt occurs {[mircform kano] [k default][lindex [args] 1][k error] occurs more than once; no message sent}
+nt pingorigin {[mircform kano] No ping/pong origin specified}
+nt notext {[join [lrange [args] 1 end]]}
+nt notoplvl {[mircform kano] No toplevel domain specified for [k default][lindex [args] 1].}
+nt topwild {[join [lrange [args] 1 end]]}
+nt cmdunknown {[join [lrange [args] 1 end]]}
+nt noadmin {[mircform kano] No admin information for [k default][lindex [args] 1]}
+nt nonickgiven {[mircform kano] No nickname given.}
+nt badnick {[join [lrange [args] 1 end]]}
+nt nickinuse {[mircform kano] The nickname [k default][lindex [args] 1][k error] is in use.}
+nt nickcollision {[mircform kano] Nickname collision.}
+nt notonchan {[join [lrange [args] 1 end]]}
+nt notinchan {[join [lrange [args] 1 end]]}
+nt alreadyonchan {[mircform kano] [k nick][lindex [args] 1][k error] is already on [k channel][lindex [args] 2].}
+nt notregistered {[mircform kano] You have not registered.}
+nt toofewparms {[mircform kano] Not enough parameters for [k default][lindex [args] 1].}
+nt alreadyregistered {[mircform kano] You've already registered.}
+nt notprivileged {[mircform kano] Your host is not among the privileged.}
+nt badpass {[mircform kano] Incorrect password.}
+nt bannedfromserver {[mircform kano] You're banned from this server.}
+nt keyset {[join [lrange [args] 1 end]]}
+nt chanfull {[join [lrange [args] 1 end]]}
+nt chaninvite {[join [lrange [args] 1 end]]}
+nt chanbanned {[join [lrange [args] 1 end]]}
+nt chanbadkey {[join [lrange [args] 1 end]]}
+nt banlistfull {[join [lrange [args] 1 end]]}
+nt nopermission {[mircform kano] Permission denied; you're not an IRCop.}
+nt notop {[join [lrange [args] 1 end]][iph [isop [my_nick] [lindex [args] 1]] (Desync) ""]}
+nt unknownmode {[join [lrange [args] 1 end]]}
+nt serverkill {[mircform kano] You can't kill a server, you dork.}
+nt notoper {[mircform kano] Your host doesn't have any O-lines.}
+nt notyourmode {[mircform kano] You can't change other people's modes!}
+nt silencefull {[mircform kano] Your silence list is full.}
+nt nogline {[mircform kano] No such G-line [k default][lindex [args] 1].}
+nt created {[lindex [args] 1] created on [mircform time [lindex [args] 2]]}
+
+#new to kano12
+nt hashed {}
+nt split {[mirc other][mircform kano] Splits: [join [split [string range [raw_args] 1 end]] " from "] (press control+f to see who left)}
+nt rejoin {[mircform kano] Rejoins: [lindex $splitwin($swl) 2] and [lindex $splitwin($swl) 1]}
+nt wiend {[join [lrange [args] 1 end]]} ;#whois end (318)
+nt wwend {[join [lrange [args] 1 end]]} ;#whowas end (369)
+nt banend {[join [lrange [args] 1 end]]} ;#banlist end (368)
+nt whoend {[join [lrange [args] 1 end]]} ;#who end (315)
+nt nameend {[join [lrange [args] 1 end]]} ;#names end (366)
+nt timestamp {[mirc info2][mircform kano] The time is now [mircform time [clock seconds]]}
+
+#new to kano13
+nt except {[t bans]}
+nt exceptend {[t banend]}
+#nt ujoin: see above
+
+#new to kano14
+nt dnslookup {[mirc other][mircform kano] Looking up $host}
+nt dnsrelay {[mirc other][mircform kano] $dnsreq($request) -> $request -> $result (press control+g to copy)}
+nt dnsfound {[mirc other][mircform kano] Resolved $result to $request (press control+g to copy)}
+nt dnsrevfail {[mirc other][mircform kano] Resolved $dnsreq($request) to $request, but reverse lookup failed (press control+g to copy)}
+nt dnsfail {[mirc other][mircform kano] Unable to resolve $request}
+
+nt wallmsg {\[wall[lindex [args] 0]\] [t pubmsg]}
+nt wallnotice {\[wall[lindex [args] 0]\] [t pubnotice]}

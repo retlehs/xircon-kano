@@ -1,0 +1,329 @@
+set do_pre {
+    catch {unset addpre frmset colfrm addform}
+}
+eval $do_pre
+proc fulldcc {} {
+    set size 0
+    foreach i [get_cookie xdcc] {
+	if ![file exists [lindex $i 0]] continue
+	incr size [file size [lindex $i 0]]
+    }
+    return $size
+}
+#.- doot.xdcc (1 pack, 63.2k total, 0b sent)
+#:  1 :   0x :  63.2k : #1 good mIRC script
+#`- /ctcp kloreen xdcc send/tsend/list [#]
+
+nt xdccstart {.- xdcc ([llength [get_cookie xdcc]] packs, [filesize [fulldcc]] total, [filesize [get_cookie dootsent 0]] sent)}
+nt xdcclist  {[format ":  %num : %3sx : %6s : %desc" %gets %size]}
+nt xdccend   {`- /ctcp [my_nick] xdcc send/list \[#\]}
+nt themename "doot format loader"
+nt winick {}
+nt wiaddr {}
+nt joincountry {}
+proc align {x num} {
+    return [format %-${num}s $x]
+}
+
+proc frmset {type string} {
+    global frmset
+    set frmset($type) $string
+}
+proc addcolfrm {type theme sys} {
+    global colfrm
+    set colfrm($type) [list $theme $sys]
+}
+proc setcolor name {
+    global setcolor
+    lappend setcolor $name
+}
+proc addpre bullet {
+    global addpre
+    lappend addpre $bullet
+}
+proc addform {form string} {
+    global addform
+    set addform([string tolower $form]) $string
+}
+
+if {[get_cookie doot_frm] == ""} {
+    echo "[kano] You have switched to the doot format(theme) loader, but have not configured which doot format to use. Type /form to do so. :)"
+} {
+    if [catch {source [get_cookie doot_frm]}] {
+	echo "[kano] Could not load doot format file:\n$errorInfo"
+    }
+}
+set do_dd {
+    proc dcolor {} {
+	global colfrm
+	set y [array names colfrm]
+	set d [lindex [lsort $y] 0]
+	set z [get_cookie curform $d]
+	if {[lsearch $y $z] == -1} {set z $d}
+	return $z
+    }
+
+    catch {rename nick dnick}
+    proc nick {} {
+	set n [dnick]
+	if {$n == ""} {set n [my_nick]}
+	return $n
+    }
+    proc dform x {
+	global addpre colfrm
+	for {set i 1} {$i <= 9} {incr i} {
+	    regsub -all %pre$i $x [lindex $addpre [expr $i -1]] x
+	}
+	for {set i 1} {$i <= 9} {incr i} {
+	    set n [lindex [lindex $colfrm([dcolor]) 0] [expr $i -1]]
+	    if {[string length $n] == 1} {set n 0$n}
+	    regsub -all %c$i $x $n x
+	}
+	return $x
+    }
+
+    proc drep {x y z} {
+	if [catch {
+	    regsub -all {\\} $z {\\\\} z
+	    regsub -all {\&} $z {\\\&} z
+	    regsub -all $y $x $z x
+	    return $x
+	}] {return [rep $x $y $z]}
+    }
+
+    proc dhost {{h ""}} {
+	if {$h == ""} {
+	    set h [host]
+	}
+	global addform
+	set host [lindex $addform(addy) 2]
+	regsub -all \\. $h $host h
+	return $h
+    }
+
+    #dd!
+    proc dd {doot kano args} {
+	global addform
+	set doot [string tolower [lindex $doot 0]]
+	if ![info exists addform($doot)] return
+	set start ""
+	set end ""
+	if {[lsearch $args "nick *"] != ""} {
+	    lappend args {lnick [format %-9s [nick]]}
+	    lappend args {rnick [format %9s [nick]]}
+	}
+	if {[lsearch $args "host *"] != ""} {
+	    lappend args {thost [dhost]}
+	}
+	if {[set s [lsearch $args "chan *"]] != ""} {
+	    set f [join [lrange [split [lindex $args $s]] 1 end]]
+	    if {$f == ""} {set f [list {}]}
+	    lappend args "nchan \[string range $f 1 end\]"
+	}
+	if {$kano != "curtime"} {lappend args {time [t curtime]} {ttime [t curtime]}}
+	foreach i $args {
+	    append start "\[drep "
+	    append end " %[lindex [split $i] 0] [join [lrange [split $i] 1 end]]\]"
+	}
+	foreach i $kano {
+	    nt $i "\[dform $start [list $addform($doot)] $end]"
+	}
+    }
+
+    dd time curtime {h [cform %H]} {m [cform %M]} {s [cform %S]} {a [string tolower [cform %p]]}
+
+    #msg
+    dd owntext mymsg {nick [my_nick]}
+    dd chantext pubmsg {nick [nick]}
+    dd privtext msg {nick [nick]} ;#?
+    dd action {action myaction dcctext} {nick [nick]}
+    dd chattext dcctext {nick [nick]}
+    dd hightext highlight {nick [nick]}
+
+    #channel
+    dd join {join myjoin} {nick [nick]} {user [user]} {host [host]} {chan [lindex [args] 0]}
+    dd part part {nick [nick]} {user [user]} {host [host]} {chan [lindex [args] 0]}
+    dd quit quit {nick [nick]} {user [user]} {host [host]} {reason [lindex [args] 0]} {chan %chan}
+    dd kick {kick kickedyou} {nick [nick]} {knick [lindex [args] 1]} {chan [lindex [args] 0]} {reason [lindex [args] 2]}
+    dd nick {nick mynick} {newnick [lindex [args] 0]} {oldnick [nick]} {user [user]} {host [host]} {chan $i}
+    dd mode modechange {nick [nick]} {user [user]} {host [host]} {chan [lindex [args] 0]} {mode [lindex [args] 1]} {parms [join [lrange [args] 2 end]]}
+    dd topic topicchange {nick [nick]} {chan [lindex [args] 0]} {topic [lindex [args] 1]}
+
+    #private
+    dd usermode umode {nick [my_nick]} {mode [lindex [args] 1]}
+    dd inmsg msgnoquery {nick [nick]} {user [user]} {host [host]}
+    dd outmsg mymsgnoquery {nick [lindex [args] 0]}
+    dd chanctcp {ctcp xdcc} {nick [nick]} {user [user]} {host [host]} {ctcp [lindex [args] 1]} {uctcp [string toupper [lindex [args] 1]]} {lctcp [string tolower [lindex [args] 1]]} {parms [lindex [args] 2]} {chan [lindex [args] 0]}
+    dd outctcp myctcp {nick [lindex [args] 0]} {ctcp [lindex [args] 1]} {lctcp [string tolower [lindex [args] 1]]} {uctcp [string toupper [lindex [args] 1]]} {parms [join [lrange [args] 2 end]]}
+    dd ctcprep {ctcpreply ctcptimereply} {nick [nick]} {user [user]} {host [host]} {ctcp [concat [lindex [args] 1] [lindex [args] 2]]}
+    dd invite invitedyou {nick [nick]} {user [user]} {host [host]} {chan [lindex [args] 1]}
+    dd notice notice {nick [nick]} {user [user]} {host [host]}
+    dd channotice pubnotice {nick [nick]} {user [user]} {host [host]} {chan [lindex [args] 0]}
+    dd outnotice mynotice {nick [lindex [args] 0]}
+
+    #various
+    dd timenow timestamp
+    dd {awaypage awaynopage} {awayform awaypubform} {reason [raw_args]}
+    dd back backform {reason [raw_args]}
+    dd notify notifyon {nick [nick]} {user [user]} {host [host]}
+    dd denotify notifyoff {nick [nick]} {user [user]} {host [host]}
+    dd onotice chanwallops {chan [channel]} {ops [llength [oplist [channel]]]} {text [raw_args]}
+    dd kill killed {oper [lindex [args] 10]} {kills 0} {nick [string trimright [lindex [args] 8] .]} {reason [join [lrange [args] 13 end]]}
+
+    #dcc
+    dd sendcreate dccsend {nick [lindex [args] 1]} {file [lindex [args] 2]} {nfile [file tail [lindex [args] 2]]} {size [file size [lindex [args] 2]]}
+    dd getcreate dccreq {nick [lindex [args] 1]} {file [lindex [args] 2]} {nfile [file tail [lindex [args] 2]]} {size [filesize [lindex [args] 3]]}
+    dd {sendbegin getbegin} dccbegin {nick [lindex [args] 1]([lindex [args] 0])} {file [lindex [args] 2]} {nfile [file tail [lindex [args] 2]]}
+    dd {senddone getdone} dccdone {nick [lindex [args] 1]([lindex [args] 0])} {file [lindex [args] 2]} {nfile [file tail [lindex [args] 2]]} {size [lindex [args] 3]} {cps [lindex [args] 4]} {time [lindex [args] 5]}
+    dd {senderror geterror} dccerr {nick [lindex [args] 1]([lindex [args] 0])} {file [lindex [args] 2]} {nfile [file tail [lindex [args] 2]]}
+
+    #dns
+    #(nothing)
+
+    #titles
+    #(nothing too!)
+
+    #boxes
+    #(whee, nothing)
+
+    #whois
+    dd whoistop witop {nick [lindex [args] 1]} {user [lindex [args] 2]} {host [lindex [args] 3]}
+    dd whoisinfo winick {nick [lindex [args] 1]} {user [lindex [args] 2]} {host [lindex [args] 3]} {type [country [lrange [split [lindex [args] 3] .] end end]]}
+    dd whoisname winame {name [lindex [args] 5]}
+    dd whoischan wichan {chans [lindex [args] 2]}
+    dd whoisserv wiserv {serv [lindex [args] 2]} {info [lindex [args] 3]}
+    dd whoisidle wiidle {idle [since [lindex [args] 2]]} {sidle [lindex [args] 2]}
+    dd whoison wisign {on [since [lindex [args] 3]]} {son [lindex [args] 3]}
+    dd whoiscop wioper {nick [lindex [args] 2]}
+    dd whoisaway wiaway {nick [lindex [args] 1]}
+    dd whoisbottom wiend
+
+    #whowas
+    dd whowastop wwtop {nick [lindex [args] 1]} {user [lindex [args] 2]} {host [lindex [args] 3]}
+    dd whowasinfo wwnick {nick [lindex [args] 1]} {user [lindex [args] 2]} {host [lindex [args] 3]} {type [country [lrange [split [lindex [args] 3] .] end end]]}
+    dd whowasname wwname {name [lindex [args] 3]}
+    dd whowasbottom wwend
+
+    #users
+    dd userchars userchars
+    dd usertop usertop
+    dd usernicks usernicks
+    dd userbottom userbottom
+
+    proc chanecho {chan text} {
+	if [ison [my_nick] $chan] {
+	    echo $text channel $chan
+	} {
+	    echo $text
+	}
+    }
+    catch {
+	setkano
+	catch {nt themename "$frmset(name) by $frmset(author)"}
+	# if {[info exists curtheme(witop)] && [info exists curtheme(winick)]} {
+	#     set curtheme(winick) "\[t witop\]\n$curtheme(winick)"
+	# }
+    }
+} 
+eval $do_dd
+proc setkano {} {
+    global addpre
+    set_cookie kano [dform [lindex $addpre 0]]
+}
+
+nt users {[null [catch {
+    set chan [lindex [args] 2]
+    set users [lindex [args] 3]
+    set ops ""
+    set voc ""
+    set non ""
+    foreach i [lsort $users] {
+	switch [string index $i 0] {
+	    @ {lappend ops $i}
+	    + {lappend voc $i}
+	    default {lappend non $i}
+	}
+    }
+    chanecho $chan [drep [drep [drep [drep [t usertop] %chan $chan] %ops [llength $ops]] %voice [llength $voc]] %non [llength $non]]
+    catch {unset isnick}
+    foreach {1 2 3 4 5} [concat $ops $voc $non] {
+	set y [t usernicks]
+	foreach i {1 2 3 4 5} {
+	    set m [set $i]
+	    set m [10][format %-10s $m]
+	    set m [drep $m @ [lindex [t userchars] 0]]
+	    set m [drep $m + [lindex [t userchars] 1]]
+	    regsub -all %nick$i $y $m y
+	}
+	chanecho $chan $y
+    }
+    chanecho $chan [t userbottom]
+}]]}
+
+proc null args {}
+
+alias color {
+    if {[args] == ""} {
+	echo "[kano] [format %10s scheme]  colors"
+	foreach i [array names colfrm] {
+	    set m ""
+	    foreach j [lindex $colfrm($i) 0] {
+		append m "[ndig $j 2][ndig $j 2] "
+	    }
+	    if {$i == [dcolor]} {set i $i}
+	    echo "[kano] [format %10s $i]: $m"
+	}
+	echo "[kano] type '/[event] <name>' to switch color schemes"
+    } {
+	if {[lsearch [array names colfrm] [join [args]]] == -1} {
+	    echo "[kano] What?"
+	} {
+	    set_cookie curform [join [args]]
+	    setkano
+	    echo "[kano] Using color scheme [join [args]]"
+	}
+    }
+    complete
+}
+
+alias form {
+    set file [join [args]]
+    if {$file == ""} {
+	set ans [FALC_fileopen -d [file dirname [get_cookie theme]] -t "doot theme loader" -f "Doot themes (*.frm)|*.frm|All files (*.*)|*"]
+	if {$ans == ""} return
+	set file $ans
+    }
+    if ![file exists $file] {
+	set f [file root $file].frm
+	if [file exists $f] {set file $f}
+    }
+    if ![file exists $file] {
+	set g [recurse *.frm]
+	if {$g == ""} {
+	    echo "[kano] Could not find any *.frm files in [string tolower [pwd]]."
+	    complete
+	    return
+	}
+	foreach i $g {
+	    echo "[kano] $i"
+	}
+	echo "[kano] type '/[event] <full filename displayed>' to load"
+    } {
+	if ![catch {source $file} x] {
+	    eval $do_pre
+	    source $file
+	    if [catch $do_dd x] {
+		echo "[kano] Error applying theme:\n$errorInfo"
+	    } {
+		set_cookie doot_frm $file
+		echo "[kano] Applied format. Type /color for more info on configuring your display."
+	    }
+	} {
+	    echo "[kano] Error loading format: $errorInfo"
+	}
+    }
+    complete
+}
+
+kaddhelp form "Loads a doot.tcl format file (*.frm)." "/form \[filename\]" "Load Doot Format"
+kaddhelp color "Switches between color schemes of a doot.tcl format. Leave out arguments for a list of available schemes." "/color \[name\]" "Switch Doot Color Scheme"

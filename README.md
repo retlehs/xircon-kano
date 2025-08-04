@@ -1,6 +1,6 @@
 # XiRCON + kano.tcl Setup on Apple Silicon
 
-This guide shows you how to run the classic IRC client **XiRCON** with the **kano.tcl script** on modern Apple Silicon Macs using virtualization.
+This repository archives the complete XiRCON + kano.tcl IRC client setup and provides a guide for running it on modern Apple Silicon Macs using virtualization.
 
 ## About XiRCON & kano.tcl
 
@@ -14,8 +14,16 @@ This guide shows you how to run the classic IRC client **XiRCON** with the **kan
 - [DareNET XiRCON Script Archives](https://archives.darenet.org/?dir=irc%2Fclients%2FXiRCON%2FScripts%2FKano+the+Xircon+Script)
 - [Original kano.tcl homepage](https://web.archive.org/web/*/kano.net/kanotcl/) (Wayback Machine)
 
+## Repository Contents
+
+This repository includes:
+- **XiRCON + kano.tcl executables** (`k15beta8.exe` and `XiRC10b4.exe`) - Ready-to-install versions
+- **Complete installation reference** (`XiRCON/` directory) - Full extracted installation for reference without needing Windows
+- **Setup guide** - Instructions for running on Apple Silicon using virtualization
+- **Historical preservation** - Archives the increasingly rare XiRCON + kano.tcl setup
+
 ## Why This Guide?
-With XiRCON being a 32-bit Windows application from the 1990s, it won't run natively on modern Apple Silicon Macs. Additionally, the original XiRCON and kano.tcl executables are increasingly difficult to find on the modern web, with many download links broken or dead. This guide provides a complete setup using Windows XP virtualization to get this classic IRC setup running on contemporary Apple hardware, with the hard-to-find executables included for convenience.
+With XiRCON being a 32-bit Windows application from the 1990s, it won't run natively on modern Apple Silicon Macs. Additionally, the original XiRCON and kano.tcl executables are increasingly difficult to find on the modern web, with many download links broken or dead. This repository preserves a complete working XiRCON + kano.tcl installation and provides setup instructions using Windows XP virtualization to get this classic IRC setup running on contemporary Apple hardware.
 
 ---
 

@@ -1,0 +1,340 @@
+kmod popups 15 "basic popups"
+
+menu status "&Reconnect" {if [connected] {/server [server]} {FALC_askbox -i exclamation -t "Reconnect" "You're not connected!"}}
+menu status ""
+menu status "&DCC Status->&Kano's" /dccs
+menu status "&DCC Status->&[kclient Xircon]'s" {status_page 4}
+menu status ""
+menu status "&Kill all queries" /kq
+menu status "View active &timers" /timers
+menu status ""
+menu status "&Change servers->&Remove servers" /servers
+menu status "&Change servers->&Clear list" {set_cookie servers ""}
+menu status "&Change servers->&???" {/server [prompt [kanovers] "Change to what server?"]}
+menu status "&Change servers->"
+set f 1
+set u 1
+set newservers ""
+foreach i [lsort [get_cookie servers]] {
+    if {[lindex $i 1] == ""} {set i "$i 6667"}
+    if {[lsearch $newservers $i] == -1} {lappend newservers $i}
+}
+set_cookie servers $newservers
+set servips ""
+if {[info commands FALC_isip] == ""} {set x 0} {set x {[FALC_isip [lindex $i 0]]}}
+foreach i $newservers {
+    if $x {
+	lappend servips $i
+    } {
+	set j [revorder [split [lindex $i 0] .]]
+	lappend servarr([lrange $j 1 [expr [llength $j] -2]]) $i
+    }
+}
+
+foreach i [lsort [array names servarr]] {
+    set j [lsort $servarr($i)]
+    if {[llength $j] == 1} {
+	set k [lrange $i 0 [expr [llength $i] -2]]
+	while {[llength $k] > 0 && ![info exists servarr($k)]} {
+	    set k [lrange $k 0 [expr [llength $k] -2]]
+	}
+	if {$k != ""} {set k [join $k ->]} {set k other}
+	menu status "&Change servers->$k->[join [lindex $j 0] " - "]" "/server [lindex $j 0]"
+    } {
+	if {$i == ""} {set i other}
+	foreach k $j {
+	    menu status "&Change servers->[join $i ->]->[join $k " - "]" "/server $k"
+	}
+    }
+}
+
+foreach i [lsort $servips] {
+    menu status "&Change servers->IPs->[join $i " - "]" "/server $i"
+}
+menu channel "&Channel->Channel &Stats" /cstat
+menu channel "&Channel->"
+menu channel "&Channel->&Lock/unlock topic" /lock
+menu channel "&Channel->Switch to L&astTopic" /lt
+menu channel "&Channel->Undo Last&Ban" /lb
+menu channel "&Channel->Redo Last&UnBan" /lu
+menu channel "&Channel->&Toggle showing j/p/q/k" /showj
+menu channel ""
+menu channel "&Mass->&Op" /mop
+menu channel "&Mass->&Deop" /mdop
+menu channel "&Mass->&Voice" /mv
+menu channel "&Mass->D&evoice" /mdv
+menu channel "&Mass->&Kick" /mkick
+menu channel "&Mass->Kick&Ban" /mkb
+menu channel "&Mass->"
+menu channel "&Mass->&Undo massmode" /undo
+menu channel "&XDCC->&List" {/xdcc list}
+menu channel "&XDCC->&Offer to Channel" {/xdcc offer}
+menu channel "&XDCC->&Add File" {/xdcc add}
+menu channel "&XDCC->&Remove File" {/xdcc rem [prompt [kanovers] "Remove which file?" mirc32.exe]}
+menu channel "&Away->&Away" {/away [prompt [kanovers] "Away reason (Cancel for none):"]}
+menu channel "&Away->&Back" {/back [prompt [kanovers] "Back reason (Cancel for none):"]}
+menu channel "&Away->&Quick" {
+    if $isaway /back /away
+}
+
+menu query "&Finger"         {/finger [args]}
+menu query ""
+menu query "&CTCP->&Ping" {
+    foreach i [args] {
+	/ctcp $i ping
+    }
+}
+menu query "&CTCP->&Version" {
+    foreach i [args] {
+	/ctcp $i version
+    }
+}
+menu query "&CTCP->&Time" {
+    foreach i [args] {
+	/ctcp $i time
+    }
+}
+
+menu query "&CTCP->&???" {
+    set prompt [prompt [kanovers] "CTCP [args] what?"]
+    foreach i [args] {
+	/ctcp $i $prompt
+    }
+}
+menu query "&DCC->&Chat" {/dcc chat [args]}
+menu query "&DCC->&Send" {/dcc send [join [args] ,]}
+menu query "&DCC->Send Specific &File" {/send [args] [prompt [kanovers] "Send [args] what file?" kano.tcl]}
+menu query ""
+menu query "&Userlist->Ignore" {/ignr [args]}
+menu query "&Userlist->"
+menu query "&Userlist->User info" {
+    /info [args]
+    complete
+}
+menu query "&Userlist->&Remove user" {
+    foreach i [args] {/duser $i}
+}
+menu query "&Userlist->&Notify->&Add" {
+    foreach i [args] {/notify add $i}
+}
+menu query "&Userlist->&Notify->&Remove" {
+    foreach i [args] {/notify rem $i}
+}
+menu query "&Userlist->&Permban (on/off)" {
+    foreach i [args] {
+	/perm $i
+    }
+}
+
+#menu query ""
+
+
+
+menu chat ""
+menu chat "&CTCP->&Ping"    { /ctcp [args] ping }
+menu chat "&CTCP->&Version" { /ctcp [args] version }
+menu chat "&CTCP->&Time"    { /ctcp [args] time }
+menu chat "&CTCP->&???"     { /ctcp [args] [prompt "CTCP Message" "CTCP [args] what?"] }
+menu chat ""
+menu chat "&Reconnect" {/dcc chat [join [args]]}
+menu chat ""
+menu chat "&Finger"         { /finger [args] }
+
+proc getuhost {} {
+    global do_who
+    if {[FALC_askbox -t [kanovers] -b ok_cancel "I don't have [args]'s user@host. Try again in a few seconds while I look."] == "ok"} {
+	/quote who [args]
+	incr do_who
+    }
+}
+
+
+#menu users "&Selective->&Deop all but these nicks"
+#menu users "&Selective->&Kick"
+menu users ""
+menu users "&CTCP->&???..."     {
+    /ctcp [join [args] ,] [prompt "CTCP Message" "CTCP them what?"]
+}
+menu users "&CTCP->"
+menu users "&CTCP->&Ping"    {
+    /ctcp [join [args] ,] ping
+}
+menu users "&CTCP->&Version" {
+    /ctcp [join [args] ,] version
+}
+menu users "&CTCP->&Time"    {
+    /ctcp [join [args] ,] time
+}
+
+menu users "&CTCP->P&age"    {
+    /ctcp [join [args] ,] page
+}
+
+menu users "&DCC->&Chat" {foreach i [args] {/chat $i}}
+menu users "&DCC->&Send" {foreach i [args] {/send $i}}
+menu users "&XDCC->&Offer to nick" {/xdcc notc [args]}
+menu users "&XDCC->(Req) XDCC &Send" {
+    set cmd [prompt [kanovers] "What's the command?" "xDCC Send"]
+    set pack #[string trimleft [prompt [kanovers] "Which pack?" 1] #]
+    /ctcp [join [args] ,] $cmd $pack
+}
+menu users "&XDCC->(Req) XDCC &List" {
+    set cmd [prompt [kanovers] "What's the command?" "xDCC List"]
+    /ctcp [join [args] ,] $cmd
+}
+menu users ""
+menu users "&Other->Use&rScan" {
+    if {$joyn(whois) == 0} {
+	if [info exists chanelz] {unset chanelz}
+	incr joyn(whois) [llength [args]]
+	set whoistype u
+	set userscan [args]
+	/whois [join [args] ,]
+	echo "[kano] Scanning [llength $userscan] users."
+    } {
+	FALC_askbox -t [kanovers] "[iph "\"$whoistype\" == \"i\"" "Idle Time Scan" "UserScan"] is already in progress. ([format %.1f [expr 100 - (100 * ($joyn(whois) / [llength $userscan].0))]]% done)"
+    }
+}
+menu users "&Other->&Idle Time Scan" {
+    if {$joyn(whois) == 0} {
+	if [info exists chanelz] {unset chanelz}
+	catch {unset idletime}
+	set whoistype i
+	set userscan [args]
+	incr joyn(whois) [llength [args]]
+	foreach i [args] {
+	    /whois [join $i] [join $i]
+	}
+	echo "[kano] Scanning [llength [args]] users."
+    } {
+	FALC_askbox -t [kanovers] "[iph "\"$whoistype\" == \"i\"" "Idle Time Scan" "UserScan"] is already in progress. ([format %.1f [expr 100 - (100 * ($joyn(whois) / [llength $userscan].0))]]% done)"
+    }
+}
+menu users "&Other->What he &said" {foreach i [args] {/said $i}}
+menu users "&Other->&Copy to clipboard" {FALC_clip -c [join [args] ", "]}
+
+menu users "&Message->&Message" {
+    set prompt [prompt [kanovers] "/msg what?"]
+    if {$prompt == ""} return
+    /msg [join [args] ,] $prompt
+}
+menu users "&Message->&Notice" {
+    set prompt [prompt [kanovers] "/notice what?"]
+    if {$prompt == ""} return
+    /NOTICE [join [args] ,] $prompt
+}
+menu users &Message->&WallExcept {
+    set prompt [prompt [kanovers] WallExcept]
+    if {$prompt == ""} return
+    /wallx [join [args] ,] $prompt
+}
+
+menu users "&Userlist->Op all in userlist" {
+    set ops [list]
+
+    foreach i [noplist [channel]] {
+	if {[find_user $i![uhost $i]] != -1} {
+	    lappend ops $i
+	}
+    }
+
+    massmode [channel] +o $ops
+}
+menu users "&Userlist->Deop all not in userlist" {
+    set ops [list]
+
+    foreach i [noplist [channel]] {
+	if {[find_user $i![uhost $i]] == -1} {
+	    lappend ops $i
+	}
+    }
+
+    massmode [channel] -o $ops
+}
+menu users "&Userlist->"
+menu users "&Userlist->Ignore" {foreach i [args] {/ignr $i public}}
+menu users "&Userlist->"
+menu users "&Userlist->User &info" {/info [arg]}
+menu users "&Userlist->&Remove user" {
+    foreach i [args] {/duser $i}
+}
+menu users "&Userlist->&Notify->&Add" {
+    foreach i [args] {/notify add $i}
+}
+menu users "&Userlist->&Notify->&Remove" {
+    foreach i [args] {/notify rem $i}
+}
+foreach i {kick ban op voice deop} {
+    foreach {j k} {add + remove -} {
+	menu users &Userlist->&Protect->&[string toupper [string index $i 0]][string tolower [string range $i 1 end]]->&[string toupper [string index $j 0]][string tolower [string range $j 1 end]] [subst -nocommands {/prot [join [args] ,] active $k$i}]
+    }
+}
+menu users &Userlist->&Protect->&State->&Active {/prot [join [args] ,] active}
+menu users &Userlist->&Protect->&State->&Passive {/prot [join [args] ,] passive}
+menu users &Userlist->&Protect->
+menu users &Userlist->&Protect->&Help {/help prot}
+
+benchmark
+
+menu users "&Eggdrop->&DCC Chat" {
+    foreach i [args] {/dcc chat $i}
+}
+menu users "&Eggdrop->&Help..." {
+    /msg [join [args] ,] help [prompt "Specific command?" "Hit cancel for no, or type the specific cmd here"]
+}
+menu users "&Eggdrop->&Set->&Email..." {
+    /msg [join [args] ,] email [prompt "Email address" "Enter your email address" [my_user]@[my_host]]
+}
+menu users "&Eggdrop->&Set->&Info Line..." {
+    /msg [join [args] ,] info [prompt "Info line" "Enter info line" "is here!"]
+}
+menu users "&Eggdrop->&Set->&Pass..." {
+    /msg [join [args] ,] pass [prompt "Password" "Enter new password here"]
+}
+menu users "&Eggdrop->&Set->I&dent..." {
+    /msg [join [args] ,] ident [prompt "Ident pass" "Enter your Eggdrop password" [botpass [ret [lindex [args] 0]]]] [prompt "Different Handle?" "What's your handle on the bot?" [my_nick]]
+}
+menu users "&Eggdrop->&Op->&Op..." {
+    /msg [join [args] ,] op [prompt "Password" "Enter your Eggdrop password" [botpass [ret [lindex [args] 0]]]]
+}
+menu users "&Eggdrop->&Op->&Invite..." {
+    /msg [join [args] ,] invite [prompt "Password" "Enter your Eggdrop password" [botpass [ret [lindex [args] 0]]]] [prompt "Channel" "Enter the channel you want to be invited to"]
+}
+menu users "&Eggdrop->&Op->&Who..." {
+    /msg [join [args] ,] who [prompt "Who" "\"Who\" for what IRC channel?" [channel]]
+}
+menu users "&Eggdrop->&Op->&Who&is..." {
+    /msg [join [args] ,] whois [prompt "User?" "Enter handle you want info on"]
+}
+menu users "&Eggdrop->&Master->&Jump..." {
+    /msg [join [args] ,] jump [prompt "Jump Eggdrop to New Server" "What server?" [lindex [server] 0]:[lindex [server] 1]]
+}
+menu users "&Eggdrop->&Master->&Rehash" {
+    /msg [join [args] ,] rehash
+}
+menu users "&Eggdrop->&Master->Rese&t..." {
+    /msg [join [args] ,] reset [prompt "Reset Channel Information" "Reset which channel's information?" [channel]]
+}
+menu users "&Eggdrop->&Master->&Status" {
+    /msg [join [args] ,] status
+}
+menu users "&Eggdrop->&Master->&Die..." {
+    /msg [join [args] ,] die [prompt "Eggdrop Password" "Enter your eggdrop password" [botpass [ret [lindex [args] 0]]]] [prompt "Kill Bot" "Die reason?"]
+}
+menu users "&Eggdrop->&Master->&Check Memory Usage" {
+    /msg [join [args] ,] memory
+}
+menu users "&Eggdrop->&Notes->&Index..." {
+    /msg [join [args] ,] notes [prompt "Eggdrop Password" "Enter your eggdrop password" [botpass [ret [lindex [args] 0]]]] index
+}
+menu users "&Eggdrop->&Notes->&Send..." {
+    /msg [join [args] ,] notes [prompt "Eggdrop Password" "Enter your eggdrop password" [botpass [ret [lindex [args] 0]]]] to [prompt "Send note" "Send note to whom?"] [prompt "Send note" "Enter the note you'd like to send"]
+}
+menu users "&Eggdrop->&Notes->&Read..." {
+    /msg [join [args] ,] notes [prompt "Eggdrop Password" "Enter your eggdrop password" [botpass [ret [lindex [args] 0]]]] read [prompt "Read notes" "Read what note(s)?" all]
+}
+menu users "&Eggdrop->&Notes->&Erase..." {
+    /msg [join [args] ,] notes [prompt "Eggdrop Password" "Enter your eggdrop password" [botpass [ret [lindex [args] 0]]]] erase [prompt "Erase notes" "Erase what notes?" all]
+}
+menu channel "Pas&te" do_paste
+menu status "&Quit" {set p [prompt [kanovers] "Quit message?:"];if {$p != ""} {/quit $p}}

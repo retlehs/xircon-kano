@@ -1,0 +1,15 @@
+GRADIAL.THM INSTALL
+   b y  k a n o
+
+A. Click Tools, then Preferences, then on the tab labelled Color.
+B. Click Load and find the INI you want to load. **
+C. Hit OK :) then load the theme if it isn't already.
+
+To make your own fading INI [gradial theme], try /makeini.
+Example: /makeini red green christmas.ini
+         makes an INI which fades from red to green (saves to xircon\christmas.ini)
+
+To load a color INI, go to Tools->Preferences and click the Colors tab. Press
+the "Load" button.
+
+** I suggest starting out with "xircon\kano\Themes\Gradial\Blue Gradial Scheme.ini"

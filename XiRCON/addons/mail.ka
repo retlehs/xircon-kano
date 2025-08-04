@@ -1,0 +1,230 @@
+#send
+addecho "[kano] mail addon by mr0 and kano loaded."
+kaddhelp sendmail "Sends email." /sendmail "Email Send (SMTP)"
+alias sendmail {
+    set ItemsList [list]
+    lappend ItemsList [list label lbl1 5 15 30 10 "        To:"]
+    lappend ItemsList [list edit sm(to) 35 13 230 12 [get_cookie smtp(to)]]
+    lappend ItemsList [list label lbl2 5 30 30 10 "     From:"]
+    lappend ItemsList [list edit sm(from) 35 28 230 12 [get_cookie from]]
+    lappend ItemsList [list label lbl3 5 45 30 10 " Subject:"]
+    lappend ItemsList [list edit sm(sub) 35 43 230 12 [get_cookie smtp(sub)]]
+    lappend ItemsList [list label lbl4 5 65 30 10 "   SMTP:"]
+    lappend ItemsList [list edit sm(host) 35 63 230 12 [get_cookie host]]
+    lappend ItemsList [list edit -m sm(data) 8 85 258 90 [get_cookie smtp(data)]]  
+    if ![llength [set answer [FALC_dialog -t "[omail]" 275 185 $ItemsList]]] {complete;return}
+    foreach control $answer {
+        set_cookie [lindex $control 0] [lindex $control 1]
+    }
+    if {[get_cookie sm(to)] == ""} {
+	set_cookie sm(to) [prompt "[omail]" "Enter Recipient Address:" ""] 
+    }
+    if {[get_cookie sm(from)] == ""} {
+	set_cookie sm(from) [prompt "[omail]" "Enter Return Address:" ""] 
+    }
+    if {[get_cookie sm(host)] == ""} {
+	set_cookie sm(from) [prompt "[omail]" "Enter SMTP Host:" ""] 
+    }
+    if {[catch {socket -async [get_cookie sm(host)] 25} smConx]} {echo "[kano] Error connecting to [get_cookie sm(host)]"; complete; return }
+    fconfigure $smConx -blocking no
+    fileevent $smConx readable {
+	if [string match "*message accepted*" [string tolower [gets $smConx]]] {
+	    echo "Message Sent to [get_cookie sm(to)]: Closing Link"
+	    puts $smConx "QUIT"
+	    flush $smConx
+	}
+	if [eof $smConx] {close $smConx}
+    }
+    echo "[kano] Host [get_cookie sm(host)] Contacted, Sending Message to [get_cookie sm(to)]..." 
+    puts $smConx "HELO okt0ber.com\nMAIL FROM: [get_cookie sm(from)]\nRCPT TO: [get_cookie sm(to)]\nDATA\nTo: [get_cookie sm(to)]\nSubject: [get_cookie sm(sub)]\nX-Mailer: [omail]\n[get_cookie sm(data)]\n."
+    close $smConx
+    echo "[kano] Message Sent Successfully."
+    set_cookie sm(to) ""
+    set_cookie from "[get_cookie sm(from)]" 
+    set_cookie sm(sub) ""
+    set_cookie host "[get_cookie sm(host)]"
+    set_cookie sm(data) ""
+    complete
+}
+
+proc omail {} {
+    return "[kanovers] for xircon - www.kano.net"
+}
+
+#receive
+set mail(count) 0
+set mail(last)  [expr [clock seconds] - (60 * ([get_cookie pop(time)] + 1))]
+set mail(stage) user
+set mail(lastcount) 0
+
+on_minute {
+    if {[expr [unixtime] - $mail(last)] >= [expr [get_cookie pop(time)] * 60] && [active] && [connected] && [get_cookie pop(time)]} /check
+}
+
+alias check {
+    set ret 0
+    catch {close $mailv}
+    foreach i {host user pass} {
+	if {[get_cookie pop($i)] == ""} {set ret 1}
+    }
+    if $ret {
+	echo "[kano] Try using /pop to configure POP email checking."
+	complete
+	return
+    }
+    echo "[kano] Connecting to POP server." status
+    if [catch {socket -async [get_cookie pop(host)] 110} mailv] {echo "[kano] Error checking email: $mailv";complete;return}
+    fconfigure $mailv -buffering line
+    fileevent $mailv readable "mailresp $mailv"
+    set mail(last) [unixtime]
+    set mail(stage) user
+    catch {unset fmail}
+    complete
+}
+
+proc mailresp mailv {
+    global mail fmail
+    if [eof $mailv] {close $mailv;unset mailv;set mail(stage) user;set mail(last) [unixtime];return}
+    gets $mailv line
+    if {$line == ""} return
+    if {[lindex [split $line] 0] == "-ERR"} {echo "[kano] POP error: $line";close $mailv;unset mailv;return}
+    switch $mail(stage) {
+	user {
+	    puts $mailv "user [get_cookie pop(user)]";#echo >user
+	    set mail(stage) pass
+	}
+	pass {
+	    puts $mailv "pass [rot_old [get_cookie pop(pass)]]";#echo >pass
+	    set mail(stage) getn
+	}
+	getn {
+	    puts $mailv list;#echo >list
+	    set mail(stage) getting
+	    set mail(count) 0
+	}
+	getting {
+	    if {[lindex [split $line] 0] != "."} {
+		incr mail(count)
+	    } {
+		incr mail(count) -1
+		set mail(stage) getsubj
+		if {$mail(count) == 0} {puts $mailv quit} {
+		    set mail(stage) getsubj
+		    set mail(subj) 1
+		    set ms 1
+		    while {$ms <= $mail(count)} {
+			puts $mailv "retr $ms"
+			incr ms
+		    }
+		    set mail(line) 1
+		}
+	    }
+	    catch {unset fmail}
+	    set mail(display) 1
+	    set mail(attachn) 0
+	}
+	getsubj {
+	    if {$line != "."} {
+		if {[string range $line 0 7] == "Subject:"} {
+		    lappend mail(getsubj$mail(line)) $line
+		} elseif {[string range $line 0 4] == "From:"} {
+		    lappend mail(getsubj$mail(line)) $line
+		}
+		if {[lindex [split $line] 0] == "Content-Description:"} {set mail(display) 0;incr mail(attachn);lappend fmail($mail(line)) "[kanoverz]: Type /read $mail(line)[string index Kabcdefghijklmnopqrstuvwxyz $mail(attachn)] to view attachment."}
+		if {[lindex [split $line] 0] != "+OK" && $mail(display)} {lappend fmail($mail(line)) $line} elseif {!$mail(display) && [lindex [split $line] 0] != "+OK"} {lappend fmail($mail(line)[string index Kabcdefghijklmnopqrstuvwxyz $mail(attachn)]) $line}
+	    } {
+		if {$mail(line) == $mail(count)} {
+		    puts $mailv quit;#echo >quit
+		    if {$mail(count) > $mail(lastcount)} {
+			mmstop all
+			mmplay [get_cookie sound(email)]
+			beep
+			echo "[kano] You have new mail. Type /read list to read."
+#			/read list
+			set mail(lastcount) $mail(count)
+		    }
+		}
+		incr mail(line);set mail(display) 1
+	    }
+	}
+    }
+    mailresp $mailv
+    catch {flush $mailv}
+}
+
+alias pop {
+    if {[get_cookie pop(time)] == 0} {
+	set popo 0
+    } {
+	set popo 1
+    }
+    set ItemsList [list]
+    lappend ItemsList [list label lbl1 5 15 20 10 "Host:"]
+    lappend ItemsList [list edit pop(host) 25 13 104 12 [get_cookie pop(host)]]
+    lappend ItemsList [list label lbl2 5 30 20 10 "User:"]
+    lappend ItemsList [list edit pop(user) 25 28 104 12 [get_cookie pop(user)]]
+    lappend ItemsList [list label lbl3 5 45 20 10 "Pass:"]
+    lappend ItemsList [list edit pop(pass) 25 43 104 12 [rot_old [get_cookie pop(pass)]]]
+    lappend ItemsList [list check -v $popo popo 14 62 70 10 "Check every:"]
+    lappend ItemsList [list edit pop(time) 84 60 14 12 [get_cookie pop(time) "5"]]
+    lappend ItemsList [list label lbl4 100 63 30 10 "minutes"]
+    if [llength [set answer [FALC_dialog -t "[kanovers] mail check" 146 80 $ItemsList]]] {
+	foreach control $answer {
+	    set_cookie [lindex $control 0] [lindex $control 1]
+	}
+	set_cookie pop(pass) [rot_old [get_cookie pop(pass)]]
+	if ![get_cookie popo] {set_cookie pop(time) 0}
+	set_cookie popo ""
+    }
+    complete
+}
+
+alias read {
+    if {[llength [array names fmail]] == 0} {
+	echo "[kano] You have no mail."
+    } elseif {[string trim [arg] 1234567890abcdefghijklmnopqrstuvwxyz] != "" && [arg] != "list" || [arg] == ""} {
+	echo "[kano] Usage: /read <number>, /read list"
+    } elseif {[arg] == "list"} {
+	if {[queries .Mail.] == ""} {
+	    /query .Mail.
+	    window set_title "Email Console" query .Mail.
+	}
+	window clear query .Mail.
+	if {[window state query .Mail.] == "minimize"} {
+	    window restore query .Mail.
+	}
+	window focus query .Mail.
+	echo "[kano] $mail(count) messages:" query .Mail.
+	set getsubj ""
+	foreach i [lsort [array names mail]] {
+	    if {[string range $i 0 6] == "getsubj"} {
+		lappend getsubj [string trimleft $i getsubj]
+	    }
+	}
+	set getsubj [lsort -integer $getsubj]
+	set getsubj [lrange $getsubj [expr [llength $getsubj] - ($mail(count) + 1)] end]
+	foreach i $getsubj {
+	    echo "[kano] [format %-4s $i.] [lindex $mail(getsubj$i) 0]" query .Mail.
+	    echo "[kano]      [lindex $mail(getsubj$i) 1]" query .Mail.
+	}
+	echo "[kano] Type /read <number> to read the email." query .Mail.
+    } elseif [info exists fmail([string trimleft [arg] 0])] {
+	window clear query .Mail.
+	foreach i $fmail([string trimleft [arg] 0]) {
+	    update
+	    echo [wrap $i 72] query .Mail.
+	}
+	window set_title "Email Console" query .Mail
+    } {
+	echo "[kano] No such mail number."
+    }
+    complete
+}
+
+addmenu * "&Email->&Configure" /pop
+addmenu * "&Email->Check &mail" /check
+addmenu * "&Email->&Read mail" {/read list}
+
+kaddhelp read "Reads or lists your email." "/read list, /read <number>" "Read Email" "/pop, /check"
+kaddhelp check "Checks your email." "/check" "Email Check" "/pop, /read"
+kaddhelp pop "Configures the email checker." "/pop" "Email Check Configuration" "/check, /read"

@@ -1,0 +1,91 @@
+kmod "extra channel stuff" 15 "parses channel text/joins"
+
+ac check @sortnicks @1 Sort nick completion nicks by likelihood (slow)
+
+on privmsg {
+    if {$ischan} {
+	if {[get_cookie sortnicks 1]} {add_last_speak $d [nick]}
+	set msg [lindex [args] 1]
+	mmplay [get_cookie sound(chan)]
+	isdebug mm
+	lappend said($o) $m
+	foreach i [get_cookie noshowpub] {
+	    if {[string match $i [lindex [args] 1]]} {
+		complete
+		return
+	    }
+	}
+	isdebug noshow
+	if {$yes} {
+	    mmstop all
+	    mmplay [get_cookie sound(nick)]
+	    if {![xirctop]} {
+		flash_title
+		flash_scroll
+	    }
+	}
+	isdebug donehl
+	if {[string match {[зи]*} $msg]} {
+	    echo [t rot14] channel $d
+	    complete
+	}
+	isdebug donech
+    } else {
+	if {![xirctop]} {
+	    flash_title
+	    flash_scroll
+	}
+	mmplay [get_cookie sound(msg)]
+	addmlog "0*[nick]![user]@[host]0* [lindex [args] 1]"
+	if {[string first [string index $msg 0] зи] != -1} {
+	    /query [nick]
+	    echo [t rot14] query [nick]
+	    complete
+	    return
+	}
+    }
+}
+
+on join {
+    set user [find_user [nick]![user]@[host]]
+    set mask [get_user $user mask]
+    if {$user == -1} {
+	set echo [t join]
+    } else {set echo [t ujoin]}
+    if {[info exists joinhost($h)] && [get_cookie thisis 1]} {
+	set j $joinhost($h)
+	set k [lindex $j 0]
+	if {$k != $n} {
+	    if {[ison $k $c]} {set is is} else {set is was}
+	    append echo " (this $is [lindex $j 1])"
+	}
+    }
+    set ex ""
+    if {[info exists chanex($c)]} {
+	foreach i [string tolower $chanex($c)] {
+	    if {[string match $i [string tolower [nick]![user]@[host]]]} {
+		lappend ex $i
+	    }
+	}
+    }
+    if {$ex != ""} {
+	append echo " (excepted: [join [killdupe $ex] ", "])"
+    }
+    if {[nick] == [my_nick] && [get_cookie autohash] && !$gotkicked($lc)} {
+	uhash $lc
+    }
+    if {$gotkicked($lc)} {lappend doaskops $lc}
+    set gotkicked($lc) 0
+    set chan $lc
+    if {[isop [my_nick] $chan] && [isprotect [nick] voice]} {
+	/mode $chan +v [nick]
+    }
+    set c [string tolower $c]
+    set joinhost($h) [list $n [nick]]
+    set chan $lc
+    set perm [isperm $user]
+    if {$perm != -1 && [isop [my_nick] $lc]} {
+	/mode $lc -o+b [nick] [get_user $user mask]\n \
+	    kick $lc [nick] :shitlisted: $perm
+    }
+}

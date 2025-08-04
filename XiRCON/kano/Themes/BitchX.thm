@@ -1,0 +1,226 @@
+#non display stuff
+set kanobg 15,01
+set vers {{Socially inept? You bet I am!}}
+set ctcpvers "xirc([version major]b[version beta]) - [kanoverz] by kano + falc([rep [FALC_ver] . .]) + bitchx.thm by subarctic"
+set_cookie kv 1
+set_cookie kano 4ù0í4ù15
+
+
+foreach i {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15} {
+    proc $i {} "return \003[string range 0$i [expr [string length 0$i] -2] end]"
+}
+proc b {} {return }
+proc u {} {return }
+proc o {} {return }
+proc bx {} {return [14]>[15]>[0]>15}
+#kano stuff
+nt themename "[b]S[o]ub[u]A[o]rctic's half-assed [u][9]B[3]X[o] theme"
+nt awaypubform {is gone, [arg] \[l/%msglog p/%page\]}
+nt awayform {[arg] \[l/%msglog p/%page since/[string trimleft [clock format [unixtime] -format %I:%M] 0][string tolower [string index [clock format [unixtime] -format %p] 0]]\]}
+nt backform {has returned, [arg] \[gone/%gone\]}
+nt xdccstart {Files Offered: /ctcp [my_nick] XDCC send #N for pack N}
+#%num %desc %file %size %gets
+nt xdcclist {[format "#%num ( %8s: %3s gets) %desc" %size %gets]}
+nt xdccend {}
+nt socketfailed {[kano] [15]%type unable to create socket: %error.}
+nt rot14 {[13]<[o][15][nick][14]:[13]ROT-14[13]>[o] [15][rot [string trimleft [join [lrange [args] 1 end]] §]]}
+nt ident {[kano] [14]\[[15]%host[14]\][15] requested your ident[14]:[15] returned [13][get_cookie ident(user)][15].}
+nt identoff {[kano] [14]\[%host[14]\] [15]requested your ident: ignoring (ident is [u]OFF[u])}
+nt page {[bx] [nick] [14]\[[15][user]@[host][14]\][15] paged you!}
+nt sound {[kano] [13]([lrange [split [lindex [args] 2] \\] end end]) [0]ð[15] [nick][15] [lrange [args] 3 end]}
+nt chanwallops {\[Wall/[channel]\] [raw_args]}
+nt chanwallx {\[WallX/[channel]:[nick2nick [lindex [args] 0]]\] [join [lrange [args] 1 end]]}
+nt myctcp {[14]\[[5]ctcp[14]([4][nick2nick [join [lindex [args] 0] ,]][14])\][15] [string toupper [join [lindex [args] 1]]] [join [lrange [args] 2 end]]}
+nt mysound {[13]([lrange [split [lindex [args] 0] \\] end end])[0] ð[15] [my_nick][15] [lrange [args] 1 end]}
+nt autoignoreall {[kano] Possible flood detected: added *!*@* to ignore list for 30s.}
+nt autoignore {[kano] %type flood from [nick] [14]\[[15][user]@[host][14]\][15]; ignoring for 30secs.}
+nt unignore {[kano] Autoignore expired: Unignoring %host.}
+nt dictsearching {[bx] Searching dictionary server for: [arg]}
+nt dicterr {[bx] Dictionary server error: %dict}
+nt dicterrnotfound {[bx] Dictionary: %word not found; no suggestions}
+nt dicterrfound {[bx] Spelling error in %word. Suggestions:}
+nt dictfound {[bx] Definition for %word:}
+nt dictdef {[bx] %gets}
+nt dictunknown {[bx] %gets}
+nt tempkickban {[bx] Unbanning [join [lindex [args] 0]] in [lindex [args] 1].}
+nt tkbunban {[bx] TempKB Expired: Unbanning %host on %chan.}
+nt topiclock {[kano] [14]\[[10][channel][14]\][15] Topic Locked.}
+nt topicunlock {[kano] [14]\[[10][channel][14]\][15] Topic [u]Un[o]locked}
+nt addperm {[bx] Added %nick [14]([15]%user[14])[15] to permban.}
+nt remperm {[bx] Removed %nick [14]([15]%user[14])[15] from permban.}
+
+###basic stuff
+nt dcctext {[14]\[[9][nick][14]([3]dcc[14])\][15] [lindex [args] 0]}
+nt dccact {[14]ð [9][nick]/dcc[15] [lrange [lindex [args] 0] 1 end]}
+nt myaction {[14]ð [0][my_nick][15] %text}
+nt action {[14]ð [8][nick]/[join [lindex [args] 0]][15] %text}
+nt actionnoquery {[14]ð [8][nick] [15]%text}
+nt pubmsg {[12]<[15][nick][12]>[o][15] %text}
+nt mymsg {[13]<[o][15][my_nick][13]>[o][15] %text}
+nt mymsgnoquery {[14]\[[5]msg[14]([4]%nick[14])\][15] %text}
+nt msg {[12]<[o][15][nick][12]>[o][15] %text}
+nt msgnoquery {[14]\[[13][nick][14]([6][user]@[host][14])\][15] %text}
+nt pubnotice {[14]-[13][nick][14]:[6][join [lindex [args] 0]][14]-[15] %text}
+nt servnotice {[9][iph [connected] [9]\[[lindex [set split [split [lindex [server] 0] .]] [expr [llength $split]-2]]\] ""]![3][lindex [server] 0][15] %text}
+nt notice {[14]-[13][nick][14]([6][user]@[host][14])-[15] %text}
+nt mynotice {[14]\[[5]notice[14]([4][nick2nick [join [lindex [args] 0]]][14])\][15] %text}
+nt mynoticenoquery {[t mynotice]}
+nt highlight {[12]<[8][nick][12]>[15] %text}
+
+#nt joincountry {[kano][11] [nick][15] is from [0][country [lrange [split [host] .] end end]]}
+nt joincountry {}
+nt join {[kano][11] [nick] [14]\[[10][user]@[host][14]([15][country [lrange [split [host] .] end end]][14])\][15] has joined [lindex [args] 0]}
+nt myjoin {[t join]}
+
+nt part {[kano][15] [nick] [14]\[[15][user]@[host][14]\][15] has left [lindex [args] 0] [14]\[[15][lindex [args] 1][14]\]}
+nt quit {[kano][15] SignOff [0][nick][15]:[14] ([15][arg][14])}
+nt kick {[kano][0] [lindex [args] 1][15] was kicked off [lindex [args] 0] by [10][nick][14] ([15][lindex [args] 2][14])}
+nt kickedyou {[bx][0] [10]You[15] were kicked off [10][lindex [args] 0][15] by [10][nick][14] ([15][lindex [args] 2][14])}
+nt modechange {[kano][15] mode[14]/[10][lindex [args] 0][14] \[[0][lindex [args] 1]%mode[14]\][15] by [0]%nick}
+
+nt mynick {[bx] [0]You[14]([15][my_nick][14])[15] are now known as [10][arg]}
+nt nick {[kano] [0][nick][15] is now known as [10][string trimleft [raw_args] :]}
+nt wallops {[kano] wallops: [arg]}
+nt dccsend {[14]\[[5]dcc[14]([4]SEND[14])\][15] [lindex [args] 1]}
+nt dccreq {[kano] [4]DCC[15] GET [14]([15][file tail [lindex [args] 2]][14])[15] request from [lindex [args] 1][14]\[[11][uhost [lindex [args] 1]][14]\][15] [filesize [lindex [args] 3]]}
+nt dccbegin {[kano] [4]DCC[15] [lindex [args] 0] with [0][lindex [args] 1][14]\[[11][lindex [split [uhost [lindex [args] 1]] @] 1]:[rand 1000 6000][14]\][15] established}
+nt dccdone {[kano] [4]DCC[0] [lindex [args] 0]:[9][file tail [lindex [args] 2]] [14]\[[11][filesize [file size [lindex [args] 2]]][14]\][15] [iph {[lindex [args] 0] == {SEND}} to from] [lindex [args] 1] ([lindex [args] 4]kb/sec)}
+nt dccerr {[kano] [15]Error[14]:[15] DCC connection closed [14]([15][lindex [args] 2][14])[15] [iph {[lindex [args] 0] == {SEND}} to from] [lindex [args] 1].}
+nt getnick {[kano] Regaining nick [arg].}
+nt getnickerr {[kano] You are already known as [nick]!}
+nt askopschan {[kano] Asking %bots for %opsorauth.}
+nt askopsmain {[kano] [14]\[[10]%chan[14]\][15] Asking %bots for %opsorauth}
+nt cycleforops {[kano] Cycling %chan to gain ops.}
+nt newconn {[bx] Attempting connection to [10][lindex [args] 0][o] on port [10][lindex [args] 1][o]}
+nt closedconn {[kano] Connection closed.}
+nt tclconsoleinput {[13]% [join [lrange [args] 1 end]]}
+nt notifyon {[kano] [9]Signon[o] by [4][nick][4][o]![4][user]@[host] [o]at [clock format [unixtime] -format %I:%M][string tolower [clock format [unixtime] -format %p]]}
+nt notifyoff {[kano] [9]Signoff[o] by [4][nick][4][o]![4][user]@[host] [o]at [clock format [unixtime] -format %I:%M][string tolower [clock format [unixtime] -format %p]]}
+nt invitedyou {[15][bx] [0][nick][15] Invited you to [10][lindex [args] 1][15]. Press [13]Ctrl+I[15] to join chan.}
+nt ctcpreply {[kano] [15]CTCP [0][lindex [args] 1][15] reply from [nick]: %reply}
+nt ctcptimereply {[kano] [15]CTCP [0][lindex [args] 1][15] reply from [format %-9s [nick]]: %reply}
+nt ctcpcloaked {[bx] [11][nick] [14]\[[10][user]@[host][14]\] [15][10]requested [lindex [args] 1] from [lindex [args] 0]; cloaked}
+nt xdcc {[bx] [9][nick] [14]\[[3][user]@[host][14]\] [15][3]requested [lindex [args] 1] [lindex [args] 2] from [lindex [args] 0]}
+nt ctcp {[bx] [9][nick] [14]\[[3][user]@[host][14]\] [15][3]requested %cmd from [lindex [args] 0]}
+
+###raw stuff
+nt stats {[join [lrange [args] 1 end]]}
+nt motd {[bx] [lrange [args] 1 end]}
+nt dline {[kano] Line: [lrange [args] 1 end]}
+nt umode {[kano] mode change [14]\[[0][lindex [args] 1][14]\][15] for user [10][my_nick]}
+nt lusercrap {[kano] [join [lrange [args] 1 end]]}
+nt admincrap {[kano] [join [lrange [args] 1 end]]}
+nt overloaded {[kano] [lrange [args] 1 end]}
+nt silenced {[kano] [lrange [args] 1 end]}
+nt killed {[kano] [15][string trimright [lindex [split [arg]] 8] .][15] was killed by [15][lindex [split [arg]] 10][15] [join [lrange [split [arg]] 13 end]]}
+nt trace {[kano] [format %-9s [lindex [args] 1]]: [lrange [args] 1 end]}
+nt line {[kano] Line: [lrange [args] 1 end]}
+nt away {[kano] You are now marked as being away.}
+nt notaway {[kano] You are no longer marked as being away.}
+nt helpful {[kano] [lrange [args] 1 end]}
+
+####WHOIS STUFF
+nt wwnick {[9]ÚÄÄÄÄÄ---[3]Ä[9]--[3]ÄÄ[9]-[3]ÄÄÄÄÄÄ---[14]Ä[3]--[14]ÄÄ[3]-[14]ÄÄÄÄÄÄÄÄÄ--- --  -[o]
+| [0][lindex [args] 1][14] ([15][lindex [args] 2]@[lindex [args] 3][14]) ([0][country [lrange [split [lindex [args] 3] .] end end]][14])}
+nt wwaddr {}
+nt wwname {³ [0]i[15]rcname  :[15] [lindex [args] 5]}
+
+nt winick {
+[9]ÚÄÄÄÄÄ---[3]Ä[9]--[3]ÄÄ[9]-[3]ÄÄÄÄÄÄ---[14]Ä[3]--[14]ÄÄ[3]-[14]ÄÄÄÄÄÄÄÄÄ--- --  -[o]
+[9]| [0][lindex [args] 1][14] ([15][lindex [args] 2]@[lindex [args] 3][14]) ([0][country [lrange [split [lindex [args] 3] .] end end]][14])
+}
+nt wiaddr {}
+nt winame {[9]³ [0]i[15]rcname  :[15] [lindex [args] 5]}
+nt wichan {[3]| [0]c[15]hannels :[15] [lindex [args] 2]}
+nt wiserv {[14]³ [0]s[15]erver   :[15] [lindex [args] 2] ([lindex [args] 3])}
+nt wiaway {[14]| [0]a[15]way     :[15] [lindex [args] 2]}
+nt wiidle {[14]: [0]i[15]dle     :[15] [since [lindex [args] 2]] (signon: [since c[lindex [args] 3]])}
+nt wioper {[14]| [0]o[15]perator :[15] [join [lrange [args] 2 end]]}
+nt wisign {}
+##EEK
+
+nt isaway {[kano] [0][lindex [args] 1][15] is away[14]:[15] [lindex [args] 2]}
+nt ismode {[kano] mode/[10][lindex [args] 1] [14]\[[0][lindex [args] 2][14]\] [15][lindex [args] 3]}
+nt notopic {[kano][10] [lindex [args] 1][15]: no topic set. }
+nt istopic {[kano] Topic for [10][lindex [args] 1][14]:[15] [lindex [args] 2]}
+nt settopic {[kano] topic set by [10][lindex [args] 2][14] \[[10][clock format [lindex [args] 3]][14]\]}
+nt topicchange {[kano][0] [nick][15] has changed the topic on channel [lindex [args] 0] to[14]: [15][lindex [args] 1]}
+nt topiclocked {[kano] Channel topic locked. Switching back...}
+nt inviting {[bx][0] Inviting [lindex [args] 1] to [lindex [args] 2]}
+nt summoning {[kano] Summoning [lindex [args] 1] to IRC}
+nt atversion {[kano] [lindex [args] 2] is at version [lindex [args] 1][lindex [args] 3]: [lindex [args] 4]}
+nt who {[format "[kano] [10]%-10s[15] %-9s[15] %8s@%-21s %4s %-2s %s" %blah]} ;#%blah is replaced with seven or eight different values. blah.
+nt users {[eval {
+    set m "[kano] [14]\[[9]Users[14]([3][lindex [args] 2]:[llength [split [string trim [lindex [args] 3]]]][14])\]"
+    if {[channels [lindex [args] 2]] != ""} {
+	echo $m channel [lindex [args] 2]
+    } {
+	echo $m
+    }
+    for {set i 0} {[lindex [split [string trim [join [lindex [args] 3]]]] $i] != ""} {incr i 4} {
+	set m ""
+	foreach j [lrange [split [split [string trim [join [lindex [args] 3]]]]] $i [expr $i+3]] {
+	    if {[string index $j 0] != "+" && [string index $j 0] != "@"} {
+		set n 10
+		set space " "
+	    } {
+		set n 11
+		set space ""
+	    }
+	    append m "[14]\[[12][rep [rep $space[format %-${n}s [join $j]] @ [11]@[12]] + [13]v[12]][14]\]"
+	}
+	if {[channels [lindex [args] 2]] != ""} {
+	    echo $m channel [lindex [args] 2]
+	} {
+	    echo $m
+	}
+    }
+}]}
+nt bans {[kano] [format %-9s [lindex [args] 1]] [format %-14s [lindex [split [lindex [args] 3] !] 0]] [format %-30s [lindex [args] 2]] ([since c[lindex [args] 4]])}
+nt nowoper {[bx] You are now an IRCop}
+nt time {[kano] [lindex [args] 1] [lindex [args] 2]}
+nt user {[kano] [lrange [args] 1 end]}
+nt nosuchnick {[0][lindex [args] 1][15]: No such nick/channel}
+nt nosuchserver {[kano][15] [lindex [args] 1] no such server}
+nt invalidchan {[kano] [lindex [args] 1]: invalid channel}
+nt cannotsendmoderated {[kano][15] [lindex [args] 1]  Cannot send to channel}
+nt toomanychans {[bx] Unable to join [lindex [args] 1]: you've joined too many channels.}
+nt wasnonick {[kano][15] [lindex [args] 1]  There was no such nickname}
+nt occurs {[kano][15] [lindex [args] 1] occurs more than once; no message sent}
+nt pingorigin {[kano] No ping/pong origin specified}
+nt notext {[bx] No text to send.}
+nt notoplvl {[kano][15] [lindex [args] 1]: No toplevel domain specified.}
+nt topwild {[kano][15] [lindex [args] 1]: Wildcard in toplevel domain (can't do that!)}
+nt cmdunknown {[kano][15] Unknown command: [string tolower [lindex [args] 1]]}
+nt noadmin {[kano][15] [lindex [args] 1] No admin information. }
+nt nonickgiven {[kano] No nickname given.}
+nt badnick {[kano][15] Nickname specified is illegal}
+nt nickinuse {[kano][15] [lindex [args] 1]  Nickname is already in use}
+nt nickcollision {[kano] Nickname collision.}
+nt notonchan {[kano] [lindex [args] 2]: [15][lindex [args] 1] isn't on channel.}
+nt notinchan {[kano] [lindex [args] 1] you're not in that channel.}
+nt alreadyonchan {[kano][15] [lindex [args] 1][14]\\[10][lindex [args] 2][15] already on channel.}
+nt notlogged {[kano] Sorry, [15][lindex [args] 1] isn't logged on; cannot summon him.}
+nt summondisabled {[kano] Sorry, summon has been disabled.}
+nt usersdisabled {[kano] Users has been disabled.}
+nt notregistered {[kano] You have not registered.}
+nt toofewparms {[kano][15] [lindex [args] 1]: Not enough parameters.}
+nt alreadyregistered {[kano] You've already registered.}
+nt notprivileged {[kano] Your host is not among the privileged.}
+nt badpass {[kano] Incorrect password.}
+nt bannedfromserver {[kano] Can not connect to server: k-lined.}
+nt keyset {[kano][15] [lindex [args] 1]'s channel key already set.}
+nt chanfull {[kano] [15]\[[lindex [args] 1]\]  Channel is full}
+nt chaninvite {[kano] [15]\[[lindex [args] 1]\] Invite only channel.}
+nt chanbanned {[kano] [15]\[[lindex [args] 1]\] banned from channel.}
+nt chanbadkey {[kano] [15]\[[lindex [args] 1]\] Bad channel key}
+nt banlistfull {[kano] \[[15][lindex [args] 1]\] banlist is full.}
+nt nopermission {[kano] Permission denied; you're not an IRCop.}
+nt notop {[kano][15] You're not opped on [lindex [args] 1][iph [isop [my_nick] [join [lindex [args] 1]]] ", but you are (desync)" ""]}
+nt unknownmode {[kano][15] Unknown MODE flag.}
+nt serverkill {[kano] You can't kill a server.}
+nt notoper {[kano] Your host doesn't have any O-lines.}
+nt notyourmode {[kano][15] Can't change modes for other users.}
+nt silencefull {[kano][15] Your silence list is full.}
+nt nogline {[kano][15] [lindex [args] 1][15] No such G-line.}
+nt created {[kano] Channel [lindex [args] 1] was created at [join [clock format [lindex [args] 2]]]}

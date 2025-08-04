@@ -1,0 +1,2 @@
+Well, load them in Xircon's preferences (Tools->Preferences) under the Colors tab.
+Then turn "INI colors" on in /config.

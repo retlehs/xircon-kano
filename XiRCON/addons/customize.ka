@@ -1,0 +1,1029 @@
+####procs
+
+proc bigwin {varname {name Commands} {label {Enter each command on a\
+	separate line}}} {
+    set il [list]
+    lappend il [list label x 0 0 200 10 $label]
+    upvar 1 $varname text
+    lappend il [list edit -m return 0 10 200 200 [expr \
+	    {[info exists text] && $text != "" ? $text : "# lines beginning\
+	    with a hash-mark (#) are not evaluated\r\n#\r\n# to say\
+	    something, try:\r\n#   /say hello!\r\n#\r\n# to echo text,\
+	    try\r\n#   /echo stuff etc.\r\n#\r\n# all IRC commands must be\
+	    prefixed with a slash (/)\r\n#\r\n# the \
+	    characters \$, \\, \[, \], and \" are special characters\r\n#\
+	    and can be printed by using a backslash (\\) before\r\n# the\
+	    character\r\n\r\n"}]]
+    set x [FALC_dialog -t $name 200 212 $il]
+    set text [lindex [lindex $x 0] 1]
+    expr {$text != ""}
+}
+
+proc shortcut_alias {} {
+    global darkhelp litehelp
+
+    set sp [split [raw_args]]
+    set from [string trimleft [lindex $sp 0] /]
+    set to [string trimleft [lindex $sp 1] /]
+
+    complete
+
+    if {$from == ""} {
+	set froms [list];set tos [list]
+	foreach fromto [get_cookie shortcuts] {lappend froms \
+		[lindex $fromto 0];lappend tos [lindex $fromto 1]}
+	set il [list]
+	lappend il [list label x 10 10 100 10 "When executing /"]
+	lappend il [list combo -e from 67 8 50 100 $froms]
+	lappend il [list label x 10 30 100 10 "Execute /"]
+	lappend il [list combo -e to 42 28 75 100 $tos]
+	set ans [FALC_dialog -t "Shortcut editor" 130 53 $il]
+	if {$ans == ""} return
+	
+	set from [string tolower [lindex [lindex $ans 0] 1]]
+	set to [string tolower [lindex [lindex $ans 1] 1]]
+    }
+    set custom [get_cookie shortcuts]
+
+    set did 0
+    set end [list]
+    foreach fromto $custom {
+	if {[lindex $fromto 0] == $from} {
+	    if {$to != ""} {
+		lappend end [list $from $to]
+	    }
+	    set did 1
+	} {
+	    lappend end $fromto
+	}
+    }
+
+    if {!$did && $to != ""} {
+	lappend end [list $from $to]
+    }
+
+    set_cookie shortcuts $end
+    set custom $end
+
+    echo "[kano] [llength $custom] shortcut[s [llength $custom]]"
+    for {set i 0} {$i < [llength $custom]} {incr i} {
+	set index [lindex $custom $i]
+	if {[string tolower [lindex $index 0]] == $from} {
+	    set custom [lreplace $custom $i $i [list $from $to]]
+	}
+	set a [lindex $index 0]
+	set b [lindex $index 1]
+	echo "    $darkhelp/$litehelp[format %-10s $a] $darkhelp->\
+		/$litehelp$b"
+    }
+}
+
+proc all_alias {} {
+    global errorInfo runAlias runValue er
+
+    set cmd [string tolower [lindex [args] 0]]
+    set args [raw_args]
+    set f [lsearch -exact [get_cookie alias_names] $cmd]
+    if {$f != -1} {
+	set al [lindex [get_cookie alias_scripts] $f]
+	set runAlias $al
+	/__run_alias $args
+	if {$runValue == 1} {
+	    echo "[kano] Error executing custom alias: $er\n$errorInfo"
+	}
+	complete
+	return
+    }
+    foreach i [get_cookie shortcuts] {
+	if {[string tolower [lindex $i 0]] == $cmd} {
+	    /[lindex $i 1] $args
+	    complete
+	    return
+	}
+    }
+}
+
+proc run_alias {} {
+    global runAlias runValue er
+    set runValue [catch {uplevel \#0 $runAlias} er]
+    complete
+}
+
+proc custom_get {type name} {
+    set name [string tolower $name]
+    set f [lsearch -exact [get_cookie ${type}_names] $name]
+    if {$f == -1} return {return [lindex [get_cookie ${type}_scripts] $f]}
+}
+
+proc custom_list type {get_cookie ${type}_names}
+
+proc custom_set {type name {val {}}} {
+    set name [string tolower $name]
+    set f [lsearch -exact [get_cookie ${type}_names] $name]
+    set names [get_cookie ${type}_names]
+    set scripts [get_cookie ${type}_scripts]
+    if {$f == -1} {
+	if {$val != ""} {
+	    lappend names $name
+	    lappend scripts $val
+	    custom_add $type $name
+	}
+    } {
+	if {$val == ""} {
+	    set names [lreplace $names $f $f]
+	    set scripts [lreplace $scripts $f $f]
+	} {
+	    set scripts [lreplace $scripts $f $f $val]
+	}
+    }
+    set_cookie ${type}_names $names
+    set_cookie ${type}_scripts $scripts
+}
+
+proc custom_add {type name} {
+    upvar \#0 custom_did($type,$name) this
+
+    if {![info exists this]} {
+	$type $name ${type}_do
+	set this [clock seconds]
+    }
+}
+
+proc custom_do type {uplevel \#0 [${type}_get [event]]}
+
+proc on_do {} {
+    global hooks hook_events match_map showed_error errorInfo
+
+    set event [string tolower [event]]
+    if {![info exists hook_events($event)]} return
+
+    foreach hook $hook_events($event) {
+	if {[info exists showed_error($hook)]} continue
+
+	set val $hooks($hook)
+
+	if !([lindex $val 1]) continue
+
+	set match [custom_get on $hook]
+	if {$match == ""} return
+
+	set stop 0
+	foreach item [lrange $match 0 [expr {[llength $match] -2}]] \
+		{junk junk against} [lindex $val 2] {
+	    if {[info exists match_map($item)]} {
+		set item $match_map($item)
+	    }
+
+	    set item [string tolower $item]
+	    set against [string tolower [subst $against]]
+
+	    if {![string match $item $against]} {set stop 1; break}
+	}
+	if {$stop} continue
+
+	set ev [run_on [lindex $match end] [lindex $val 4]]
+	if {[lindex $ev 0] == 1} {
+	    set showed_error($hook) 1
+	    echo "[kano] error performing hook '$hook': [lindex $ev 1]"
+	    echo $errorInfo
+	    echo "[kano] disabling hook '$hook' for this IRC session"
+	}
+    }
+}
+
+proc run_on {__script __vars} {
+    foreach {__name __val __desc} $__vars {
+	set $__name [subst $__val]
+    }
+    if {[info exists __name]} {unset __name __val __desc}
+    unset __vars
+
+    list [catch $__script er] $er
+}
+
+proc hotkey_do {} {
+    set script [custom_get hotkey [string tolower [event]]]
+
+    if {$script != ""} {
+	if {[uplevel \#0 [list catch $script er]] == 1} {
+	    global errorInfo er
+
+	    echo "[kano] error performing custom hotkey script for [event]:\
+		    $er"
+	    echo "$errorInfo"
+	}
+    }
+}
+
+proc hotkey_alias {} {
+    complete
+
+    set sp [split [raw_args]]
+    set key [lindex $sp 0]
+    set script [join [lrange $sp 1 end]]
+
+    if {[catch {hotkey $hook}]} {
+	
+	global key2num
+	set il [list]
+	lappend il [list combo which   5   5  60  100 [list add/edit remove]]
+	lappend il [list label x       70  5  100 10  Holding...]
+	lappend il [list check control 70  15 50  10  Ctrl]
+	lappend il [list check alt     70  25 50  10  Alt]
+	lappend il [list combo key     5   25 60  100 [list f1 f2 f3 f4 f5 \
+		f6 f7 f8 f9 f10 f11 f12 a b c d e f g h i j k l m n o p q r \
+		s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V \
+		W X Y Z 1 2 3 4 5 6 7 8 9 0 ! @ \# $ % ^ & * ( ) <enter> \
+		<space> <tab> <up> <down> <left> <right>]]
+	set ans [FALC_dialog -t "custom hotkeys" 70 45 $il]
+	if {$ans == ""} return
+	foreach i $ans {set [lindex $i 0] [lindex $i 1]}
+	
+	set shift 0
+	regexp {^<(.*)>$} $key junk key
+	if {[regexp {^[A-Z]$} $key]} {
+	    set shift 1
+	    set key [string tolower $key]
+	} elseif {[regexp {^[!@#$%^&*()]$} $key]} {
+	    set shift 1
+	    set key $key2num($key)
+	}
+	if $control {set key control+$key}
+	if $alt {set key alt+$key}
+	if $shift {set key shift+$key}
+
+	set script [custom_get hotkey $key]
+	if {$which == "add/edit"} {
+	    if ![bigwin script "custom hotkey: $key"] return
+	}
+    } else {
+	set which [expr {[string length $script] ? "add/edit" : "remove"}]
+    }
+    switch -- $which {
+	add/edit {
+	    custom_add hotkey $key
+	    custom_set hotkey $key $script
+	    echo "[kano] saved custom hotkey $key\n[kano] some hotkeys may \
+		    need a reload (/reload) to be initialized"
+	}
+	remove {
+	    if {$script == ""} {
+		echo "[kano] $key is not a custom hotkey (no entry found)"
+	    } else {
+		custom_set hotkey $key
+		echo "[kano] deleted custom hotkey entry for $key"
+	    }
+	}
+    }
+}
+
+proc alias_do args return
+
+proc alias_alias {} {
+    complete
+
+    set sp [split [raw_args]]
+    set alias [lindex $sp 0]
+    set script [join [lrange $sp 1 end]]
+
+    if {$alias == ""} {
+	set il [list]
+	lappend il [list combo which    5   5  60  100 [list add/edit remove]]
+	lappend il [list combo -e alias 70  5  60  100 \
+		[get_cookie alias_names]]
+	set ans [FALC_dialog -t "custom aliases" 130 45 $il]
+	if {$ans == ""} return
+	foreach i $ans {set [lindex $i 0] [lindex $i 1]}
+
+	set script [custom_get alias $alias]
+	if {$which == "add/edit"} {
+	    if ![bigwin script "custom alias: $alias"] return
+	}
+    } else {
+	set which [expr {[string length $script] ? "add/edit" : "remove"}]
+    }
+    switch -- $which {
+	add/edit {
+	    custom_add alias $alias
+	    custom_set alias $alias $script
+	    echo "[kano] saved custom alias $alias\n[kano] some\
+		    aliases may need a reload (/reload) to be initialized"
+	}
+	remove {
+	    if {$script == ""} {
+		echo "[kano] $alias is not a custom alias (no entry found)"
+	    } else {
+		custom_set alias $alias
+		echo "[kano] deleted custom alias entry for $alias"
+	    }
+	}
+    }
+}
+
+catch {unset hooks}
+array set hooks {
+    msg {
+	privmsg 
+	{[lindex [args] 0] == [my_nick]}
+	{
+	    source
+	    {nick!user@host of the guy who msg'd you}
+	    {[nick]![user]@[host]}
+
+	    msg
+	    {message text}
+	    {[lindex [args] 1]}
+	}
+	{all incoming private messages}
+	{
+	    nick {[nick]} {his nickname}
+	    user {[user]} {his username}
+	    host {[host]} {his hostname}
+	    msg {[lindex [args] 1]} {the message text}
+	}
+    }
+    text {
+	privmsg 
+	{[lindex [args] 0] != [my_nick]}
+	{
+	    channel
+	    {channel this was said in}
+	    {[lindex [args] 0]}
+
+	    source
+	    {nick!user@host of the guy who said it}
+	    {[nick]![user]@[host]}
+
+	    msg
+	    {message text}
+	    {[lindex [args] 1]}
+	}
+	{all channel text said by others}
+	{
+	    nick {[nick]} {his nickname}
+	    user {[user]} {his username}
+	    host {[host]} {his hostname}
+	    chan {[lindex [args] 0]} {the channel}
+	    msg {[lindex [args] 1]} {the message text}
+	}
+    }
+    servnotice {
+	notice
+	{[host] == ""}
+	{
+	    server
+	    {server who sent this notice}
+	    {[nick]}
+
+	    msg
+	    {message text}
+	    {[lindex [args] 1]}
+	}
+	{messages (NOTICEs) from servers}
+	{
+	    server {[server]} {the server who sent this notice}
+	    msg {[lindex [args] 1]} {the message text}
+	}
+    }	    
+    notice {
+	notice
+	{[lindex [args] 0] == [my_nick]}
+	{
+	    source
+	    {nick!user@host of the guy who noticed you}
+	    {[nick]![user]@[host]}
+
+	    msg
+	    {message text}
+	    {[lindex [args] 1]}
+	}
+	{all incoming private notices}
+	{
+	    nick {[nick]} {his nickname}
+	    user {[user]} {his username}
+	    host {[host]} {his hostname}
+	    msg {[lindex [args] 1]} {the message text}
+	}
+    }
+    pubnotice {
+	notice
+	{[lindex [args] 0] == [my_nick]}
+	{
+	    channel
+	    {channel this was said in}
+	    {[lindex [args] 0]}
+
+	    source
+	    {nick!user@host of the guy who said it}
+	    {[nick]![user]@[host]}
+
+	    msg
+	    {message text}
+	    {[lindex [args] 1]}
+	}
+	{all channel notices}
+	{
+	    nick {[nick]} {his nickname}
+	    user {[user]} {his username}
+	    host {[host]} {his hostname}
+	    chan {[lindex [args] 0]} {the channel}
+	    msg {[lindex [args] 1]} {the message text}
+	}
+    }
+    ophack {
+	mode+o
+	{[lindex [args] 1] != [my_nick] && [nick] == ""}
+	{
+	    channel
+	    {channel this guy was opped in}
+	    {[lindex [args] 0]}
+
+	    server
+	    {server that did the opping}
+	    {[host]}
+	    
+	    destination
+	    {nick!user@host of the guy who got opped}
+	    {[lindex [args] 1]![uhost [lindex [args] 1]]}
+	}
+	{when a server ops someone (NOT you) (e.g., on a split rejoin)}
+	{
+	    server {[nick]} {the server doing the opping}
+	    opnick {[lindex [args] 1]} {the nickname of the guy being opped}
+	    chan {[lindex [args] 0]} {the channel}
+	}
+    }
+    op {
+	mode+o
+	{[lindex [args] 1] != [my_nick] && [nick] != [my_nick]}
+	{
+	    channel
+	    {channel this guy was opped in}
+	    {[lindex [args] 0]}
+
+	    source
+	    {nick!user@host of the guy who did the opping}
+	    {[nick]![user]@[host]}
+	    
+	    destination
+	    {nick!user@host of the guy who got opped}
+	    {[lindex [args] 1]![uhost [lindex [args] 1]]}
+	}
+	{when someone (NOT you) ops someone (NOT you)}
+	{
+	    nick {[nick]} {the opper's nickname}
+	    user {[user]} {the opper's username}
+	    host {[host]} {the opper's hostname}
+	    opnick {[lindex [args] 1]} {the nickname of the guy being opped}
+	    chan {[lindex [args] 0]} {the channel}
+	}
+    }
+    deop {
+	mode-o
+	{[lindex [args] 1] != [my_nick] && [nick] != [my_nick]}
+	{
+	    channel
+	    {channel this guy was deopped in}
+	    {[lindex [args] 0]}
+
+	    source
+	    {nick!user@host of the guy who did the deopping}
+	    {[nick]![user]@[host]}
+
+	    destination
+	    {nick!user@host of the guy who got deopped}
+	    {[lindex [args] 1]![uhost [lindex [args] 1]]}
+	}
+	{when someone (NOT you) deops someone (NOT you)}
+	{
+	    nick {[nick]} {the deopper's nickname}
+	    user {[user]} {the deopper's username}
+	    host {[host]} {the deopper's hostname}
+	    deopnick {[lindex [args] 1]} \
+		    {the nickname of the guy being deopped}
+	    chan {[lindex [args] 0]} {the channel}
+	}
+    }
+    voice {
+	mode+v
+	{[lindex [args] 1] != [my_nick] && [nick] != [my_nick]}
+	{
+	    channel
+	    {channel this guy was voiced in}
+	    {[lindex [args] 0]}
+
+	    source
+	    {nick!user@host of the guy who did the voicing}
+	    {[nick]![user]@[host]}
+	    
+	    destination
+	    {nick!user@host of the guy who got voiced}
+	    {[lindex [args] 1]![uhost [lindex [args] 1]]}
+	}
+	{when someone (NOT you) voices someone (NOT you)}
+	{
+	    nick {[nick]} {the voicer's nickname}
+	    user {[user]} {the voicer's username}
+	    host {[host]} {the voicer's hostname}
+	    vnick {[lindex [args] 1]} {the nickname of the guy being voiced}
+	    chan {[lindex [args] 0]} {the channel}
+	}
+    }
+    devoice {
+	mode-v
+	{[lindex [args] 1] != [my_nick] && [nick] != [my_nick]}
+	{
+	    channel
+	    {channel this guy was deopped in}
+	    {[lindex [args] 0]}
+
+	    source
+	    {nick!user@host of the guy who did the devoicing}
+	    {[nick]![user]@[host]}
+
+	    destination
+	    {nick!user@host of the guy who got devoiced}
+	    {[lindex [args] 1]![uhost [lindex [args] 1]]}
+	}
+	{when someone (NOT you) devoices someone (NOT you)}
+	{
+	    nick {[nick]} {the deopper's nickname}
+	    user {[user]} {the deopper's username}
+	    host {[host]} {the deopper's hostname}
+	    devnick {[lindex [args] 1]} \
+		    {the nickname of the guy being deopped}
+	    chan {[lindex [args] 0]} {the channel}
+	}
+    }
+    ban {
+	mode+b
+	{[nick] != [my_nick]}
+	{
+	    channel
+	    {channel this hostmask was banned in}
+	    {[lindex [args] 0]}
+
+	    source
+	    {nick!user@host of the guy who did the banning}
+	    {[nick]![user]@[host]}
+	    
+	    destination
+	    {hostmask being banned}
+	    {[lindex [args] 1]}
+	}
+	{when someone (NOT you) bans a hostmask}
+	{
+	    nick {[nick]} {the banner's nickname}
+	    user {[user]} {the banner's username}
+	    host {[host]} {the banner's hostname}
+	    mask {[lindex [args] 1]} {the hostmask being banned}
+	    chan {[lindex [args] 0]} {the channel}
+	}
+    }
+    unban {
+	mode-b
+	{[nick] != [my_nick]}
+	{
+	    channel
+	    {channel this hostmask was unbanned in}
+	    {[lindex [args] 0]}
+
+	    source
+	    {nick!user@host of the guy who did the unbanning}
+	    {[nick]![user]@[host]}
+	    
+	    destination
+	    {hostmask being unbanned}
+	    {[lindex [args] 1]}
+	}
+	{when someone (NOT you) unbans a hostmask}
+	{
+	    nick {[nick]} {the unbanner's nickname}
+	    user {[user]} {the unbanner's username}
+	    host {[host]} {the unbanner's hostname}
+	    mask {[lindex [args] 1]} {the hostmask being unbanned}
+	    chan {[lindex [args] 0]} {the channel}
+	}
+    }
+    kick {
+	kick
+	{[lindex [args] 1] != [my_nick] && [nick] != [my_nick]}
+	{
+	    channel
+	    {channel this guy was kicked in}
+	    {[lindex [args] 0]}
+
+	    source
+	    {nick!user@host of the guy who did the kicking}
+	    {[nick]![user]@[host]}
+
+	    destination
+	    {nick!user@host of the guy who got kicked}
+	    {[lindex [args] 1]![uhost [lindex [args] 1]]}
+	    
+	    reason
+	    {kick reason/message}
+	    {[lindex [args] 2]}
+	}
+	{when someone (NOT you) kicks someone (NOT you)}
+	{
+	    nick {[nick]} {the kicker's nickname}
+	    user {[user]} {the kicker's username}
+	    host {[host]} {the kicker's hostname}
+	    kicknick {[lindex [args] 1]} \
+		    {the nickname of the guy being kicked}
+	    chan {[lindex [args] 0]} {the channel}
+	    reason {[lindex [args] 2]} {the kick reason/message}
+	}
+    }
+    join {
+	join
+	{[nick] != [my_nick]}
+	{
+	    channel
+	    {channel this guy joined}
+	    {[lindex [args] 0]}
+
+	    source
+	    {nick!user@host of the guy who joined}
+	    {[nick]![user]@[host]}
+	}
+	{when someone (NOT YOU) joins a channel}
+	{
+	    nick {[nick]} {his nickname}
+	    user {[user]} {his username}
+	    host {[host]} {his hostname}
+	    chan {[lindex [args] 0]} {the channel}
+	}
+    }
+    part {
+	part
+	{[nick] != [my_nick]}
+	{
+	    channel
+	    {channel this guy parted}
+	    {[nick]![user]@[host]}
+
+	    reason
+	    {part reason/message (on DALNet)}
+	    {[lindex [args] 1]}
+	}
+	{when someone (NOT YOU) leaves a channel}
+	{
+	    nick {[nick]} {his nickname}
+	    user {[user]} {his username}
+	    host {[host]} {his hostname}
+	    chan {[lindex [args] 0]} {the channel}
+	    reason {[lindex [args] 1]} {the part reason/message (on DALNet)}
+	}
+    }
+    quit {
+	quit
+	{[nick] != [my_nick]}
+	{
+	    source
+	    {nick!user@host of the guy quitting}
+	    {[nick]![user]@[host]}
+
+	    reason
+	    {quit message}
+	    {[lindex [args] 0]}
+	}
+	{when someone (NOT you) quits IRC}
+	{
+	    nick {[nick]} {his nickname}
+	    user {[user]} {his username}
+	    host {[host]} {his hostname}
+	    reason {[lindex [args] 0]} {the quit message}
+	}
+    }
+    topic {
+	topic
+	{[nick] != [my_nick]}
+	{
+	    channel
+	    {the channel on which the topic is being set}
+	    {[lindex [args] 0]}
+
+	    source
+	    {nick!user@host of the guy setting the topic}
+	    {[nick]![user]@[host]}
+
+	    topic
+	    {the topic text being set}
+	    {[lindex [args] 1]}
+	}
+	{all topic changes (but NOT those changed by you)}
+	{
+	    nick {[nick]} {his nickname}
+	    user {[user]} {his username}
+	    host {[host]} {his hostname}
+	    chan {[lindex [args] 0]} {the channel}
+	    topic {[lindex [args] 1]} {the topic text being set}
+	}
+    }
+    invite {
+	invite
+	{[nick] != [my_nick]}
+	{
+	    channel
+	    {the channel to which you are being invited}
+	    {[lindex [args] 1]}
+
+	    source
+	    {nick!user@host of the guy who's inviting you}
+	    {[nick]![user]@[host]}
+	}
+	{all channel invitations sent to you (but NOT those from yourself)}
+	{
+	    nick {[nick]} {his nickname}
+	    user {[user]} {his username}
+	    host {[host]} {his hostname}
+	    chan {[lindex [args] 1]} {the channel}
+	}
+    }
+    ctcp {
+	ctcp
+	{[nick] != [my_nick]}
+	{
+	    channel
+	    {the channel to which this CTCP was sent, if any}
+	    {[expr {[lindex [args] 0] == [my_nick] ? "" : [lindex [args] 0]}]}
+
+	    cmd
+	    {the CTCP command (such as VERSION or PING)}
+	    {[lindex [args] 1]}
+
+	    parms
+	    {the parameters to the CTCP command, if any}
+	    {[lindex [args] 2]}
+	}
+	{all incoming CTCP's (but NOT those from yourself)}
+	{
+	    nick {[nick]} {his nickname}
+	    user {[user]} {his username}
+	    host {[host]} {his hostname}
+	    chan {[expr {[lindex [args] 0] == [my_nick] ? "" : \
+		    [lindex [args] 0]}]} {the channel}
+	    cmd {[lindex [args] 1]} {the CTCP command (like VERSION or PING)}
+	}
+    }
+    chat {
+	chat_text
+	{[nick] != [my_nick]}
+	{
+	    source
+	    {nick!user@host of the guy with whom you are DCC-chatting}
+	    {[nick]![user]@[host]}
+
+	    text
+	    {message text being sent}
+	    {[lindex [args] 0]}
+	}
+	{all incoming DCC-chat text}
+	{
+	    nick {[nick]} {his nickname}
+	    user {[user]} {his username}
+	    host {[host]} {his hostname}
+	    text {[lindex [args] 0]} {the chat text being sent}
+	}
+    }
+    nick {
+	nick
+	{[nick] != [my_nick]}
+	{
+	    from
+	    {nick!user@host of the guy changing his nick}
+	    {[nick]![user]@[host]}
+
+	    to
+	    {the guy's new nickname}
+	    {[lindex [args] 0]}
+	}
+	{all nick changes (but NOT those by you)}
+	{
+	    nick {[nick]} {his old nickname}
+	    user {[user]} {his username}
+	    host {[host]} {his hostname}
+	    newnick {[lindex [args] 0]} {his new nickname}
+	} 
+    }
+}
+
+catch {unset hook_events}
+foreach {name val} [array get hooks] {
+    lappend hook_events([lindex $val 0]) $name
+}
+
+catch {unset match_map}
+array set match_map {
+    # #*
+    ? {[^#]*}
+    {} *
+}
+
+proc hook_alias {} {
+    complete
+
+    global hooks
+
+    echo "THIS COMMAND IS NOT FINISHED"
+
+    if {[raw_args] == ""} {
+	foreach {hook desc} [array get hooks] {
+	    echo "[kano] [format %-11s $hook]: [lindex $desc 3]"
+	}
+	echo " "
+	echo "[kano] for more information on a hook, type: /[event] <hook\
+		name>"
+	echo "[kano] for example, to display info on the '$hook' hook, type:\
+		/[event] $hook"
+	echo "[kano] to add a hook, first display its info.."
+	return
+    }
+
+    regexp {^ *([^ ]+) *(: (.*))?$} [raw_args] junk hook junk args
+
+    set hook [string tolower $hook]
+
+    upvar 0 hooks($hook) h
+
+    if {![info exists h]} {
+	echo "[kano] no such hook '$hook'"
+	/[event]
+    } elseif {$args == ""} {
+	echo "[kano] information for the '$hook' hook:"
+	echo " "
+
+	set str [list]
+	foreach {aarg adesc areal} [lindex $h 2] {
+	    lappend str $aarg
+	}
+	echo {
+NOTE: match text can be a wildcard string, where:
+  *           matches any text
+  ?           matches any letter or character
+  text        matches if text contains only this word
+  text*       matches if text starts with this word
+  *text       matches if text ends with this word
+  *text*      matches if text contains this word anywhere
+ 
+for more information on match text, type /help matchtext
+}
+	echo " "
+	echo "usage: /[event] $hook: [join $str " ; " ] ; commands"
+	foreach {aarg adesc areal} [lindex $h 2] {
+	    echo " "
+	    echo "     + $aarg should be match text for"
+	    echo "         $adesc"
+	}
+	echo " "
+	echo "     + commands: commands to execute when this event happens"
+	echo "                and all fields (like $aarg) match. commands are"
+	echo "                to be separated by semicolons, like:"
+	echo "                /query kano ; /msg kano hi"
+	echo " "
+	echo "NOTE: aliases (such as /msg or /join) MUST start with a /"
+	echo "      to work correctly."
+	echo " "
+	echo "variables for the '$hook' hook: "
+	foreach {varg vreal vdesc} [lindex $h 4] {
+	    echo " "
+	    echo "     $$varg represents"
+	    echo "       $vdesc"
+	}
+	echo " "
+	echo "NOTE: variables can be used in any of the commands you"
+	echo "      specify for this hook."
+	echo " "
+	echo "Example: /msg \$nick Pinging you.. ; /ctcp \$nick ping"
+	echo " "
+    } else {
+	set split [split $args {;}]
+
+	set end [list]
+	foreach i $split {
+	    lappend end [string trim $i]
+	}
+	set split $end
+
+	set vars [list]
+	foreach {value description against} [lindex $h 2] {
+	    lappend vars $value
+	}
+
+	if {[llength $split] < [llength $vars]} {
+	    echo "[kano] you didn't specify the following arguments:"
+	    echo "    [join [lrange $vars [expr {[llength $split] -1}] end] \
+		    " ; "]"
+	    echo "[kano] for more information, try typing: /[event] $hook"
+	} else {
+	    if {[llength $split] > [llength $vars]} {
+		set split [concat \
+			[lrange $split 0 [expr {[llength $vars] -1}]] \
+			[list \
+			[join \
+			[lrange $split [expr {[llength $vars]}] end] \
+			{;}] \
+			] \
+			]
+	    }
+	    
+	    custom_set on $hook $split
+	}
+    }
+}
+
+####end of procs
+
+####vars
+
+array set key2num {! 1 @ 2 # 3 $ 4 % 5 ^ 6 & 7 * 8 ( 9 ) 0}
+
+####end of vars
+
+####inititalization
+
+if {![info exists customize_load]} {
+    set customize_load 1
+    alias shortcut shortcut_alias
+    alias * all_alias
+    alias hotkey hotkey_alias
+    alias hotk hotkey_alias
+    alias alias alias_alias
+    alias hook hook_alias
+    alias on hook_alias
+    alias __run_alias run_alias
+
+    foreach i [get_cookie hotkeys] {
+	custom_set hotkey [lindex $i 0] [join [lrange $i 1 end]]
+    }
+    set_cookie hotkeys {}
+
+    foreach i [get_cookie aliases] {
+	custom_set alias [lindex $i 0] [join [lrange [split $i] 1 end]]
+    }
+    set_cookie aliases {}
+
+
+    if {0 == "this is a comment"} {
+	set hooks(id) {
+	    event
+	    special-case
+	    {
+		value description match-against
+		?value2 description2 match-against2?
+		?...?
+	    }
+	    description
+	    {
+		variable value description
+		?variable value description?
+		?...?
+	    }
+	}
+    }
+
+    foreach {name val} [array get hooks] {
+	custom_add on [lindex $val 0]
+    }
+    
+    foreach i [custom_list hotkey] {
+	custom_add hotkey $i
+    }
+
+    kaddhelp alias "Executes the given script when you type a command." \
+	    "/alias : for a graphical interface, /alias <alias-name> :\
+	    to delete an alias, /alias <alias-name> <commands> : to assign\
+	    a list of semicolon-separated commands to an alias" \
+	    "Custom Aliases"
+    kaddhelp hotkey "Executes the given script when you press a specified\
+	    key." "/hotkey : for a graphical interface, /hotkey <hotkey-name>\
+	    : to delete a hotkey, /hotkey <hotkey-name> <commands> : to\
+	    assign a list of semicolon-separated commands to execute when\
+	    you press a hotkey" "Custom Hotkeys"
+    kaddhelp hook "Not yet implemented." "/hook" "Custom Remote Events"
+    kaddhelp shortcut "Creates a shortcut from one command to another." \
+	    "/shortcut : for a graphical interface, /shortcut <from> : to\
+	    delete a shortcut, /shortcut <from> <to> : to set up a shortcut:\
+	    when you type /from, /to is really executed." \
+	    "Custom Command Shortcuts"
+
+    kaddhelp matchtext {
+Examples: 
+- hello*
+    matches anything beginning with "hello" (like
+    "hello! how are you?")
+- *big*
+    matches anything containing the word "big" (like
+   "this file is a big one")
+- hi
+    matches any line if it contains only this word
+    (only matches "hi")
+- *!
+    matches anything ending with an exclamation
+    point (like "hi kano!")
+} none "Match Text Help" "/hook"
+}
+
+####end of init

@@ -1,0 +1,113 @@
+--- updates for beta 1:
+
+(feature updated) /config is better-organized
+(bug fix) Fixed a bug with wallops. Oops. [/wall]
+(bug fix) Fixed a bug in autounignore
+(feature updated) Hacked xircon again to allow semicolons (";") in user info (notes, autoop, etc)
+(bug fix) Fixed a 'bug' in the perl replacement ("s/a/b") where it would repeat the last line even if no matches were found
+(feature updated) Hopefully shortened the time between when you connect and when the lag stops and you join your autojoin channels. :/
+(bug fix) "ftp." and "www." no longer highlight as URL's
+(bug fix) Fixed a bug with loading themes and files with the extension .THM instead of .thm [/theme]
+(new feature) kano.tcl now uses an interesting form of threading for some functions. basically, scripts added to the ON_MINUTE list will now be spread throughout the minute, executing one every few seconds. this means you won't (hopefully) get lockups every minute or so. I hope it works =)
+(feature updated) Sped up text display if echo.km is loaded by about 50%. Note that text is still faster WITHOUT echo.km. But it doesn't come out as pretty ;)
+(new feature) you can now change the nick-completion character from the default colon (":")
+(bug fix) Fixed a bug with getting files via DCC to directories with _ characters in them.
+(bug fix) Fixed a bug with dcc gets with invalid filesizes
+(bug fix) Fixed a bug in /defaults
+(feature updated) echo.km now checks on load for a white background: if the user has a white background in the color properties, converse is turned on.
+(bug fix) fixed a bug in "(this was ...)"
+(bug fix) /unban works again
+(bug fix) Fixed a bug with /scramble and ?'s <games.ka>
+(feature updated) You can now set the number of letters in nicknames for "Append to nickname when away" [/config]
+(bug fix) Fixed a bug with banning and users with 10-char usernames [/kb, /ban]
+(feature updated) Away time now includes idle time when set away by autoaway
+(bug fix) Fixed a whole bunch of flood stuff <flood.ka>
+(bug fix) Fixed a bug where the script would display quits twice
+(bug fix) Fixed a bug in conio.thm.
+(feature updated) Hopfully sped up nick complete (the 'nick: text' kind)
+(bug fix) Fixed a bug with channel titlebars saying users are split when .. they aren't.
+(new feature) Added /ct to clear the topic for a channel.
+(feature updated) the script now kicks instead of deopping on deopfloods. kicks take higher priority on most ircd's. <flood.ka>
+(bug fix) Fixed a dumb bug with white backgrounds.
+(feature updated) Added '/until set <name> <date>' to save dates and times. Check '/help until.'
+(new feature) Added /exclude to exclude words from nick highlight.
+(bug fix) Fixed a bug with devoicing users with funny nicknames. :/ [/dv]
+Greatly improved the /flood dialog box. <flood.ka>
+(bug fix) Fixed a bug with cycling servers outside your network
+(feature updated) Revised the "ask to open file after dcc" dialog -- you can now open the folder, open the file, or rename the file. And it's stable now. :)
+
+--- updates for beta 2:
+
+(feature removed) Removed help entries for /alias and /hotk -- they're now in customize.ka
+(bug fix) Fixed a bug syntax encryption just stopped working. ever.:) <synenc.ka>
+(bug fix) Fixed a bad bug with op/deopping people with any of the characters []\ in their nick
+(feature updated) Added $fullhost to /bantype
+(bug fix) Fixed a bug with same[] not being updated in query windows when you join/leave a channel.
+(bug fix) Fixed a bug completing nicks of users with dashes in their nicks.
+(bug fix) Hacked xircon once again to fix a rare bug with [active].
+(bug fix) Fixed a bug where the script lied about being away when you /reloaded.
+(bug fix) Fixed a stupid undernet bug with USERHOST replies.
+
+--- updates for beta 3:
+
+(new feature) Added /cal.
+(new feature) Fixed /cstat -s again. :) {thanks to kobaz}
+(bug fix) Fixed a bug with masspubflood. {thanks to kobaz}
+(bug fix) Fixed bugs in the /flood dialog {thanks to illz-}
+(new feature) Added /le to copy the last-echoed line of a window to the clipboard {thanks to chosen}
+(bug fix) Fixed a bug with kicking lots of people at once. :| {thanks to gobs}
+(feature updated) When you type "/msg nickname " then paste, it will paste to that person instead of just the first line. {thanks to pHluid-}
+(bug fix) Fixed a bug in /ftpqueue. <ftp.ka> {thanks to phamed}
+(bug fix) xdcc tsend now works... <xdcc.ka> {thanks to phamed}
+(bug fix) fixed a bug in /rkick <rkick.ka> {thanks to kode54}
+(feature updated) kFile now uses HTTP 1.0 for easier use for those behind proxies.
+(feature updated) Sped up text output 2-3 times. Enjoy. :)
+(bug fix) Fixed blinking w/scroll lock..not sure what exactly was wrong {thanks to Darkhalf}
+(new feature) Added an option, defaulted to ON, that caches configuration settings so they aren't written directly to disk each time they're set, and the same for when they're read. This is shaky, though, especially when running under two server windows, so it's an option in /config. It speeds stuff up a LOT though.
+(feature updated) Updated [since] once again to use years/months/weeks correctly, as well as having a precision option. this will be evident in themes and such. (Like in user idle times.)
+(reminder) I still haven't incorporated the /xdcc-http config stuff.
+(bug fix) fixed a strange bug that I couldn't reproduce with ansi parsing. {thanks to kode54}
+
+--- updates for beta 4:
+
+(bug fix) fixed a bug with 'Download in Xircon' option...
+(feature updated) Added /said <nick> -nonick. {thanks to wizkid}
+(feature updated) Added servnotice and ophack hooks to /hook. <customize.ka> {thanks to Kobaz}
+(feature updated) Ctrl-F (list splits) is sorted by channel now.
+(feature updated) /ajoin now accepts arguments to add/remove a channel.
+(feature updated) /url works with IE now <alias.km>
+(feature updated) Added "New Browser Window" option to the URL dialog box. <events.km>
+(feature updated) the default usermode setting in /config now supports negative modes. e.g., set it to +wi-k to force having modes +wi but force NOT having mode +k.
+(bug fix) Fixed a bug where chats didn't "work" with alt-right/alt-left/alt-[1-9].
+(feature updated) masskick now uses default kick messages
+
+--- updates for beta 5:
+
+(bug fix) the /config dialog box is no longer way too big {thanks to _GandalF_}
+(bug fix) Fixed a bug with /avg producing an error.
+(bug fix) fixed a bug with /back showing up twice
+(bug fix) fixed a bug with errors while sending or receiving DCC transfers
+(new feature) Added "Automatically reset away time" checkbox to /config {thanks to Kobaz}
+
+--- updates for beta 6:
+
+(bug fix) Fixed /avg.
+(bug fix) fixed the kickban popup.
+(bug fix) fixed a bug in conio.thm's names list parsing.. and bitchx.thm's..
+
+--- updates for beta 7:
+
+(bug fix) fixed another conio.thm bug with ctcp's
+(bug fix) fixed the installer..I hope
+(bug fix) autologging (/config mod) now timestamps.
+(bug fix) made gradial.thm load again.
+
+--- updates for beta 8:
+
+(bug fix) removing custom aliases now works <customize.ka> {thanks to gonadgoat}
+(bug fix) /servers (Remove Servers on the status menu) reports 1 instead of -1 now.
+(feature updated) Ctrl-I now also rejoins channels you were kicked from
+(new feature) Added /blink {thanks to jeanray}
+(bug fix) /config now works even if your filenames are .KA instead of .ka
+(new feature) Added "ircop notify" -- when you join a channel, you are notified of any opers on the channel
+(new feature) The installer now guesses at where you last installed kano

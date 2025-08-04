@@ -1,0 +1,199 @@
+proc do_paste {} {
+    fix_rel_len relaytext [string tolower [window name]]
+    global relaytext
+    if {[llength [split [string trim [FALC_clip -p] \n] \n]] > [get_cookie pastelines 10] && [get_cookie pastelines 10]} {
+	/play -paste [input get_sel_start] [input get_text]
+	complete
+    } elseif {[info exists relaytext([string tolower [channel][query]])] && [get_cookie colorpaste 1]} {
+	set paste ""
+	set change 0
+	set rec [split [string trim [strip [FALC_clip -p]] \n] \n]
+	set rel $relaytext([string tolower [channel][query]])
+	set rev [revorder [lrange $rel [expr [llength $rel] - 25] end]]
+	foreach i $rec {
+	    set got 0
+	    set 0 [strip [lindex [split [string trim $i]] end]]
+	    foreach j $rev {
+		if $got continue
+		if {[eq [strip [lindex [split [string trim $j]] end]] $0] || ![get_cookie fastcp 1]} {
+		    if {[eq [string trim [strip $j]] [string trim $i]]} {
+			lappend paste $j
+			incr change
+			set got 1
+			break
+		    }
+		}
+	    }
+	    if !$got {lappend paste $i}
+	}
+	if $change {
+	    final_in
+	    set paste [strip $paste g]
+	    regsub -all  $paste "" paste
+	    set text [input get_text]
+	    set str [input get_sel_start]
+	    set start [string range $text 0 [expr $str -1]]
+	    set end [string range $text $str end]
+	    if {[llength $paste] != 1} {
+		foreach i [lrange $paste 0 [expr [llength $paste] -2]] {
+		    say $start$i$end
+		}
+	    }
+	    set p [lindex $paste end]
+	    input set_text $start$p$end
+	    input set_sel_start [expr $str + [string length $p]]
+	    complete
+	}
+    }
+}
+
+hotkey control+v do_paste
+
+
+hotkey control+l {
+    set p [FALC_clip -p]
+    set new ""
+    foreach i [split $p \n] {
+	append new [string trim $i]\n
+    }
+    set new [wrap $new 72]
+    FALC_clip -c $new
+    echo "[kano] Formatted clipboard."
+    complete
+}
+
+
+alias relay {
+    set chan [string tolower [window name]]
+    fix_rel_len relaytext $chan
+    set lines 1
+    set match *
+    set ag [args]
+    if {[lindex [args] 0] == "-e"} {set ag [lrange $ag 1 end];set which echo} {set which say}
+    foreach {x y} $ag {
+	switch -- [string tolower [join $x]] {
+	    -l {
+		set lines [join $y]
+		if {[string trim $lines 1234567890] != "" || $lines == ""} {
+		    echo "[kano] Invalid line count '$lines.'"
+		    complete;return
+		}
+	    }
+	    -c {
+		set chan [string tolower [join $y]]
+	    }
+	    -m {
+		set match [string tolower [join $y]]
+	    }
+	    default {
+		echo "[kano] Invalid option '$x.'"
+		complete;return
+	    }
+	}
+    }
+    if ![info exists relaytext($chan)] {
+	echo "[kano] No text to relay in $chan."
+	complete;return
+    }
+    if {$match != "*" && $lines == 1} {
+	set lines [get_cookie echolines 100]
+    }
+    set line [expr [llength $relaytext($chan)] - $lines]
+    set total [expr [llength $relaytext($chan)] - 1]
+    set rt $relaytext($chan)
+    while {$line <= $total} {
+	set stripped [strip [lindex $rt $line] g]
+	if {[string match [string tolower $match] [string tolower $stripped]]} {$which $stripped}
+	incr line
+    }
+    unset rt
+    complete
+}
+
+alias paste {
+    set win [string tolower [window name]]
+    if {[window type] == "status"} {set win status}
+    if {[lindex [args] 0] == ""} {set paste_ch [channel][query]} {set paste_ch [lindex [args] 0]}
+    if ![info exists relaytext($win)] {
+	echo "[kano] No text to relay from $win."
+	complete;return
+    }
+    /query .paste.
+    window set_title "Paste window" query .paste.
+    window restore query .paste.
+    window focus query .paste.
+    set ind 1
+    foreach i $relaytext($win) {
+	myecho "$darkhelp\[$litehelp[format %3s $ind]$darkhelp\]$kanobg $i"
+	incr ind
+    }
+    set paste_tx $relaytext($win)
+    complete
+}
+
+on timer {
+    foreach h [array names readz] {
+	if {[llength $readz($h)] == 0} {unset readz($h);echo "[kano] Stopped playing." [lindex $h 0] [lindex $h 1]} {
+	    if {[lindex $h 0] != "channel" || [ison [my_nick] [lindex $h 1]]} {
+		if {[string tolower [lindex $h 0]] == "chat"} {set eq =} {set eq ""}
+		set j [lindex $readz($h) 0]
+		if {[string index $j 0] == "/"} {say $j} {/msg $eq[lindex $h 1] $j}
+		set readz($h) [lrange $readz($h) 1 end]
+		catch {unset holding($h)}
+	    } {
+		if ![info exists holding($h)] {echo "[kano] Waiting to paste to [lindex $h 1]..";set holding($h) [clock seconds]} elseif {[expr [clock seconds] - $holding($h)] >= 120 && $holding($h)} {
+		    set holding($h) 0
+		    if {[FALC_askbox -t "Paste" -b yes_no -d no -i exclamation "I've been waiting two minutes to wait for you to rejoin [lindex $h 1] so I can continue pasting.\nI have [llength $readz($h)] lines left.\nWould you like to keep waiting"] == "yes"} {
+		    } {unset readz($h);unset holding($h)}
+		}
+	    }
+	}
+    }
+}
+
+alias play {
+    if {[lindex [args] 0] == "-paste"} {
+	set str [lindex [args] 1]
+	set text [join [lrange [split [raw_args]] 2 end]]
+	set start [string range $text 0 [expr $str -1]]
+	if [catch {set end [string range $text $str end]}] {complete;return}
+	set clip [FALC_clip -p]
+	foreach i [split [FALC_clip -p] \n] {
+	    if {[string trim $i] == ""} continue
+	    if [get_cookie pastewrap 72] {
+		foreach j [split [wrap $i [get_cookie pastewrap 72]] \n] {
+		    if {[string trim $j] == ""} continue
+		    lappend "readz([window type] [window name])" $j
+		}
+	    } {lappend "readz([window type] [window name])" $start$i$end}
+	}
+	echo "[kano] Press escape to stop pasting"
+	complete
+    }
+}
+
+alias privmsg {
+    if {[string tolower [lindex [args] 0]] == ".paste."} {
+	set num [join [lrange [args] 1 end]]
+	foreach line [split $num ,] {
+	    if [string match *-* $line] {
+		set line [split $line -]
+		if {[llength $line] == 2} {
+		    foreach j [lrange $paste_tx [expr [lindex $line 0] - 1] [expr [lindex $line 1] - 1]] {
+			/msg $paste_ch [strip $j g]
+		    }
+		}
+	    } {
+		/msg $paste_ch [strip [lindex $paste_tx [expr $line - 1]] g]
+	    }
+	}
+	return
+    }
+}
+
+kaddhelp paste "Pastes specified lines of the current window." "/paste \[channel\], pasteWin commands: <#> / <#-#> / <#,#,#-#,etc.>" "Paste Window"
+
+ac nedit @pastewrap @72 Wrap characters on paste:
+ac check @colorpaste @1 Paste in color
+ac check @fastcp @1 Fast but inconsistent color paste
+ac nedit @pastelines @10 Delayed-paste if # of lines over:

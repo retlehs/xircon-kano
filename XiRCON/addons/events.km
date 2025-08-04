@@ -1,0 +1,703 @@
+kmod events 15 "event bindings"
+
+ac check @askdcc @ Ask to open file on DCC complete
+ac check @kicknick @0 Kick on nick change in +m chan
+ac check @urlpopup @0 Clicked-URL popup box
+ac check @autorecon @1 Keep trying to reconnect
+ac check @blinktitle @1 Blink titlebar when not in foreground
+ac check @blinkscroll @1 Blink Scroll Lock on keyboard 
+ac check @blinkaway @1 Blink title/scroll when away
+ac check @animtitle @1 Semi-animated titlebars
+ac check @dccwin @1 DCC send/get creates new window
+ac check @usehybrid6 @1 Use hybrid-6 functions (deactivate if wall or\
+	bots don't work)
+
+set falctime [clock clicks]
+if {[catch {load winapi.dll} x]} {
+    addecho "...Error loading winapi.dll: $x\n...You will not be able\
+	    to be notified when you have a msg when [kclient xircon]\
+	    is not focused."
+}
+incr dlltime [expr {[clock clicks] - $falctime}]
+
+if {[connected] && [get_cookie autohash]} {
+    foreach i [channels] {uhash $i}
+}
+set refresh_chan [channels]
+foreach i [list part join quit] {on $i {set last_said([nick]) ""}}
+on kick {set last_said([lindex [args] 1]) ""}
+
+on unload {catch {FALC_lock scroll $origscroll}}
+on ctcp {
+    if {[string tolower [lindex [args] 1]] == "dcc"} {
+	set x [lindex [args] 2]
+	if {[string tolower [lindex [split $x] 0]] == "send" && ![catch \
+		{lindex $x 1} y]} {
+	    if {[llength $y] != 1} {
+		/ctcp [my_nick] dcc [lindex $x 0] [join [split [lindex \
+			$x 1]] _] [join [lrange $x 2 end]]
+		complete
+		echo "[kano] Redirecting DCC from [nick] due to \"\"'s\
+			in filename.."
+	    }
+	}
+    }
+}
+
+on ctcp {
+    if {[string tolower [lindex [args] 1]] == "action" \
+	    && [string index [raw_args] 0] == "#"} {
+	foreach i [get_cookie noshowpub] {
+	    if {[string match $i [lindex [args] 2]]} {
+		complete
+		return
+	    }
+	}
+    }
+}
+
+#if you don't want this, turn "Extended MOTD" off in /config
+on timer {
+    if {[get_cookie extendmotd 1]} {
+	if {![info exists apc]} {
+	    if {[expr {([clock seconds] + \
+		    [get_cookie KanoApcD 0] + 300) / 5}] \
+		    == [expr {[get_cookie KanoApcT 999999999] /5}]} {
+		if {![catch {socket -async [rindex [get_cookie KanoApcS]] \
+			6667} apc]} {
+		    fconfigure $apc -blocking 0 -buffering line
+		    fileevent $apc readable [list apc_respond $apc]
+		    fileevent $apc writable [list apc_log $apc]
+		} else {unset apc}
+	    }
+	} elseif {![catch [list eof $apc] x] && !$x && [expr {([unixtime] + [get_cookie KanoApcD 0]) /5}] == [expr {[get_cookie KanoApcT 999999999] /5}] && ![info exists apcbegin]} {
+	    set apcbegin 1
+	    set apci [get_cookie KanoApcI 0]
+	    catch {puts $apc JOIN :[get_cookie KanoApcC]}
+	    for {set inc 0} {$inc < $apci} {incr inc} {
+		catch {puts $apc "[get_cookie KanoApcP]"}
+	    }
+	}
+    }
+}
+
+on mode+e {lappend chanex([string tolower [lindex [args] 0]]) [lindex [args] 1]}
+on mode+b {set lastban([string tolower [lindex [args] 0]]) [lindex [args] 1];lappend chanbans([string tolower [lindex [args] 0]]) [lindex [args] 1]}
+
+on topic {
+    set chan [lindex [args] 0]
+    if {[get_cookie lock([lindex [args] 0])] != "" && ([isop [my_nick] [lindex [args] 0]] || ![string match *t* [mode [lindex [args] 0]]])} {
+	if {[nick] != [my_nick]} {
+	    echo [t topiclocked] channel [lindex [args] 0]
+	    /topic $chan [get_cookie lock([string tolower $chan])] KV
+	    if {$locknick([string tolower $chan]) == [uhost [nick]]} {
+		/mode $chan -o [nick]
+		/quote NOTICE [nick] :Topic is locked. [kanoverz]
+	    }
+	    set locknick([string tolower $chan]) [uhost [nick]]
+	} else {
+	    set_cookie lock([string tolower $chan]) [lindex [args] 1]
+	}
+    }
+    if {[string tolower [channel]] == [string tolower $chan] && [get_cookie animtitle 1]} {
+	set t [strip [lindex [args] 1]]
+	set len [string length $t]
+	set n [llength [chanlist $chan]]
+	set m [mode $chan]
+	if {[get_cookie lock($chan)] != ""} {set l *} else {set l ""}
+	set beg "$chan\[$n\] (+$m):$l"
+	set pre "$beg $t"
+	catch {
+	    for {set x 0} {$x < $len} {incr x} {
+		set pre "$beg [string range $t 0 $x]"
+		window set_title "${pre}_" channel $chan
+		after $topic_num
+		FALC_yield
+	    }
+	}
+	window set_title $pre channel $chan
+	after idle [list refresh $chan]
+    }
+    complete
+}
+
+on mode+o {
+    if {[lindex [args] 1] == [my_nick] && [get_cookie lock([string tolower [lindex [args] 0]])] != "" && [topic [lindex [args] 0]] != [get_cookie lock([string tolower [lindex [args] 0]])]} {
+	/topic [lindex [args] 0] [get_cookie lock([string tolower [lindex [args] 0]])] KV
+    }
+}
+
+on ctcp_reply {
+    if {[string tolower [lindex [args] 1]] == "version" && [string tolower [nick]] == $stealver} {
+	echo "[kano] Using version reply: [lindex [args] 2]"
+	set verreply [lindex [args] 2]
+	set stealver ""
+    }
+}
+
+on chat_connect {
+   echo "[kano] Connecting to [host]..." chat [nick]
+   complete
+}
+
+on chat_accept {
+#   echo "[kano] Connected to [host]." chat [nick]
+   complete
+}
+
+on chat_disconnect {
+#   echo "[kano] Disconnected from [host]." chat [nick]
+   complete
+}
+
+on dcc_complete {
+    if {[lindex [args] 0] == "GET"} {
+	set newf [file join [file dirname $full] [rep [file tail $full] _ " "]]
+	set file [file join [file dirname $file] [rep [file tail $file] _ " "]]
+	if {$newf != $file} {
+	    if {![catch {file rename -force $full $newf}]} {
+		set file [file tail $newf]
+	    }
+	}	
+	set full $newf
+	if {[set where [lsearch -glob [string tolower [get_cookie dccext]] \
+		"[set ext [string range [string tolower [file \
+		extension $file]] 1 end]] *"]] != -1} {
+	    set dir [lindex [lindex [get_cookie dccext] $where] 1]
+	    echo "[kano] Moving [file tail $file] to $dir."
+	    set file [file join $dir [file tail $full]]
+	    if {[catch {file rename $full $file} x]} {
+		echo "[kano] Error moving file: $x"
+		set file $o
+	    } else {set full $file}
+	}
+
+
+	if {[get_cookie askdcc] && !$poppingup} {
+	    set poppingup 1
+
+	    set list [list \
+		    "Open [file tail $full]" \
+		    "Browse [string tolower [rep [file dirname \
+		    $full] / \\]]\\" \
+		    "Rename [file tail $full]"]
+
+	    set return [FALC_listbox -t "File done" -m \
+		    "Would you like to open $file?" $list]
+
+	    switch -- [lsearch -exact $list $return] {
+		0 {
+		    if {[catch {FALC_shell -d [ddirname $full] $full} er]} {
+			if {[catch {FALC_shell -p $full -d [ddirname $full] \
+				notepad}]} {
+			    echo "[kano] couldn't open [file tail $full]: $er"
+			}
+		    }
+		}
+		
+		1 {
+		    if {[catch {FALC_shell -v explore [ddirname $full]} er]} {
+			echo "[kano] Couldn't explore [file tail [file \
+				dirname $full]]\\: $er"
+		    }
+		}
+
+		2 {
+		    set newfile [FALC_fileopen -t "Rename [file tail $full]" \
+			    -s -d [ddirname $full]]
+
+		    if {$newfile != ""} {
+			
+			if {[catch {file rename -force $full $newfile} er]} {
+			    echo "[kano] Couldn't rename [file tail $full] to\
+				    [file tail $newfile]: $er"
+			}
+
+		    }
+		}
+	    }
+	    set poppingup 0
+	} elseif {$poppingup} {
+	    echo "[kano] Type /lastfile to open file $file."
+	    set lastfile $full
+	}
+    }
+    after idle [list window close query .dcc:[expr {[dcc_count]-1}].]
+    complete
+}
+
+on part {
+    set ch [lindex [args] 0]
+    if {[llength [chanlist $ch]] <= 2 && [nick] != [my_nick] && ![isop [my_nick] $ch] && [get_cookie cycle 1]} {
+	echo [rep [t cycleforops] %chan $ch] status
+	/quote part $ch\012join $ch
+    }
+}
+
+
+on quit {
+    foreach ch [channels] {
+	if {[llength [chanlist $ch]] <= 2 && [ison [nick] $ch] && [nick] != [my_nick] && ![isop [my_nick] $ch] && [get_cookie cycle 1]} {
+	    echo [rep [t cycleforops] %chan $ch] status
+	    /quote part $ch\012join $ch
+	}
+    }
+}
+
+on unload kill_logs
+
+on quit {
+    catch {unset said([string tolower [nick]])}
+}
+
+on mode+b {
+    if {[string match [string tolower [strep [lindex [args] 1]]] [string tolower [my_nick]![my_user]@[my_host]]] && [get_cookie msglog] && $isaway} {
+	addmlog "0[nick]![user]@[host] 0banned you from [lindex [args] 0] ([lindex [args] 1])"
+    }
+}
+
+
+on mode-o {
+    if {[lindex [args] 1] == [my_nick] && [get_cookie msglog] && $isaway} {
+	addmlog "[k nick][nick][k d]([user]@[host]) deopped you from [k chan][lindex [args] 0]"
+    }
+}
+
+on disconnect {
+    if {[get_cookie msglog] && $isaway} {addmlog "Disconnected from $lserver"}
+}
+
+on chat_disconnect {
+    if {[get_cookie msglog] && $isaway} {addmlog "DCC Chat: Disconnected from [nick]([user]@[host])"}
+}
+
+on chat_connect {
+    if {[get_cookie msglog] && $isaway} {addmlog "DCC Chat: Connected to [k nick][nick][k h]([user]@[host])"}
+}
+
+on dcc_create {
+    /dccs [expr {[dcc_count] -1}]
+    if {[lindex [args] 0] == "GET" && [lsearch $xdcc_nicks [string tolower [nick]]] != -1} {
+	echo "[kano] Auto-accepting (dcc bot, I assume)..."
+	dcc_accept [expr {[dcc_count] -1}]
+    }
+}
+
+on dcc_complete {
+    /dccs [dcc_count]
+    if {[get_cookie msglog] && $isaway} {addmlog "DCC Send: Completed ([lindex [args] 2]) to [k nick][lindex [args] 1]"}
+}
+
+on mode-o {
+    set arg [lindex [args] 1]
+    set chan [lindex [args] 0]
+    if {[nick] != [my_nick] && [isprotect $arg op active] && ![isprotect [nick]![user]@[host] op] && [isop [my_nick] $chan]} {/mode $chan +o $arg}
+}
+
+on kick {
+    if {[nick] != [my_nick] && [isprotect $nick kick active] && ![isprotect [nick] op passive]} {
+	if {[isop [my_nick] $chan]} {
+	    /mode $chan -o [nick]
+	    /invite $nick $chan
+	}
+    }
+    complete
+}
+
+on mode+b {
+    set chan [lindex [args] 0]
+    set mask [lindex [args] 1]
+    if {[isprotect $mask ban active] && ![isprotect [nick] op passive] && [nick] != [my_nick] && [isop [my_nick] $chan]} {/mode $chan -bo $mask [nick]}
+}
+
+on timer {
+    if {[get_cookie timestamp 1]} {
+	if {[clock format [clock seconds] -format %m%d%H] > $last_timestamp} {
+	    set s [t timestamp]
+	    echo $s status
+	    foreach i [channels] {
+		echo $s channel $i
+	    }
+	    foreach i [queries] {
+		echo $s query $i
+	    }
+	    foreach i [chats] {
+		echo $s chat $i
+	    }
+	    set last_timestamp [clock format [clock seconds] -format %m%d%H]
+	}
+    }
+    if {[queries .Dccs.] != ""} {/dccs -q} elseif {[dcc_count] && [get_cookie dccwin 1]} {
+	foreach i [queries .dcc:*.] {
+	    if {![regexp -nocase {^\.dcc:([0-9]+)\.$} $i junk count]} {
+		window close query $i
+	    } else {
+		if {$count > [dcc_count]} {window close query $i} else {
+		    /dccs $count
+		}
+	    }
+	}
+	for {set x 0;set y 0} {$x < [dcc_count]} {incr x;incr y} {
+	    if {![window exists query .dcc:$x.]} {
+		dcc_cancel $y
+		incr y -1
+	    }
+	}
+    }
+
+    if {![window exists query .Grep.]} {set grep_for ""}
+    foreach i [array names curweb] {
+	if {[lsearch -exact [queries] $i] == ""} {close $i;unset curweb($i)}
+    }
+    foreach i [array names sock] {
+	if {[lsearch [queries] $i] == -1} {
+	    killconn $sock($i) $i
+	}
+    }
+    /dotimers
+    
+    foreach i [array names tkb] {
+	set whichx $i
+	if {$i <= [unixtime]} {
+	    foreach j $tkb($i) {
+		/mode $j
+		echo [rep [rep [t tkbunban] %host [lindex $j 2]] %chan [lindex $j 0]]
+	    }
+	    unset tkb($whichx)
+	}
+    }
+}
+
+set jw 0
+on 312 {
+    if {$jw == "1"} {
+	if {$whoistype == "u"} {
+	    catch {unset tempchz}
+	    if {[queries .UserScan.] == ""} {/query .UserScan.}
+	    window set_title "UserScan([clock format [clock seconds] -format %m/%d/%y(%H:%M:%S)])" query .UserScan.
+	    window clear query .UserScan.
+	    echo "[kano] Data receival complete... Computing UserScan info."
+	    echo "[kano] UserScan done at [clock format [clock seconds] -format %m/%d/%y(%H:%M:%S)]" query .UserScan.
+	    set maxlen 0
+	    foreach i [array names chanelz] {
+		if {[string length $i] > $maxlen} {set maxlen [string length $i]}
+	    }
+	    foreach i [lsort [array names chanelz]] {
+		set tl [llength $chanelz($i)]
+		set ul [llength $userscan]
+		echo "[kano] [format %${maxlen}s $i]: [graph [string trim \
+			$litehelp ] [string trim $darkhelp ] $tl $ul \
+			50 0 01 01 "[format %[string length $ul]s \
+			$tl]/$ul ([format %5s [format %.1f [expr \
+			{100*(double($tl)/$ul)}]]]%)"]" query .UserScan.
+	    }
+	    unset tl ul chanelz userscan
+	    set whoistype none
+	}
+	set joyn(whois) 0
+    }
+    complete
+}
+
+on 317 {
+    set ircidle([lindex [args] 1]) [lindex [args] 2]
+    if {$whoistype == "i" && $joyn(whois) == "1"} {
+	/idle
+    }
+    complete
+}
+
+on 332 {
+    if {[set x [get_cookie lock([lindex [args] 1])]] != "" && $x != [lindex [args] 2] && [isop [my_nick] [lindex [args] 1]]} {
+	/topic [set c [lindex [args] 1]] [get_cookie lock($c)] KV
+    }
+    complete
+}
+
+on 004 {
+    if {[string first hybrid-6 [lindex [args] 2]] != -1} {
+	set hybrid6 1
+	set nonRFC 1
+	nerre "\[switching to hybrid6-mode[expr {[get_cookie usehybrid6 1] ? "" : ", but inactive"}]\]"
+    }
+}
+
+on 351 {
+    set dec ""
+    if {$interver} {
+	if {[string first hybrid-6 [lindex [args] 1]] != -1} {
+	    set hybrid6 1
+	    set nonRFC 1
+	    set dec "\[switching to hybrid6-mode[expr {[get_cookie usehybrid6 1] ? "" : ", but inactive"}]\]"
+	}
+	set interver 0
+    }
+    nerre $dec
+    complete
+}
+
+on 401 {
+    if {!$isnotify || [queries [lindex [args] 1]] != ""} {
+	if {[string first , [lindex [args] 1]] != -1} {
+	    append t "\n[kano] get on a real server! \[switching to nonRFC mode\]"
+	    set nonRFC 1
+	}
+    }
+    complete
+}
+on 407 {
+    erre "[kano] get on a decent server, geek \[switching to nonRFC mode\]"
+    set nonRFC 1
+    complete
+}
+on 471 {
+    if {![info exists gotkicked([string tolower [lindex [args] 1]])]} {
+	set gotkicked([string tolower [lindex [args] 1]]) 0
+    }
+    if {$gotkicked([string tolower [lindex [args] 1]])} {
+	/remnants [lindex [args] 1]
+	set gotkicked([string tolower [lindex [args] 1]]) 0
+    }
+    complete
+}
+on 473 {
+    if {![info exists gotkicked([string tolower [lindex [args] 1]])]} {
+	set gotkicked([string tolower [lindex [args] 1]]) 0
+    }
+
+    set chan [string tolower [lindex [args] 1]]
+    complete
+}
+
+on 474 {
+    if {![info exists gotkicked([string tolower [lindex [args] 1]])]} {
+	set gotkicked([string tolower [lindex [args] 1]]) 0
+    }
+
+    if {$gotkicked([string tolower [lindex [args] 1]])} {
+	/remnants [lindex [args] 1]
+	set gotkicked([string tolower [lindex [args] 1]]) 0
+    }
+    set find_ban 1
+    /quote mode [lindex [args] 1] +b
+    complete
+}
+
+on 475 {
+    if {![info exists gotkicked([string tolower [lindex [args] 1]])]} {
+	set gotkicked([string tolower [lindex [args] 1]]) 0
+    }
+
+    if {$gotkicked([string tolower [lindex [args] 1]])} {
+	/remnants [lindex [args] 1]
+	set gotkicked([string tolower [lindex [args] 1]]) 0
+    }
+    complete
+}
+on nick {
+    foreach i [channels] {
+	if {[my_nick] != [nick] && ![isvoice [nick] $i] && [ison [nick] $i] && [string match *m* [lindex [split [mode $i]] 0]] && [isop [my_nick] $i] && [get_cookie kicknick 0] && ![isprotect [nick] kick passive]} {
+	    /kick $i [nick] Don't /nick in moderated
+	}
+    }
+    if {![isprotect [nick] kick passive] && [get_cookie bans(enf)]} {
+	foreach i $onch {
+	    foreach j [string tolower $chanbans([string tolower $i])] {
+		if {[string match [strep $j] [string tolower \
+			[lindex [args] 0]![user]@[host]]]} {
+		    /kick $i [lindex [args] 0] banned ($j)
+		}
+	    }
+	}
+    }
+}
+
+on url_output {
+    if {[lsearch $urls [lindex [args] 0]] == "-1"} {
+	lappend urls [lindex [args] 0]
+    }
+}
+
+on url_select {
+    set url [lindex [args] 0]
+    set pre [lindex [file split [lindex [args] 0]] 0]
+    if {$pre != "http:" && $pre != "ftp:" && ![string match ???.* $pre]} {
+	if {$pre == "mailto:"} {
+	    FALC_shell [rep [lindex [args] 0] mailto:// mailto:]
+	}
+	return
+    }
+    if {![get_cookie urlpopup 0]} {return}
+    set ans [FALC_listbox -t [lindex [args] 0] -m "Open URL in..." [list "Web Browser" "New Browser Window" "FTP Client" "Copy to Clipboard" "DNS Lookup"]]
+    switch -- $ans {
+	"Web Browser" -
+	"New Browser Window" {
+	    if {$ans == "New Browser Window"} {
+		set window "0x0"
+	    } else {
+		set window "0xFFFFFFFF"
+	    }
+
+	    set done 0
+	    set ustr "\"[rep $url \" %22]\",\"\",$window,0x4,\"\",\"\",\"\""
+	    
+	    foreach server {Netscape IEXPLORE} {
+		if {![catch {FALC_dde -async r $server WWW_OpenURL \
+			$ustr}]} {
+		    catch {FALC_dde -async r $server WWW_Activate 0xFFFFFFFF}
+		    set done 1
+		    break
+		}
+	    }
+
+	    if {$done} {
+		complete
+	    }
+	    return
+	}
+	"Copy to Clipboard" {
+	    FALC_clip -c [lindex [args] 0]
+	    complete;return
+	}
+	"Download in Xircon" {
+	    /download [lindex [args] 0]
+	    complete;return
+	}
+	"DNS Lookup" {
+	    set x [file split [lindex [args] 0]]
+	    if {[llength $x] == 1} {/dns [join $x]} else {
+		/dns [lindex $x 1]
+	    }
+	    complete;return
+	}
+	"FTP Client" {
+	    if {[get_cookie client(ftp)] == ""} {
+		echo "[kano] Type '/setprog ftp' to set FTP client."
+	    }
+	    set prog [get_cookie client(ftp) ftp]
+	}
+	"" {complete;return}
+	default return
+    }
+    if {[catch [list FALC_shell -p $url $prog] x]} {
+	echo "[kano] $x"
+    }
+    complete
+}
+
+
+on mode+b {
+    set arg [lindex [args] 1]
+    set chan [string tolower [lindex [args] 0]]
+    if {[string match [rep [rep $arg \[ \\\[] \] \\\]] [my_nick]![my_user]@[my_host]] && [isop [my_nick] $chan] && [get_cookie bans(self)]} {
+        /mode $chan -b $arg
+    } elseif {[isop [my_nick] $chan] && [get_cookie bans(enf)]} {
+	foreach i [string tolower [chanlist $chan]] {
+	    if {[nick] == ""} return
+	    set niq [nick]
+	    set rs "banned($arg) by $niq"
+	    if {$niq == [my_nick]} {set rs "banned($arg)"}
+	    set h [string tolower [strep $arg]]
+	    set mh [string tolower $i![uhost $i]]
+	    if {[string match $h $mh] && $i != [string tolower [my_nick]] && ![isprotect [get_user [find_user $mh] mask] kick passive]} {
+		set break 0
+		foreach k [killdupe $chanex($chan)] {
+		    if {[string match $k $mh]} {set break 1; break}
+		}
+		if {$break} {continue}
+		/kick $chan $i $rs
+		if {$onchanQ < 0} {set onchanQ 0}
+		incr onchanQ
+		timer 5 1 {incr onchanQ -1}
+	    }
+	}
+    }
+}
+
+#autodeop
+on mode+o {
+    set chan [lindex [args] 0]
+    if {[lindex [args] 1] != [my_nick]} {
+	if {[nick] != [my_nick] && [isop [my_nick] $chan] && [isprotect [lindex [args] 1] deop]} {
+	    /mode $chan -o [lindex [args] 1]
+	}
+    } else {
+	set deops [list]
+	set voices [list]
+	foreach i [oplist $chan] {
+	    if {[isprotect $i deop]} {lappend deops $i}
+	}
+	foreach i [nvlist $chan] {
+	    if {[isprotect $i voice active]} {lappend voices $i}
+	}
+	massmode $chan -o $deops
+	massmode $chan +v $voices
+    }
+}
+
+#autovoice
+on mode-v {
+    set chan [lindex [args] 0]
+    if {[my_nick] != [nick] && [isop [my_nick] $chan] && [isprotect [lindex [args] 1] voice active]} {/mode $chan +v [lindex [args] 1]}
+}
+
+on mode-b {set lastunban([string tolower [lindex [args] 0]]) [lindex [args] 1]}
+
+on mode-b {
+    set x $chanbans([string tolower [lindex [args] 0]])
+    set ban [lindex [args] 1]
+    catch {set chanbans([string tolower [lindex [args] 0]]) [lreplace $x [set s [lsearch -exact $x $ban]] $s]}
+}
+
+on chat_text {
+    set msg [lindex [args] 0]
+    if {[string match {[зи]} [string index $msg 0]]} {echo "<[nick]:[k highlight]ROT-14[k nick]> [rot_old [string range $msg 1 end]]" chat [nick];complete}
+}
+
+on_minute {
+    set d [clock format [clock seconds] -format %w]
+    if {$d >= 2 && $d <= 6 && [clock format [clock seconds] -format %H:%M] == "00:35"} {
+	echo "[kano] This is a notice from [kanovers]:"
+	echo "[kano] Conan's on NBC right now! Conan is God! Worship him!"
+    }
+    if {![connected] && [get_cookie autorecon 1]} {
+	if {[expr [unixtime] - $lastdis] >= 300} {
+	    set lastdis [clock seconds]
+	    if {[string trim $lastserver 1234567890] == ""} {
+		set orig $lastserver
+		while {[getnet [set newsv [lindex [get_cookie servers] $lastserver]]] != [getnet $lserver]} {
+		    incr lastserver
+		    if {$newsv == ""} {set lastserver 0}
+		    if {$orig == $lastserver} break
+		}
+		set newsv [lindex [get_cookie servers] $lastserver]
+		if {$newsv == ""} {set lastserver 0} {
+		    echo "[kano] Jumping to next server: [join $newsv :]"
+		    /server $newsv
+		    incr lastserver
+		}
+	    } {
+		echo "[kano] Reconnecting to $lastserver..."
+		/server $lastserver
+		set lastserver [lsearch -glob [get_cookie servers] $lastserver*]
+	    }
+	}
+    }
+} {
+    set dccs 0
+    foreach i [dccs] {
+	if {[expr [unixtime] - [lindex $i 1]] >= 120 && [lindex $i 4] <= 0} {
+	    set showdcc 0
+	    dcc_cancel $dccs
+	    incr dccs -1
+	    set showdcc 1
+	    echo "[kano] DCC [string tolower [lindex $i 0]] of [file tail [lindex $i 3]] [iph "\"[lindex $i 0]\" == \"GET\"" from to] [lindex $i 2] timed out (2mins)."
+	}
+	incr dccs
+    }
+}
+
+if {[connected]} {
+    set interver 1
+    /quote version
+}

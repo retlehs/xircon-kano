@@ -1,0 +1,4 @@
+if things get slow, you can (in this order - try reloading after you do each one)
+- delete privmsg.km
+- delete echo.km
+- delete events.km

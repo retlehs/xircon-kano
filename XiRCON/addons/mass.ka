@@ -1,0 +1,57 @@
+
+alias mkick {
+    /mdop
+    set mk [masskick [channel] [set end [lreplace [set chl [chanlist [channel]]] [lsearch $chl [my_nick]] [lsearch $chl [my_nick]]]] [raw_args]]
+    echo "[kano] Masskicked [llength $end] users in $mk hits."
+    complete
+}
+
+alias mdop {
+    set y [oplist [channel]]
+    set nickz [string tolower [concat [list [my_nick]] [split [raw_args] ", "]]]
+    set x ""
+    foreach i $y {
+	if {[lsearch -exact $nickz [string tolower $i]] == -1} {lappend x $i}
+    }
+    set undomode [list [list massmode [channel] +o $x] massdeop]
+    set hit [massmode [channel] -o [set end $x]]
+    echo "[kano] Massdeopped all but ([listify $nickz]): [llength $end] ops in $hit hits."
+    complete
+}
+
+alias mop {
+    set x [noplist [channel]]
+    set undomode [list "massmode [channel] -o [list $x]" "massop (eek)"]
+    set hit [massmode [channel] +o $x]
+    echo "[kano] Massopped [llength $x] nonops in $hit hits."
+    complete
+}
+
+alias mv {
+    /voc [join [nvlist [channel]]]
+    set undomode [list "massmode [channel] -v [list [join [nvlist [channel]]]]" massvoice]
+    echo "[kano] Massvoiced [llength [nvlist [channel]]] nonvoices."
+    complete
+}
+
+alias mdv {
+    /dvoc [vlist [channel]]
+    set undomode [list "massmode [channel] +v [list [vlist [channel]]]" massdevoice]
+    echo "[kano] Massdevoiced [llength [vlist [channel]]] voices."
+    complete
+}
+
+set undomode {"" "nothing, moron"}
+alias undo {
+    catch [lindex $undomode 0] hits
+    echo "[kano] Attempting to undo [lindex $undomode 1] in $hits hits.."
+    complete
+}
+
+kaddhelp mkick "Does a /mdop then kicks everyone on the channel. Fun, eh?" "/mkick" "Mass Kick" "/mdop"
+kaddhelp mop "Ops everyone in the channel." "/mop" "Mass Op" "/mdop, /undo"
+kaddhelp mdop "Deops everyone in the channel." "/mdop" "Mass Deop" "/mop, /undo"
+kaddhelp mkb "Does a /mkick then bans everyone." "/mkb" "Mass Kickban" "/mdop, /mkick, /undo"
+kaddhelp mv "Massvoices on a channel." "/mv" "Mass Voice" "/mdv, /undo"
+kaddhelp mdv "Massdevoices on a channel." "/mdv" "Mass DeVoice" "/mv, /undo"
+kaddhelp undo "Nifty command that undoes the last mass command you did." "/undo" "Undo Mass-Mode" "/mop, /mdop, /mv, /mdv, /mkick, /mkb"

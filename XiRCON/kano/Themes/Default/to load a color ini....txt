@@ -1,0 +1,2 @@
+To load a color INI, go to Tools->Preferences and click the Colors tab. Press
+the "Load" button.

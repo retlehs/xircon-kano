@@ -1,0 +1,428 @@
+
+
+on mode-o deop_flood
+on kick kick_flood
+on ctcp ctcp_flood
+on join join_flood
+on nick nick_flood
+on notice pub_flood
+on privmsg pub_flood
+on privmsg mass_msg_flood
+on privmsg mass_pub_flood
+
+kaddhelp flood {Sets (or reads) the flood ratios. Set both values to 0 to\
+	turn off.
+Nick: nick changes from the same user
+Join: channel joins from the same host
+Pub: channel text from the same nick
+Msg: messages from the same host
+CTCP: ctcps from the same host
+Kick: kicks from the same user
+Deop: deops from the same user
+MJoin: joins from anybody combined
+MPub: channel text from anybody combined
+} /flood "Flood Protect Config"
+
+ac check @massprot @0 Use massflood protection (may introduce bugs)
+ac check @floodprot @1 Use (all) flood protection
+
+set ctcpnicks ""
+
+proc ctcp_flood {} {
+    global ctcps ctcpnicks
+    if {![get_cookie floodprot 1]} return
+    set cmd [string tolower [lindex [args] 1]]
+    if {$cmd == "action"} return
+    if {[get_cookie cloak]} return
+    set fc [get_cookie flud(ctcp)]
+    set u [host]
+    if {![info exists ctcps($u)]} {set ctcps($u) ""}
+    set ctcps($u) "[unixtime] $ctcps($u)"
+    set this [lindex $ctcps($u) [expr {[lindex $fc 0] - 1}]]
+    if {$this != ""} {
+	if {[unixtime] - $this < [lindex $fc 1]} {
+	    echo "[kano] CTCP flood from [nick] (*@$u); cloaking (/cloak to\
+		    resume normal CTCP operation)"
+	    set_cookie cloak 1
+	    catch {unset ctcps($u)}
+	}
+    }
+    set flud [get_cookie flud(mctcp) {3 10}]
+    set c [lindex $flud 0]
+    set sec [lindex $flud 1]
+    set m ""
+    foreach i $ctcpnicks {
+	if {[llength [split [string trim $i]]] == 1} continue
+	if {[unixtime] - [lindex [split $i] 1] < $sec} {lappend m $i}
+    }
+    set ctcpnicks $m
+    if {[lsearch -glob $ctcpnicks "[strep [nick]] *"] == -1} {
+	lappend ctcpnicks "[nick] [unixtime]"
+    }
+    if {[llength $ctcpnicks] > $c} {
+	echo [rep [t autoignore] %type Ctcp]
+	addmlog "Cloaked due to $flud unique hosts ctcping you in $sec\
+		seconds; type /cloak to resume normal CTCP operation."
+	set_cookie cloak 1
+    }
+}
+
+proc pub_flood {{chan ""}} {
+    if {![get_cookie floodprot 1]} return
+    if {[nick] == ""} return
+    global pubs msgs unignore
+
+    if {![get_cookie floodprot 1]} return
+
+    set fp [get_cookie flud(pub)]
+    if {[llength $fp] != 2 || [lindex $fp 1] <= 0} return
+    
+    if {$chan == ""} {set chan [string trimleft [lindex [args] 0] @+]}
+    set nc $chan
+    if {[isprotect [nick] kick passive]} return
+    if {[string index $nc 0] == "#"} {
+	if {![isop [my_nick] $nc]} return
+	set u [host]
+	if ![info exists pubs($u)] {set pubs($u) ""}
+	set pubs($u) "[unixtime] $pubs($u)"
+	set newp ""
+	foreach i $pubs($u) {
+	    if {[unixtime] - $i < [lindex $fp 1]} {
+		lappend newp $i
+	    }
+	}
+	set pubs($u) $newp
+	if {[llength $newp] > [lindex $fp 0] && ([get_cookie flud(ops)] || \
+		![isop [nick] $nc])} {
+	    catch {unset pubs($u)}
+	    /kick $nc [nick] channel flood ([lindex $fp 0] lines in [since \
+		    [lindex $fp 1]])
+	}
+    } elseif {![regexp ^(Nick|Chan|Oper|Help|Memo)Serv$ [nick]]} {
+	set u [host]
+	if ![info exists msgs($u)] {set msgs($u) ""}
+	set msgs($u) "[unixtime] $msgs($u)"
+	set fm [get_cookie flud(msg)]
+	if {[lindex $fm 0] == "" || [lindex $fm 1] == "" \
+		|| [lindex $fm 0] < 1 || [lindex $fm 1] < 1} return
+	set temp [list]
+	foreach i $msgs($u) {
+	    if {[unixtime] - $i <= [lindex $fm 1]} {lappend temp $i}
+	}
+	set msgs($u) $temp
+	set this [lindex $msgs($u) [expr {[lindex $fm 0] - 1}]]
+	if {$this != ""} {
+	    if {[unixtime] - $this < [lindex $fm 1]} {
+		catch {unset msgs($u)}
+		echo [rep [t autoignore] %type Msg] [get_cookie status]
+		set u *!*@$u
+		/ignr $u
+		set unignore($u) [expr [unixtime] + 30]
+	    }
+	}
+    }
+}
+
+proc nick_flood {} {
+    global nicks
+    if {![get_cookie floodprot 1]} return
+
+    set xx [lindex [get_cookie flud(nick)] 0]
+    set sec [lindex [get_cookie flud(nick)] 1]
+    if {$xx <= 0 || $sec <= 0} return
+
+    if [isprotect [nick] kick passive] return
+    set u [host]
+    if ![info exists nicks($u)] {set nicks($u) ""}
+    set nicks($u) "[unixtime] $nicks($u)"
+
+    set this [lindex $nicks($u) [expr {$xx - 1}]]
+    if {$this == ""} return
+    set fo [get_cookie flud(ops)]
+    if {[unixtime] - $this < $sec} {
+	foreach i [channels] {
+	    if {[ison [nick] $i] && ($fo || ![isop [nick] $i])} {
+		
+		if [isop [my_nick] $i] {
+		    /mode $i -o+b [nick] [maskhost \
+			    [nick]![user]@[host]]\nkick $i [nick] :nick\
+			    flood ($xx nicks in $sec)
+		}
+		catch {unset nicks($u)}
+	    }
+	}
+    }
+}
+
+proc join_flood {} {
+    global splitwin joins chanj chanjs
+    set fj [get_cookie flud(join)]
+    if {[lindex $fj 1] <= 0} return
+
+    set lc [string tolower [lindex [args] 0]]
+    if {![isop [my_nick] $lc]} return
+    if {[info exists splitwin([string tolower [user]@[host]])]} return
+    if {![get_cookie floodprot 1]} return
+    if {[isprotect [nick] kick passive]} return
+    set u [host],[lindex [args] 0]
+    if {![info exists joins($u)]} {set joins($u) ""}
+    set joins($u) "[unixtime] $joins($u)"
+    set this [lindex $joins($u) [expr {[lindex $fj 0] - 1}]]
+    if {$this == ""} return
+    if {[unixtime] - $this < [lindex $fj 1] && ([get_cookie flud(ops)] || \
+	    ![isop [nick] $lc])} {
+	/mode [lindex [args] 0] -o+b [nick] [maskhost \
+		[nick]![user]@[host]]\nkick [lindex [args] 0] [nick] \
+		:join flood ([lindex $fj 0] in [since [lindex $fj 1]])
+	catch {unset joins($u)}
+    }
+    
+    if [get_cookie massprot 0] {
+	set ch [string tolower [lindex [args] 0]]
+	if ![info exists chanjs($ch)] {set chanjs($ch) ""}
+	set chanjs($ch) "[unixtime] $chanjs($ch)"
+	set j [get_cookie flud(mjoin) "10 2"]
+	set s ""
+	foreach i $chanjs($ch) {
+	    if {[expr [clock seconds] - $i] > [lindex $j 1]} break {lappend \
+		    s $i}
+	}
+	set chanjs($ch) $s
+	if {[llength $s] >= [lindex $j 0]} {
+	    if [setm $ch i] {
+		/mode $lc +i
+		echo "[kano] Massjoinflood ([join $j " in "]sec), so setting\
+			+i\n[kano] to kick all users who joined after a\
+			certain nick joined, type /afterkick <first nick>" \
+			channel $ch
+	    }
+	    set chanjs($ch) ""
+	}
+	if ![info exists chanj($ch)] {set chanj($ch) ""}
+	set lowc $chanj($ch)
+	set lown [string tolower [nick]]
+	set f [lsearch -exact $lowc $lown]
+	if {$f != -1} {set chanj($ch) [lreplace $chanj($ch) $f $f]}
+	set chanj($ch) [concat [list [nick]] $chanj($ch)]
+    }
+}
+
+alias flood {/flud [raw_args];complete}
+alias flud flud_alias
+proc flud_alias {} {
+    set t(1Channel) {
+	Nick {nick changes} {Kick user}
+	Join {channel joins} {Ban user}
+	Pub {lines of public text} {Kick user}
+	Kick {kicks} {Kick user}
+	Deop {deops (-o)} {Kick user}
+    }
+    set t(2Private) {
+	Msg {messages and notices} {Ignore user}
+	CTCP {CTCP's} {Ignore all CTCP's (/cloak)}
+    }
+    set "t(3All users on a channel, combined)" {
+	MJoin {channel joins} {Make chan. invite-only (+i)}
+	MPub {channel text} {Moderate channel (+m)}
+    }
+    set "t(4All users, combined)" {
+	MassMsg {messages/notices} {Ignore all users}
+	MCTCP {CTCP's} {Ignore all CTCP's (/cloak)}
+    }
+    set il ""
+    set m 1
+    foreach subject [lsort [array names t]] {
+	set row [expr {$m*10}]
+	lappend il [list label a 25 $row 250 10 "[string index $subject \
+		0]. [string range $subject 1 end]"]
+	incr m 2
+	foreach {i name punish} $t($subject) {
+	    set row [expr {$m*10}]
+	    lappend il [list label a 5 $row 100 10 "$punish after"]
+	    lappend il [list label a 125 $row 100 10 $name]
+	    lappend il [list edit -n 1$i 105 $row 15 10 [lindex \
+		    [get_cookie flud($i)] 0]]
+	    lappend il [list label b 200 $row 195 10 "in           \
+		    seconds"]
+	    lappend il [list edit -n 2$i 210 $row 15 10 [lindex \
+		    [get_cookie flud($i)] 1]]
+	    incr m
+	}
+	incr m
+    }
+    lappend il [list check -v [get_cookie flud(ops) 0] flud(ops) 10 [expr \
+	    {$row+20}] 200 10 "Kick ops for flooding"]
+    lappend il [list check -v [get_cookie floodprot 1] floodprot 10 [expr \
+	    {$row+30}] 200 10 "Use flood protection (all of this)"]
+    lappend il [list check -v [get_cookie massprot 0] massprot 10 [expr \
+	    {$row+40}] 200 10 "Use massflood protection (#3)"]
+    set ans [FALC_dialog -t "[kanovers] Flood Prot" 270 [expr {$row+50}] $il]
+    foreach i $ans {
+	set m [lindex $i 0]
+	set n [lindex $i 1]
+	if {$n == ""} {set n -1}
+	if {[string index $m 0] == 1} {
+	    set_cookie flud([string range $m 1 end]) $n
+	} elseif {[string index $m 0] == 2} {
+	    set_cookie flud([string range $m 1 end]) "[get_cookie \
+		    flud([string range $m 1 end])] $n"
+	} elseif {[lsearch -exact [list flud(ops) massprot \
+		floodprot] $m] != -1} {
+	    set_cookie $m $n
+	}
+    }
+    echo "[kano] Flood settings:"
+    foreach {desc this} [list "Nick changes" nick Joins join "Public text" \
+	    pub "Private text" msg CTCP ctcp Kicks kick Deops deop Massjoins \
+	    mjoin "Mass public" mpub "Mass msgs" massmsg "Mass CTCP's" mctcp] {
+	set f [get_cookie flud($this)]
+	echo [format "%4s%12s: %2s %s %2s %s" [list] $desc [lindex $f \
+		0] in [lindex $f 1] seconds]
+    }
+    echo "[kano] Flood protection is [expr {[get_cookie floodprot 1] ? \
+	    "on; massflood protection is [expr {[get_cookie massprot 0] \
+	    ? "on" : "off"}]" : "off"}]"
+    complete
+}
+
+proc mass_pub_flood {} {
+    global ischan d chanps
+    if {!$ischan} return
+
+    if {![get_cookie floodprot 1]} return
+
+    set j [get_cookie flud(mpub) "30 2"]
+    if {[lindex $j 0] <= 0} return
+
+    if {[isprotect [nick] kick passive]} return
+    if {[get_cookie massprot 0]} return
+    set ch [string tolower $d]
+    if ![info exists chanps($ch)] {set chanps($ch) ""}
+    set chanps($ch) [concat [unixtime] $chanps($ch)]
+    set s ""
+    foreach i $chanps($ch) {
+	if {[expr [clock seconds] - $i] > [lindex $j 1]} break {lappend s $i}
+    }
+    set chanps($ch) $s
+    if {[llength $s] < [lindex $j 0]} return
+    if {[isop [my_nick] $d]} {
+	if ![setm $ch m] {
+	    /mode [lindex [args] 0] +m
+	    echo "[kano] Masspubflood ([join $j " in "]sec), so setting +m\
+		    (/flood to change values, or /config to turn off)" \
+		    channel $ch
+	}
+    } {
+	window close channel $ch
+	/remnants $ch
+	echo "[kano] Masspubflood ([join $j " in "]sec), so leaving (/flood\
+		to change values, or /config to turn off)"
+    }
+    set chanps($ch) ""
+}
+
+proc kick_flood {} {
+    if {![get_cookie floodprot 1]} return
+    set rnum [lindex [get_cookie flud(kick)] 0]
+    set rtime [lindex [get_cookie flud(kick)] 1]
+
+    if {$rnum <= 0 || $rtime <= 0} return
+
+    if {[nick] != [my_nick] && [isop [my_nick] [lindex [args] 0]] && [lindex \
+	    [get_cookie flud(kick)] 0] != 0 && [isop [lindex [args] 1] \
+	    [lindex [args] 0]]} {
+	set time [unixtime]
+	lappend fludkicks([string tolower [nick]]) [unixtime]
+	set m ""
+	set tempr ""
+	foreach i $fludkicks([string tolower [nick]]) {
+	    if {[expr $time - $i] <= $rtime} {
+		if {$m == ""} {set m $i}
+		lappend tempr $i
+	    }
+	}
+	set fludkicks([string tolower [nick]]) $tempr
+	if {[llength $tempr] >= $rnum} {
+	    /kick [lindex [args] 0] [nick] masskick ([llength $tempr] in\
+		    [since $rtime])
+	    echo "[kano] is [nick] masskicking? [llength $tempr] in [since \
+		    $rtime]" channel [lindex [args] 0]
+	    set fludkicks([string tolower [nick]]) ""
+	}
+    }
+}
+
+
+alias afterkick {
+    set chan [string tolower [channel]]
+    set nick [string tolower [lindex [args] 0]]
+    masskick $chan [lrange $chanj($chan) 0 [lsearch -exact [string tolower \
+	    $chanj($chan)] $nick]] "die! (afterkick: $nick)"
+    complete
+}
+
+
+proc deop_flood {} {
+    global fluddeops
+    if {![get_cookie floodprot 1]} return
+
+    set fd [get_cookie flud(deop)]
+    set rnum [lindex $fd 0]
+    set rtime [lindex $fd 1]
+
+    if {$rnum <= 0 || $rtime <= 0} return
+
+    set chan [lindex [args] 0]
+    if {[nick] == [my_nick]} return
+    if {![isop [my_nick] $chan]} return
+    if {![isop [lindex [args] 1] $chan]} return
+    if {[isprotect [nick] op active]} return
+
+    set time [unixtime]
+
+    set ln [string tolower [nick]]
+    lappend fluddeops($ln) [unixtime]
+    set m ""
+    set tempr ""
+    foreach i $fluddeops($ln) {
+	if {$time - $i <= $rtime} {
+	    if {$m == ""} {set m $i}
+	    lappend tempr $i
+	}
+    }
+    set fluddeops($ln) $tempr
+    if {[llength $tempr] >= $rnum} {
+	/kick $chan [nick] deop flood ([llength $tempr] in [since $rtime])
+	echo "[kano] [nick] is deopflooding.. [llength $tempr] in [since \
+		$rtime]" channel [lindex [args] 0]
+	set fluddeops($ln) ""
+    }    
+}
+
+proc mass_msg_flood {} {
+    global ischan msgnicks
+    if {$ischan} return
+    if {![get_cookie floodprot 1]} return
+    set m ""
+    set c [get_cookie flud(massmsg) {5 5}]
+    set count [lindex $c 0]
+    set time [lindex $c 1]
+    if {$count <= 0 || $time <= 0} return
+
+    foreach i $msgnicks {
+	if {[llength [split [string trim $i]]] == 1} continue
+	set t [lindex [split $i] 1]
+	if {$t == ""} continue
+	if {[unixtime] - $t <= $time} {lappend m $i}
+    }
+    set msgnicks $m
+    if {[lsearch -glob $msgnicks "[strep [nick]] *"] == -1} {
+	lappend msgnicks "[nick] [unixtime]"
+    }
+    if {[llength $msgnicks] > $count} {
+	/ignr *!*@* private
+	echo "[t autoignoreall] ([listify [lsort $msgnicks]])"
+	echo "[kano] to unignore, type '/ignore'"
+	set unignore(*!*@*) [expr {[unixtime] + 300}]
+    }
+}
